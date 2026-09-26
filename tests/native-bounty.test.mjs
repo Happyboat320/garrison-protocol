@@ -25,7 +25,7 @@ test('four distinct bounties always include 1 and 4; slug alone pays zero',()=>{
   const ids=bountyOffers(data,seed),offers=ids.map(id=>bountyOption(data,id));
   assert.equal(ids.length,4);assert.equal(new Set(ids).size,4);assert.deepEqual(bountyOffers(data,seed),ids);
   assert.ok(offers.some(o=>o.coin===1));assert.ok(offers.some(o=>o.coin===4));
-  for(const o of offers){assert.ok(o.coin>=0&&o.coin<=4);assert.equal(o.count,1);assert.equal(data.enemies[o.enemyId].enemyBehavior.randomPoolEligible,true);if(o.coin===0){assert.equal(o.enemyId,BOUNTY_SLUG);slugSeen=true;}}
+  for(const o of offers){assert.ok(o.coin>=0&&o.coin<=6,'奖金档取原表 0–6');assert.equal(o.count,1);assert.equal(data.enemies[o.enemyId].enemyBehavior.randomPoolEligible,true);if(o.coin===0){assert.equal(o.enemyId,BOUNTY_SLUG);slugSeen=true;}}
  }
  assert.equal(slugSeen,true);
 });

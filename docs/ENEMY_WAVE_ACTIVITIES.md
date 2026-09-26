@@ -11,7 +11,7 @@
 
 更新资料：`node scripts/sync-enemy-activities.mjs`；随后 `npm run build`。构建会校验每条活动归属、默认模板主题/词条与逻辑资格、中高压至少4种；新敌人或活动变化须逐条复核默认 JSON，不能靠分类放开机制资格。执行 `node scripts/regenerate-wave-defaults.mjs` 按主题重生成默认表，然后构建；已保存的自定义表保持不变，要采用新默认配置请在大厅点击「重置默认敌人池」或编制台「恢复默认配置」。
 
-**领袖不在词条池里（2026-09-23 核查）**：本期 23 只 `levelType='BOSS'` 的敌人没有一只出现在 `enemyInfoDict` 的任一类型（原始 `source.json` 也一样），所以默认模板、道中波次和回合悬赏都抽不到它们。原表的领袖入口是 `effectBuffInfoDataDict` 里 key 为 `add_enemy_kill_gain_coin` 的 `enemyeffect_b_1`～`enemyeffect_b_24`（23 名领袖 ＋ 澪，逐条带 `enemy_id`／`coin` 1–6／`count` 1），客户端目前没有读它、悬赏池改由波次表成本推导。成因链、影响面（104 名原表悬赏敌人里 74 名抽不到、92 条币值与原表不一致）与三种可选修法见 [审计修复与 BOSS 入池缺口](ENEMY_AUDIT_FIX_2026-09-23.md) 第五节。
+**领袖不在词条池里（2026-09-23 核查并已接悬赏）**：本期 23 只 `levelType='BOSS'` 的敌人没有一只出现在 `enemyInfoDict` 的任一类型（原始 `source.json` 也一样），所以默认模板与道中波次抽不到它们 —— 领袖的正牌入口是**回合悬赏**：原表 `effectBuffInfoDataDict` 里 key 为 `add_enemy_kill_gain_coin` 的 `enemyeffect_b_1`～`enemyeffect_b_24`（23 名领袖 ＋ 澪，逐条带 `enemy_id`／`coin` 1–6／`count` 1）。客户端原本没读它、悬赏池改由波次表成本推导，导致 104 名原表悬赏敌人里 74 名（含全部领袖）抽不到、92 条币值与原表不一致；现已改回原表（口径见 [回合悬赏系统](BOUNTY_SYSTEM.md)，成因与验证见 [审计修复与 BOSS 入池缺口](ENEMY_AUDIT_FIX_2026-09-23.md) 第五节）。领袖在编制台手动加入时的成本也补齐为 `8 + coin`（9–14），不再回落到 `defaultCost`。
 
 界面采用模板侧栏、当前模板设置、敌人池和档案分区；配置管理与高级筛选默认收起，属性与独立难度编辑在点选档案后显示。抽取结果按同名敌人汇总，支持再抽一次、关闭按钮、Esc 和遮罩关闭。
 

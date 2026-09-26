@@ -117,7 +117,31 @@
     "enemy_1169_duphlx_2": 5,
     "enemy_1172_dugago": 7,
     "enemy_9011_acrefr": 11,
-    "enemy_1175_dushdo_2": 9
+    "enemy_1175_dushdo_2": 9,
+    "enemy_1500_skulsr": 9,
+    "enemy_1501_demonk": 10,
+    "enemy_1502_crowns": 9,
+    "enemy_1511_mdrock": 12,
+    "enemy_1513_dekght": 11,
+    "enemy_1513_dekght_2": 11,
+    "enemy_2005_axetro": 12,
+    "enemy_2004_balloon": 11,
+    "enemy_1516_jakill": 12,
+    "enemy_1504_cqbw": 9,
+    "enemy_1509_mousek": 10,
+    "enemy_1050_lslime": 10,
+    "enemy_1001_bigbo": 10,
+    "enemy_1517_xi": 12,
+    "enemy_1525_blkswb": 13,
+    "enemy_1535_wlfmster": 13,
+    "enemy_2008_flking": 12,
+    "enemy_2003_rockman": 13,
+    "enemy_10118_ymgprc": 11,
+    "enemy_1512_mcmstr": 13,
+    "enemy_1539_reid": 14,
+    "enemy_2048_smgrd": 11,
+    "enemy_2050_smsha": 11,
+    "enemy_2052_smgia": 11
   },
   "types": {
     "SPECIAL": {
@@ -1673,5 +1697,31 @@
         ]
       }
     }
+  },
+  "costSources": {
+    "enemy_1500_skulsr": "领袖赏金表 enemyeffect_b_1（coin 1）→ 项目成本 8+coin=9",
+    "enemy_1501_demonk": "领袖赏金表 enemyeffect_b_2（coin 2）→ 项目成本 8+coin=10",
+    "enemy_1502_crowns": "领袖赏金表 enemyeffect_b_3（coin 1）→ 项目成本 8+coin=9",
+    "enemy_1511_mdrock": "领袖赏金表 enemyeffect_b_4（coin 4）→ 项目成本 8+coin=12",
+    "enemy_1513_dekght": "领袖赏金表 enemyeffect_b_5（coin 3）→ 项目成本 8+coin=11",
+    "enemy_1513_dekght_2": "领袖赏金表 enemyeffect_b_6（coin 3）→ 项目成本 8+coin=11",
+    "enemy_2005_axetro": "领袖赏金表 enemyeffect_b_7（coin 4）→ 项目成本 8+coin=12",
+    "enemy_2004_balloon": "领袖赏金表 enemyeffect_b_8（coin 3）→ 项目成本 8+coin=11",
+    "enemy_1516_jakill": "领袖赏金表 enemyeffect_b_9（coin 4）→ 项目成本 8+coin=12",
+    "enemy_1504_cqbw": "领袖赏金表 enemyeffect_b_10（coin 1）→ 项目成本 8+coin=9",
+    "enemy_1509_mousek": "领袖赏金表 enemyeffect_b_11（coin 2）→ 项目成本 8+coin=10",
+    "enemy_1050_lslime": "领袖赏金表 enemyeffect_b_12（coin 2）→ 项目成本 8+coin=10",
+    "enemy_1001_bigbo": "领袖赏金表 enemyeffect_b_13（coin 2）→ 项目成本 8+coin=10",
+    "enemy_1517_xi": "领袖赏金表 enemyeffect_b_14（coin 4）→ 项目成本 8+coin=12",
+    "enemy_1525_blkswb": "领袖赏金表 enemyeffect_b_15（coin 5）→ 项目成本 8+coin=13",
+    "enemy_1535_wlfmster": "领袖赏金表 enemyeffect_b_16（coin 5）→ 项目成本 8+coin=13",
+    "enemy_2008_flking": "领袖赏金表 enemyeffect_b_17（coin 4）→ 项目成本 8+coin=12",
+    "enemy_2003_rockman": "领袖赏金表 enemyeffect_b_18（coin 5）→ 项目成本 8+coin=13",
+    "enemy_10118_ymgprc": "领袖赏金表 enemyeffect_b_19（coin 3）→ 项目成本 8+coin=11",
+    "enemy_1512_mcmstr": "领袖赏金表 enemyeffect_b_20（coin 5）→ 项目成本 8+coin=13",
+    "enemy_1539_reid": "领袖赏金表 enemyeffect_b_21（coin 6）→ 项目成本 8+coin=14",
+    "enemy_2048_smgrd": "领袖赏金表 enemyeffect_b_22（coin 3）→ 项目成本 8+coin=11",
+    "enemy_2050_smsha": "领袖赏金表 enemyeffect_b_23（coin 3）→ 项目成本 8+coin=11",
+    "enemy_2052_smgia": "领袖赏金表 enemyeffect_b_24（coin 3）→ 项目成本 8+coin=11"
   }
 }

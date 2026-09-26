@@ -3283,6 +3283,1281 @@ const ENEMY_ACTIVITY_GROUPS = {
     "eligible": false
   }
 };
+const ENEMY_KILL_COINS = {
+  "enemy_1041_lazerd_2": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_10_7",
+    "variants": [
+      {
+        "effectId": "enemyeffect_3_2",
+        "coin": 2,
+        "count": 1
+      },
+      {
+        "effectId": "enemyeffect_10_7",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1439_dslntf": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_3_3",
+    "variants": [
+      {
+        "effectId": "enemyeffect_3_3",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1299_ymkilr": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_4",
+    "variants": [
+      {
+        "effectId": "enemyeffect_3_4",
+        "coin": 2,
+        "count": 1
+      },
+      {
+        "effectId": "enemyeffect_4",
+        "coin": 1,
+        "count": 1
+      },
+      {
+        "effectId": "enemyeffect_14_6",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10084_hlegle": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_3_2_e",
+    "variants": [
+      {
+        "effectId": "enemyeffect_3_2_e",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1026_aghost": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_3_3_e",
+    "variants": [
+      {
+        "effectId": "enemyeffect_3_3_e",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1006_shield": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_3_4_e",
+    "variants": [
+      {
+        "effectId": "enemyeffect_3_4_e",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1404_msnip": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_14_7",
+    "variants": [
+      {
+        "effectId": "enemyeffect_3_5_e",
+        "coin": 2,
+        "count": 1
+      },
+      {
+        "effectId": "enemyeffect_14_7",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1007_slime": {
+    "coin": 0,
+    "count": 1,
+    "effectId": "enemyeffect_5_1",
+    "variants": [
+      {
+        "effectId": "enemyeffect_5_1",
+        "coin": 0,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_2001_duckmi": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_5",
+    "variants": [
+      {
+        "effectId": "enemyeffect_5",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_2002_bearmi": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_6",
+    "variants": [
+      {
+        "effectId": "enemyeffect_6",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_2034_sythef": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_7",
+    "variants": [
+      {
+        "effectId": "enemyeffect_7",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_2085_skzjxd": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_8",
+    "variants": [
+      {
+        "effectId": "enemyeffect_8",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1500_skulsr": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_b_1",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_1",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1501_demonk": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_b_2",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_2",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1502_crowns": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_b_3",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_3",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1511_mdrock": {
+    "coin": 4,
+    "count": 1,
+    "effectId": "enemyeffect_b_4",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_4",
+        "coin": 4,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1513_dekght": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_b_5",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_5",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1513_dekght_2": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_b_6",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_6",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_2005_axetro": {
+    "coin": 4,
+    "count": 1,
+    "effectId": "enemyeffect_b_7",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_7",
+        "coin": 4,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_2004_balloon": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_b_8",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_8",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1516_jakill": {
+    "coin": 4,
+    "count": 1,
+    "effectId": "enemyeffect_b_9",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_9",
+        "coin": 4,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1504_cqbw": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_b_10",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_10",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1509_mousek": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_b_11",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_11",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1050_lslime": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_b_12",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_12",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1001_bigbo": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_b_13",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_13",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1517_xi": {
+    "coin": 4,
+    "count": 1,
+    "effectId": "enemyeffect_b_14",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_14",
+        "coin": 4,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1525_blkswb": {
+    "coin": 5,
+    "count": 1,
+    "effectId": "enemyeffect_b_15",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_15",
+        "coin": 5,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1535_wlfmster": {
+    "coin": 5,
+    "count": 1,
+    "effectId": "enemyeffect_b_16",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_16",
+        "coin": 5,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_2008_flking": {
+    "coin": 4,
+    "count": 1,
+    "effectId": "enemyeffect_b_17",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_17",
+        "coin": 4,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_2003_rockman": {
+    "coin": 5,
+    "count": 1,
+    "effectId": "enemyeffect_b_18",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_18",
+        "coin": 5,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10118_ymgprc": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_b_19",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_19",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1512_mcmstr": {
+    "coin": 5,
+    "count": 1,
+    "effectId": "enemyeffect_b_20",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_20",
+        "coin": 5,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1539_reid": {
+    "coin": 6,
+    "count": 1,
+    "effectId": "enemyeffect_b_21",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_21",
+        "coin": 6,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_2048_smgrd": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_b_22",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_22",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_2050_smsha": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_b_23",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_23",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_2052_smgia": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_b_24",
+    "variants": [
+      {
+        "effectId": "enemyeffect_b_24",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_9006_actoxi": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyInitial_1",
+    "variants": [
+      {
+        "effectId": "enemyInitial_1",
+        "coin": 1,
+        "count": 1
+      },
+      {
+        "effectId": "enemyeffect_13_7",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_9007_acelem": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyInitial_2",
+    "variants": [
+      {
+        "effectId": "enemyInitial_2",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_9008_acbunn": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyInitial_3",
+    "variants": [
+      {
+        "effectId": "enemyInitial_3",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_9009_acfort": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyInitial_4",
+    "variants": [
+      {
+        "effectId": "enemyInitial_4",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_9010_acpupp": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyInitial_5",
+    "variants": [
+      {
+        "effectId": "enemyInitial_5",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_9011_acrefr": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyInitial_6",
+    "variants": [
+      {
+        "effectId": "enemyInitial_6",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1005_yokai": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_10_4",
+    "variants": [
+      {
+        "effectId": "enemyeffect_10_4",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1040_bombd": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_10_5",
+    "variants": [
+      {
+        "effectId": "enemyeffect_10_5",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1041_lazerd": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_10_6",
+    "variants": [
+      {
+        "effectId": "enemyeffect_10_6",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1195_sfyin": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_11_4",
+    "variants": [
+      {
+        "effectId": "enemyeffect_11_4",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1203_sfhu": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_11_5",
+    "variants": [
+      {
+        "effectId": "enemyeffect_11_5",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1209_sfden": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_11_6",
+    "variants": [
+      {
+        "effectId": "enemyeffect_11_6",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1148_dssbr": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_12_4",
+    "variants": [
+      {
+        "effectId": "enemyeffect_12_4",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1161_tidmag": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_12_5",
+    "variants": [
+      {
+        "effectId": "enemyeffect_12_5",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1162_magmot": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_12_6",
+    "variants": [
+      {
+        "effectId": "enemyeffect_12_6",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1267_nhpbr_2": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_13_4",
+    "variants": [
+      {
+        "effectId": "enemyeffect_13_4",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1270_nhstlk": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_13_5",
+    "variants": [
+      {
+        "effectId": "enemyeffect_13_5",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1272_nhtank": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_13_6",
+    "variants": [
+      {
+        "effectId": "enemyeffect_13_6",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1019_jshoot": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_14_4",
+    "variants": [
+      {
+        "effectId": "enemyeffect_14_4",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1023_jmage": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_14_5",
+    "variants": [
+      {
+        "effectId": "enemyeffect_14_5",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1169_duphlx": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_15_4",
+    "variants": [
+      {
+        "effectId": "enemyeffect_15_4",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1168_dumage": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_15_5",
+    "variants": [
+      {
+        "effectId": "enemyeffect_15_5",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1174_duholy": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_15_6",
+    "variants": [
+      {
+        "effectId": "enemyeffect_15_6",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1092_mdgint": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_16_1",
+    "variants": [
+      {
+        "effectId": "enemyeffect_16_1",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1302_ymtro_2": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_16_2",
+    "variants": [
+      {
+        "effectId": "enemyeffect_16_2",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1062_rager_2": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_16_3",
+    "variants": [
+      {
+        "effectId": "enemyeffect_16_3",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1415_mmkabi_2": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_16_4",
+    "variants": [
+      {
+        "effectId": "enemyeffect_16_4",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1364_spnaxe_2": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_16_5",
+    "variants": [
+      {
+        "effectId": "enemyeffect_16_5",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1273_stmgun_2": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_16_6",
+    "variants": [
+      {
+        "effectId": "enemyeffect_16_6",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10144_xdelk_2": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_16_7",
+    "variants": [
+      {
+        "effectId": "enemyeffect_16_7",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10159_mntrjn": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_16_8",
+    "variants": [
+      {
+        "effectId": "enemyeffect_16_8",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10141_xdpeng_2": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_16_9",
+    "variants": [
+      {
+        "effectId": "enemyeffect_16_9",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10127_rkmbst_2": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_16_10",
+    "variants": [
+      {
+        "effectId": "enemyeffect_16_10",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10097_crshd": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_16_11",
+    "variants": [
+      {
+        "effectId": "enemyeffect_16_11",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10081_mpplai": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_16_12",
+    "variants": [
+      {
+        "effectId": "enemyeffect_16_12",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1321_wdarft": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_10_8",
+    "variants": [
+      {
+        "effectId": "enemyeffect_10_8",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1203_sfhu_2": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_11_7",
+    "variants": [
+      {
+        "effectId": "enemyeffect_11_7",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1207_sfji_2": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_11_8",
+    "variants": [
+      {
+        "effectId": "enemyeffect_11_8",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10067_ftsjc": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_12_7",
+    "variants": [
+      {
+        "effectId": "enemyeffect_12_7",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1439_dslntf_2": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_12_8",
+    "variants": [
+      {
+        "effectId": "enemyeffect_12_8",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1272_nhtank_2": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_13_8",
+    "variants": [
+      {
+        "effectId": "enemyeffect_13_8",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1283_sgkill_2": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_14_8",
+    "variants": [
+      {
+        "effectId": "enemyeffect_14_8",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1170_dushld_2": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_15_7",
+    "variants": [
+      {
+        "effectId": "enemyeffect_15_7",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1172_dugago_2": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_15_8",
+    "variants": [
+      {
+        "effectId": "enemyeffect_15_8",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10138_xdsnow": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_17_1",
+    "variants": [
+      {
+        "effectId": "enemyeffect_17_1",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10156_mncrer": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_17_2",
+    "variants": [
+      {
+        "effectId": "enemyeffect_17_2",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10112_ymgds": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_17_3",
+    "variants": [
+      {
+        "effectId": "enemyeffect_17_3",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_2009_csaudc": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_17_4",
+    "variants": [
+      {
+        "effectId": "enemyeffect_17_4",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10116_ymgtop": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_17_5",
+    "variants": [
+      {
+        "effectId": "enemyeffect_17_5",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10162_mnctpt": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_17_6",
+    "variants": [
+      {
+        "effectId": "enemyeffect_17_6",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10094_crstf": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_18_1",
+    "variants": [
+      {
+        "effectId": "enemyeffect_18_1",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10073_mpcar": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_18_2",
+    "variants": [
+      {
+        "effectId": "enemyeffect_18_2",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1021_bslime": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_18_3",
+    "variants": [
+      {
+        "effectId": "enemyeffect_18_3",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10087_hlchgr": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_18_4",
+    "variants": [
+      {
+        "effectId": "enemyeffect_18_4",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1025_reveng": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_18_5",
+    "variants": [
+      {
+        "effectId": "enemyeffect_18_5",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10098_crhro": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_18_6",
+    "variants": [
+      {
+        "effectId": "enemyeffect_18_6",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10040_cnvbln": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_19_1",
+    "variants": [
+      {
+        "effectId": "enemyeffect_19_1",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10001_trslim": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_19_2",
+    "variants": [
+      {
+        "effectId": "enemyeffect_19_2",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1165_duhond_2": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_19_3",
+    "variants": [
+      {
+        "effectId": "enemyeffect_19_3",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10045_parrot": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_19_4",
+    "variants": [
+      {
+        "effectId": "enemyeffect_19_4",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10044_wintun": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_19_5",
+    "variants": [
+      {
+        "effectId": "enemyeffect_19_5",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10099_crvln": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_19_6",
+    "variants": [
+      {
+        "effectId": "enemyeffect_19_6",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1267_nhpbr": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_20_1",
+    "variants": [
+      {
+        "effectId": "enemyeffect_20_1",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1197_sfshu": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_20_2",
+    "variants": [
+      {
+        "effectId": "enemyeffect_20_2",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1009_lurker": {
+    "coin": 1,
+    "count": 1,
+    "effectId": "enemyeffect_20_3",
+    "variants": [
+      {
+        "effectId": "enemyeffect_20_3",
+        "coin": 1,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10018_sgrobh": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_20_4",
+    "variants": [
+      {
+        "effectId": "enemyeffect_20_4",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_1183_mlasrt": {
+    "coin": 2,
+    "count": 1,
+    "effectId": "enemyeffect_20_5",
+    "variants": [
+      {
+        "effectId": "enemyeffect_20_5",
+        "coin": 2,
+        "count": 1
+      }
+    ]
+  },
+  "enemy_10054_cjhot": {
+    "coin": 3,
+    "count": 1,
+    "effectId": "enemyeffect_20_6",
+    "variants": [
+      {
+        "effectId": "enemyeffect_20_6",
+        "coin": 3,
+        "count": 1
+      }
+    ]
+  }
+};
 const DEFAULT_WAVE_TABLE = {
   "version": 2,
   "defaultCost": 1,
@@ -3402,7 +4677,31 @@ const DEFAULT_WAVE_TABLE = {
     "enemy_1169_duphlx_2": 5,
     "enemy_1172_dugago": 7,
     "enemy_9011_acrefr": 11,
-    "enemy_1175_dushdo_2": 9
+    "enemy_1175_dushdo_2": 9,
+    "enemy_1500_skulsr": 9,
+    "enemy_1501_demonk": 10,
+    "enemy_1502_crowns": 9,
+    "enemy_1511_mdrock": 12,
+    "enemy_1513_dekght": 11,
+    "enemy_1513_dekght_2": 11,
+    "enemy_2005_axetro": 12,
+    "enemy_2004_balloon": 11,
+    "enemy_1516_jakill": 12,
+    "enemy_1504_cqbw": 9,
+    "enemy_1509_mousek": 10,
+    "enemy_1050_lslime": 10,
+    "enemy_1001_bigbo": 10,
+    "enemy_1517_xi": 12,
+    "enemy_1525_blkswb": 13,
+    "enemy_1535_wlfmster": 13,
+    "enemy_2008_flking": 12,
+    "enemy_2003_rockman": 13,
+    "enemy_10118_ymgprc": 11,
+    "enemy_1512_mcmstr": 13,
+    "enemy_1539_reid": 14,
+    "enemy_2048_smgrd": 11,
+    "enemy_2050_smsha": 11,
+    "enemy_2052_smgia": 11
   },
   "types": {
     "SPECIAL": {
@@ -4958,10 +6257,36 @@ const DEFAULT_WAVE_TABLE = {
         ]
       }
     }
+  },
+  "costSources": {
+    "enemy_1500_skulsr": "领袖赏金表 enemyeffect_b_1（coin 1）→ 项目成本 8+coin=9",
+    "enemy_1501_demonk": "领袖赏金表 enemyeffect_b_2（coin 2）→ 项目成本 8+coin=10",
+    "enemy_1502_crowns": "领袖赏金表 enemyeffect_b_3（coin 1）→ 项目成本 8+coin=9",
+    "enemy_1511_mdrock": "领袖赏金表 enemyeffect_b_4（coin 4）→ 项目成本 8+coin=12",
+    "enemy_1513_dekght": "领袖赏金表 enemyeffect_b_5（coin 3）→ 项目成本 8+coin=11",
+    "enemy_1513_dekght_2": "领袖赏金表 enemyeffect_b_6（coin 3）→ 项目成本 8+coin=11",
+    "enemy_2005_axetro": "领袖赏金表 enemyeffect_b_7（coin 4）→ 项目成本 8+coin=12",
+    "enemy_2004_balloon": "领袖赏金表 enemyeffect_b_8（coin 3）→ 项目成本 8+coin=11",
+    "enemy_1516_jakill": "领袖赏金表 enemyeffect_b_9（coin 4）→ 项目成本 8+coin=12",
+    "enemy_1504_cqbw": "领袖赏金表 enemyeffect_b_10（coin 1）→ 项目成本 8+coin=9",
+    "enemy_1509_mousek": "领袖赏金表 enemyeffect_b_11（coin 2）→ 项目成本 8+coin=10",
+    "enemy_1050_lslime": "领袖赏金表 enemyeffect_b_12（coin 2）→ 项目成本 8+coin=10",
+    "enemy_1001_bigbo": "领袖赏金表 enemyeffect_b_13（coin 2）→ 项目成本 8+coin=10",
+    "enemy_1517_xi": "领袖赏金表 enemyeffect_b_14（coin 4）→ 项目成本 8+coin=12",
+    "enemy_1525_blkswb": "领袖赏金表 enemyeffect_b_15（coin 5）→ 项目成本 8+coin=13",
+    "enemy_1535_wlfmster": "领袖赏金表 enemyeffect_b_16（coin 5）→ 项目成本 8+coin=13",
+    "enemy_2008_flking": "领袖赏金表 enemyeffect_b_17（coin 4）→ 项目成本 8+coin=12",
+    "enemy_2003_rockman": "领袖赏金表 enemyeffect_b_18（coin 5）→ 项目成本 8+coin=13",
+    "enemy_10118_ymgprc": "领袖赏金表 enemyeffect_b_19（coin 3）→ 项目成本 8+coin=11",
+    "enemy_1512_mcmstr": "领袖赏金表 enemyeffect_b_20（coin 5）→ 项目成本 8+coin=13",
+    "enemy_1539_reid": "领袖赏金表 enemyeffect_b_21（coin 6）→ 项目成本 8+coin=14",
+    "enemy_2048_smgrd": "领袖赏金表 enemyeffect_b_22（coin 3）→ 项目成本 8+coin=11",
+    "enemy_2050_smsha": "领袖赏金表 enemyeffect_b_23（coin 3）→ 项目成本 8+coin=11",
+    "enemy_2052_smgia": "领袖赏金表 enemyeffect_b_24（coin 3）→ 项目成本 8+coin=11"
   }
 };
 
-return {ENEMY_ACTIVITY_GROUPS,DEFAULT_WAVE_TABLE};
+return {ENEMY_ACTIVITY_GROUPS,ENEMY_KILL_COINS,DEFAULT_WAVE_TABLE};
 },
 "native-wave-fill.js": function(load) {
 // 词条波次表：每词条 × 压力档可有多套模板。开战时先随机一套，再按该套预算抽怪。
@@ -14953,35 +16278,52 @@ function tickMineCamps(battle,dt){
 return {spawnMiner,tickMiners,spawnMineCamp,mineCampReady,toggleMineCamp};
 },
 "native-bounty.js": function(load) {
-const {DEFAULT_WAVE_TABLE} = load("native-wave-defaults.js");
+const {DEFAULT_WAVE_TABLE,ENEMY_KILL_COINS} = load("native-wave-defaults.js");
 const {waveRng} = load("native-wave-random.js");
 const {blackboard} = load("protocol.js");
 const BOUNTY_SLUG='enemy_1007_slime';
-// 项目悬赏难度按内置编制成本分档，玩家改本地成本不会改变奖金。
+// 悬赏池的唯一来源是原表 `add_enemy_kill_gain_coin` 表（编译期由 scripts/build-wave-defaults.mjs
+// 烘成 ENEMY_KILL_COINS，币值直接用原表 coin 0–6）。原表按「词条组」登记，领袖是其中的
+// `enemyeffect_b_*` 组（23 名 levelType=BOSS ＋ 澪）；旧实现改成按波次表成本推导币值，
+// 结果 104 名原表悬赏敌人里 74 名（含全部领袖）永远抽不到、92 条币值与原表不一致。
+// 波次表成本推导只保留给旧存档兼容，不再是新悬赏的来源。
 function bountyOption(data,id){
- const raw=data.enemies?.[id],cost=DEFAULT_WAVE_TABLE.costs[id];
+ const raw=data.enemies?.[id],table=ENEMY_KILL_COINS[id];
+ if(raw&&raw.enemyBehavior?.randomPoolEligible===true&&table)
+  return {id,enemyId:id,name:raw.name,coin:table.coin,count:table.count,difficulty:table.coin,cost:Number(DEFAULT_WAVE_TABLE.costs[id])||0,effectId:table.effectId,source:'kill-coin'};
+ // 兼容旧存档：旧悬赏是「有波次表成本就能被抽到」并按成本映射币值，这些 id 仍要能被读回来。
+ const cost=DEFAULT_WAVE_TABLE.costs[id];
  if(raw&&raw.enemyBehavior?.randomPoolEligible===true&&(Number.isFinite(cost)||id===BOUNTY_SLUG)){
   const coin=id===BOUNTY_SLUG?0:cost<=3?1:cost<=6?2:cost<=10?3:4;
-  return {id,enemyId:id,name:raw.name,coin,count:1,difficulty:coin,cost:cost||0};
+  return {id,enemyId:id,name:raw.name,coin,count:1,difficulty:coin,cost:cost||0,source:'legacy-cost'};
  }
  // 兼容旧存档中的道具悬赏效果 ID。
  const effect=data.season.effectBuffInfoDataDict[id]?.find(e=>['add_enemy_selfbattle_win_gain_coin','next_battle_add_enemy_win_gain_coin'].includes(e.key));
  if(!effect)return null;
  const p=blackboard(effect.blackboard),enemyId=String(p.enemy_id||'');if(!data.enemies?.[enemyId])return null;
  const coin=enemyId===BOUNTY_SLUG?0:Number(p.coin)||1;
- return {id,enemyId,name:data.enemies[enemyId].name,coin,count:Number(p.count)||1,difficulty:coin};
+ return {id,enemyId,name:data.enemies[enemyId].name,coin,count:Number(p.count)||1,difficulty:coin,source:'item'};
 }
 
 function bountyOffers(data,seed){
- const pool=[...new Set([...Object.keys(DEFAULT_WAVE_TABLE.costs),BOUNTY_SLUG])].map(id=>bountyOption(data,id)).filter(Boolean);
+ const pool=Object.keys(ENEMY_KILL_COINS).map(id=>bountyOption(data,id)).filter(Boolean);
  const rng=waveRng((seed^0x7b0a17)>>>0),pick=items=>items[Math.floor(rng()*items.length)];
- const bins=Array.from({length:5},(_,coin)=>pool.filter(o=>o.coin===coin));
- if(bins.some(bin=>!bin.length))return [];
- const extra=[0,2,3],tiers=[1,4];
- while(tiers.length<4)tiers.push(extra.splice(Math.floor(rng()*extra.length),1)[0]);
- const offers=tiers.map(tier=>pick(bins[tier]).id);
- for(let i=offers.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[offers[i],offers[j]]=[offers[j],offers[i]];}
- return offers;
+ const bins=Array.from({length:7},(_,coin)=>pool.filter(o=>o.coin===coin));
+ // 项目口径：四选一，且每次至少包含 1 奖金与 4 奖金档（0 档是源石虫）。
+ // 原表 coin 上限是 6，高档位可能没有任何准入候选；缺档要跳过并从还有候选的档位补，
+ // 不能像旧实现那样「任一档为空就整轮不出悬赏」—— 否则接上领袖赏金表后第 6 档为空会让整个悬赏消失。
+ const anchor=[1,4].filter(coin=>bins[coin].length);
+ if(anchor.length<2)return [];
+ const offers=anchor.map(coin=>pick(bins[coin]).id);
+ const spare=[0,2,3,5,6].filter(coin=>bins[coin].length);
+ while(offers.length<4&&spare.length){
+  const [coin]=spare.splice(Math.floor(rng()*spare.length),1);
+  offers.push(pick(bins[coin]).id);
+ }
+ const unique=[...new Set(offers)];
+ if(unique.length<4)return [];
+ for(let i=unique.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[unique[i],unique[j]]=[unique[j],unique[i]];}
+ return unique;
 }
 
 // 回合悬赏的出现节奏（用户 2026-09-22 口径）：从第 2 回合开始每隔一个回合出现一次（2 / 4 / 6 …），
@@ -15017,7 +16359,7 @@ function renderBountyChoice(data,offers,round,{item=false}={}){
   <span class="native-bounty-prize"><b>${o.coin}</b><span>◆ / 只<br>整备奖金</span></span>
   <span class="native-choice-card-footer">${o.coin===0?'无奖金 · 轻量演练':'击倒后，下轮到账'} <b>接取 →</b></span>
  </button>`);
- return choiceFrame({kind:'bounty',title:item?'追加悬赏':'本轮悬赏',kicker:'BOUNTY / CONTRACT',round,note:'四选一 · 目标加入本轮战斗，漏失目标不获奖金。',cards,footer:`<span>每次至少包含 1 奖金与 4 奖金档 · 源石虫为 0</span>${item?'':'<button data-act="bounty-later">稍后选择</button>'}`});
+ return choiceFrame({kind:'bounty',title:item?'追加悬赏':'本轮悬赏',kicker:'BOUNTY / CONTRACT',round,note:'四选一 · 目标加入本轮战斗，漏失目标不获奖金。',cards,footer:`<span>奖金取原表 0–6 档 · 每次至少包含 1 与 4 奖金档 · 源石虫为 0</span>${item?'':'<button data-act="bounty-later">稍后选择</button>'}`});
 }
 
 function renderDecisionChoice(data,offers,round){

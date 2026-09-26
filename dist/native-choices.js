@@ -18,7 +18,7 @@ export function renderBountyChoice(data,offers,round,{item=false}={}){
   <span class="native-bounty-prize"><b>${o.coin}</b><span>◆ / 只<br>整备奖金</span></span>
   <span class="native-choice-card-footer">${o.coin===0?'无奖金 · 轻量演练':'击倒后，下轮到账'} <b>接取 →</b></span>
  </button>`);
- return choiceFrame({kind:'bounty',title:item?'追加悬赏':'本轮悬赏',kicker:'BOUNTY / CONTRACT',round,note:'四选一 · 目标加入本轮战斗，漏失目标不获奖金。',cards,footer:`<span>每次至少包含 1 奖金与 4 奖金档 · 源石虫为 0</span>${item?'':'<button data-act="bounty-later">稍后选择</button>'}`});
+ return choiceFrame({kind:'bounty',title:item?'追加悬赏':'本轮悬赏',kicker:'BOUNTY / CONTRACT',round,note:'四选一 · 目标加入本轮战斗，漏失目标不获奖金。',cards,footer:`<span>奖金取原表 0–6 档 · 每次至少包含 1 与 4 奖金档 · 源石虫为 0</span>${item?'':'<button data-act="bounty-later">稍后选择</button>'}`});
 }
 
 export function renderDecisionChoice(data,offers,round){
