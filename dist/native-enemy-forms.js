@@ -35,6 +35,10 @@ export function initEnemyForm(b,e){
   e.jesseltonAtkScale=b.combatScale?.atk??1;e.jesseltonMoveScale=b.combatScale?.moveSpeed??1;
  }else if(e.id==='enemy_10116_ymgtop'){
   e.enemyFormKind='rotator';e.enemyForm='normal';e.rotationProtectedUntil=b.s.time+Number(e.enemyTalent['ProtectionTime.protection_duration']);e.ranged=false;
+ }else if(e.id==='enemy_10098_crhro'){
+  // 主角阵营角色：本期没有摄影区，按 M27「无摄影区默认态」处理——初始模式，
+  // 普通攻击不会攻击飞行单位；「首次被击倒后持续 3 秒重生、恢复 100% 生命、无敌 0 秒」照原表黑板。
+  e.enemyFormKind='crhro';e.enemyForm='initial';e.enemyAttack={...e.enemyAttack,groundOnly:true};
  }else if(e.id===TRANSLATOR){
   e.enemyFormKind='translator';e.enemyForm='original';e.formDamageCounts={physical:0,arts:0};
   e.formBaseImmunities={...e.immunities};e.formBaseShiftImmune=!!e.shiftImmune;
@@ -151,6 +155,15 @@ export function tickEnemyForm(b,e){
    if(e.block!=null)e.degenRevealUntil=b.s.time+3;
    e.formInvisible=b.s.time+1e-9>=(e.degenRevealUntil||0);e.invisible=e.formInvisible&&!e.revealed;
   }
+  return;
+ }
+ if(e.enemyFormKind==='crhro'){
+  if(e.enemyForm==='rebirth'&&b.s.time+1e-9>=e.enemyFormUntil){
+   e.enemyForm='revived';e.formHold=false;e.unblockable=e.baseUnblockable;e.canAttack=e.baseCanAttack;e.action=null;e.attackCooldown=0;
+   e.crhroInvincibleUntil=b.s.time+Number(e.enemyTalent['reborn.invincible']);e.invulnerable=b.s.time<e.crhroInvincibleUntil;
+   announce(b,e,'重生完成');
+  }
+  if(e.enemyForm==='revived'&&e.crhroInvincibleUntil!=null&&b.s.time+1e-9>=e.crhroInvincibleUntil){e.invulnerable=false;e.crhroInvincibleUntil=null;}
   return;
  }
  if(e.enemyFormKind==='reid'){
@@ -338,6 +351,11 @@ export function enemyFormFatal(b,e){
   e.crownBlink=null;e.crownRejoin=null;e.unblockableUntil=null;
   cancelEnemyCast(b,e);e.enemyForm='rebirth';e.enemyFormUntil=b.s.time+Number(e.enemyTalent['Reborn.duration']);e.hp=e.maxHp;
   e.action=null;e.block=null;e.formHold=true;e.invulnerable=true;e.unblockable=true;e.shiftImmune=true;e.canAttack=false;announce(b,e,'重生中');return true;
+ }
+ if(e.enemyFormKind==='crhro'&&e.enemyForm==='initial'){
+  // 「首次」被击倒：形态从 initial 变成 rebirth，第二次致命伤不再触发（onFatal 不再匹配 initial）。
+  cancelEnemyCast(b,e);e.enemyForm='rebirth';e.enemyFormUntil=b.s.time+Number(e.enemyTalent['reborn.duration']);e.hp=e.maxHp;
+  e.action=null;e.block=null;e.formHold=true;e.invulnerable=true;e.unblockable=true;e.canAttack=false;announce(b,e,'重生中');return true;
  }
  if(e.enemyFormKind==='reid'&&e.enemyForm==='initial'){
   cancelEnemyCast(b,e);e.enemyForm='rebirth';e.enemyFormUntil=b.s.time+Number(e.enemyTalent['Reborn.duration']);e.hp=e.maxHp*Number(e.enemyTalent['Reborn.hp_ratio']);

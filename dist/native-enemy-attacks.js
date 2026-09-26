@@ -19,6 +19,8 @@ export function enemyAttackTargets(battle,e,alive=attackableAllies(battle.s)){
 
 export function enemyAttackTargetCount(e){
  const spec=e.enemyAttack||{};
+ // 「可同时攻击自身攻击范围内的所有我方单位」：目标数不是固定值，取 enemyAttackTargets 的全量。
+ if(spec.allInRange)return Infinity;
  if(spec.invisibleTargets)return e.invisible&&!e.revealed&&e.block==null?spec.invisibleTargets:1;
  return spec.targets||1;
 }

@@ -6,7 +6,8 @@ export function initEnemyTransport(e){
  const bb=e.enemyTalent||{},wood=e.id==='enemy_10159_mntrjn';
  if(!wood&&e.id!=='enemy_1302_ymtro_2')return;
  e.transport={max:Number(bb[wood?'bus.max_cnt':'Bus.max_cnt']),radius:.5,passengers:[],inheritRoute:wood,scatter:wood?.2:0,speedPerPassenger:wood?Number(bb['bus.move_speed']):0,disabled:false};
- if(wood){e.canAttack=e.baseCanAttack=false;e.unblockable=e.baseUnblockable=true;}else e.blockCost=4;
+ // 占用阻挡数（越长尘 4）统一登记在 enemy-behavior-overrides 的 blockCost，由 spawn 写入，这里不再硬编码。
+ if(wood){e.canAttack=e.baseCanAttack=false;e.unblockable=e.baseUnblockable=true;}
 }
 
 export function syncPassengerPositions(b){
@@ -17,7 +18,9 @@ export function tickEnemyTransport(b){
  for(const carrier of b.s.enemies){
   const spec=carrier.transport;if(!spec||carrier.hp<=0)continue;
   spec.passengers=spec.passengers.filter(uid=>b.s.enemies.some(e=>e.uid===uid&&e.hp>0&&e.carriedBy===carrier.uid));
-  const prohibited=carrier.hidden||carrier.carriedBy!=null||carrier.unbalanced||(carrier.statuses||[]).some(s=>['stun','frozen','levitate','sleep'].includes(s.kind));
+  // 失衡（被推动/拉动，位移状态在 target.shift）期间停止装载。原先读的是一个全仓库从未赋值的
+  // `carrier.unbalanced` 字段，条件恒为假——越长尘/木驮兽被推入失衡时照样继续装人。
+  const prohibited=carrier.hidden||carrier.carriedBy!=null||!!carrier.shift||(carrier.statuses||[]).some(s=>['stun','frozen','levitate','sleep'].includes(s.kind));
   if(!spec.disabled&&!prohibited)for(const e of b.s.enemies){
    if(spec.passengers.length>=spec.max)break;
    if(e===carrier||e.hp<=0||e.hidden||isIsolated(e)||e.carriedBy!=null||e.flying||e.transport||['BOSS','LEADER'].includes(e.enemyRank)||(e.enemyTags||[]).includes('machine'))continue;

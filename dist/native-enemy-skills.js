@@ -48,6 +48,7 @@ export function beginEnemySkill(battle,enemy,skill,extra={}){
  const spent=extra.allSp?enemy.sp:skill.spCost;
  changeEnemySp(enemy,-spent);
  enemy.enemyCast={index:skill.index,spent,...extra};
+ if(extra.shiftImmune){enemy.enemyCast.baseShiftImmune=!!enemy.shiftImmune;enemy.shiftImmune=true;}
  if(skill.prefab==='DeathEye'){
   enemy.enemyCast.immunities={...enemy.immunities};removeStatus(enemy,'silence');enemy.immunities={...enemy.immunities,silence:true};
  }
@@ -58,6 +59,7 @@ export function endEnemySkill(battle,enemy,{refund=false}={}){
  const cast=enemy.enemyCast;if(!cast)return;
  const skill=enemy.enemySkills[cast.index];enemy.enemyCast=null;
  if(cast.immunities)enemy.immunities=cast.immunities;
+ if(cast.baseShiftImmune!==undefined)enemy.shiftImmune=cast.baseShiftImmune;
  if(refund)changeEnemySp(enemy,cast.spent);
  else skill.used=true;
  skill.nextAt=skill.cooldown>=0?battle.s.time+skill.cooldown:null;
@@ -629,6 +631,9 @@ export function tickEnemySkills(battle,enemy,dt){
    const duration=jazz?Number(skill.bb['enemy_cnvsax[cd].duration']):6,interval=jazz?Number(skill.bb.hit_interval):.5;
    const extra={channel:jazz?'jazz':'cannon',targetUid:jazz?target.uid:null,x:Math.round(target.x),y:Math.round(target.y),nextAt:battle.s.time+interval,endsAt:battle.s.time+duration,interval,shots:0,maxShots:jazz?Math.ceil(duration/interval):10};
    if(!jazz)extra.immunities={...enemy.immunities};
+   // PRTS 高准度伦蒂尼姆城防自行炮「轰炸」：技能动画期间持有失衡免疫、晕眩/冻结/浮空/沉睡免疫。
+   // 失衡免疫是独立的 shiftImmune（不在 immunities 表里），必须一并开关，否则施法中仍可被推动。
+   if(!jazz)extra.shiftImmune=true;
    if(beginEnemySkill(battle,enemy,skill,extra)){
     enemy.stanceUntil=extra.endsAt;
     if(!jazz)for(const kind of ['stun','frozen','sleep','levitate'])enemy.immunities[kind]=true;

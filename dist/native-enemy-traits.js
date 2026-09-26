@@ -67,12 +67,16 @@ export function initEnemyTraits(battle,e,raw,{restore=false}={}){
  if(e.id==='enemy_2005_axetro'){e.enemyAttack={...e.enemyAttack,groundOnly:true};e.axetroStacks??=0;}
  if(e.id==='enemy_1050_lslime')e.damageType='arts';
  if(e.id==='enemy_1504_cqbw')e.enemyAttack={...e.enemyAttack,groundOnly:true};
+ // 反派阵营角色（PRTS 天赋）：攻击附带 15% 攻击力神经损伤（已由元素倍率键通用推断），且不会攻击飞行单位。
+ if(e.id==='enemy_10099_crvln')e.enemyAttack={...e.enemyAttack,groundOnly:true};
  if(['enemy_10031_cnvsld','enemy_10034_cnvsax'].includes(e.id))e.isolateWhileConcealed=true;
  if(NEURO_SPAWNERS.has(e.id)){e.neuroCombat??=false;if(!e.neuroCombat)e.canAttack=false;}
  if(YUANZAI.has(e.id)){
   e.unblockable=e.baseUnblockable=true;e.canAttack=e.baseCanAttack=false;
-  e.facingX??=Math.sign((e.route?.find(p=>p.kind==='move'&&Math.abs(p.x-e.x)>1e-6)?.x??e.x+1)-e.x);
  }
+ // 正面减伤要判朝向：圆仔的朝向由 faceOperatorMajority 逐帧跟人，心虚设计师（不攻击、原地）
+ // 只需要开场定一个朝向。没有朝向就不能算「正面」，能力会退化成永不生效。
+ if(hasFacingDamageResistance(e)&&e.facingX==null)e.facingX=Math.sign((e.route?.find(p=>p.kind==='move'&&Math.abs(p.x-e.x)>1e-6)?.x??e.x+1)-e.x)||1;
  if(e.enemyTalent?.['rush.dlancer_t[trigger].interval']>0&&!e.lancerRush){
   e.lancerRush={active:false,stacks:0,nextCheckAt:battle.s.time,nextStackAt:null};e.speed=e.baseSpeed;
  }
@@ -226,10 +230,34 @@ export function enemyFacingAfterMove(battle,e,oldX){
 }
 
 export function enemyFacingDamageMultiplier(e,source,type){
- if(!YUANZAI.has(e.id)||!source||!['physical','arts'].includes(type)||!Number.isFinite(source.x))return 1;
+ // 「受到来自正面的物理/法术伤害降低」。原表两处大小写不同：圆仔用 `Weakness.damage_resistance`，
+ // 心虚设计师用 `weakness.damage_resistance`（PRTS 天赋「受到来自正面的物理/法术伤害-80%」），
+ // 两种都要认；判定也不再绑死在圆仔身上——心虚设计师在随机池里，漏读会让它的核心天赋整个失效。
+ const resistance=facingDamageResistance(e);
+ if(!(resistance>0)||!source||!['physical','arts'].includes(type)||!Number.isFinite(source.x))return 1;
  // 水平朝向的前半平面；同一竖线按点积为0的边界处理。
  if((source.x-e.x)*(e.facingX??1)<0)return 1;
- return 1-Math.max(0,Math.min(1,Number(e.enemyTalent?.['Weakness.damage_resistance'])||0));
+ return 1-resistance;
+}
+
+// 正面减伤比例（0＝没有该天赋）。同一竖线按正面算的口径见 enemyFacingDamageMultiplier。
+export function facingDamageResistance(e){
+ const bb=e.enemyTalent||{};
+ const value=Number(bb['Weakness.damage_resistance']??bb['weakness.damage_resistance']);
+ return Number.isFinite(value)&&value>0?Math.max(0,Math.min(1,value)):0;
+}
+export function hasFacingDamageResistance(e){return facingDamageResistance(e)>0;}
+
+// 心虚设计师「被阻挡时，使阻挡自身的单位每秒受到心虚设计师攻击力15%的神经损伤（同名效果不叠加）」。
+// 它不是攻击附带（applyWay=NONE，本体不攻击），所以按「每秒、被阻挡期间、同一来源只挂一份」结算。
+export function tickDesignerDebuff(battle,e){
+ if(e.hp<=0||e.hidden)return;
+ const ratio=Number(e.enemyTalent?.['block.ep_damage_ratio']);
+ const blocker=e.block==null?null:getActor(battle.s,e.block);
+ if(!(ratio>0)||!blocker||blocker.hp<=0||blocker.deployed===false){e.designerDebuffUntil=null;return;}
+ if(battle.s.time+1e-9<(e.designerDebuffUntil??-Infinity))return;
+ e.designerDebuffUntil=battle.s.time+1;
+ applyElementDamage(battle,{source:e,target:blocker,amount:e.atk*ratio,type:'neural',cause:'talent'});
 }
 
 function stopLancerRush(e){const r=e.lancerRush;r.active=false;r.stacks=0;r.nextStackAt=null;e.speed=e.baseSpeed;}
@@ -281,6 +309,7 @@ export function tickEnemyTraits(battle,e,dt){
 
  const bb=e.enemyTalent||{};
  if(YUANZAI.has(e.id))faceOperatorMajority(battle,e);
+ if(Number(bb['block.ep_damage_ratio'])>0)tickDesignerDebuff(battle,e);
  if(e.id==='enemy_1025_reveng')e.atk=e.baseAtk*(1+(e.hp<=e.maxHp*.5?Number(bb['atkup.atk'])||0:0));
  if(bb['SelfFear.fear']>0&&!e.selfFearTriggered&&e.hp/e.maxHp<.5){e.selfFearTriggered=true;applyStatus(e,'fear',Number(bb['SelfFear.fear']),{source:e.uid});e.selfFearSpeedUntil=battle.s.time+Number(bb['SelfFear.speed_duration']);e.speed=e.baseSpeed*Number(bb['SelfFear.move_speed']);}
  if(e.selfFearSpeedUntil!=null&&battle.s.time>=e.selfFearSpeedUntil){e.selfFearSpeedUntil=null;e.speed=e.baseSpeed;}

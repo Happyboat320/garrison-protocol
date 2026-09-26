@@ -105869,6 +105869,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -106008,6 +106009,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -106129,6 +106131,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -106260,6 +106263,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -106383,6 +106387,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -106523,6 +106528,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -106672,6 +106678,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -106817,6 +106824,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -106938,6 +106946,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -107064,6 +107073,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -107191,6 +107201,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -107328,6 +107339,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -107513,6 +107525,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -107645,6 +107658,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -107786,6 +107800,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -107923,6 +107938,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -108060,6 +108076,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -108227,6 +108244,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -108394,6 +108412,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -108566,6 +108585,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -108720,6 +108740,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -108865,6 +108886,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -109030,6 +109052,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -109166,6 +109189,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -109301,6 +109325,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -109426,6 +109451,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -109583,6 +109609,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -109711,6 +109738,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -109838,6 +109866,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -109969,6 +109998,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -110096,6 +110126,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -110225,6 +110256,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -110382,6 +110414,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -110539,6 +110572,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": true,
@@ -110667,6 +110701,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -110794,6 +110829,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -110960,6 +110996,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -111092,6 +111129,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -111219,6 +111257,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -111365,6 +111404,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -111515,6 +111555,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": true,
@@ -111671,6 +111712,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -111815,6 +111857,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0.5,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -111931,6 +111974,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -112047,6 +112091,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -112250,6 +112295,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -112405,6 +112451,7 @@
         },
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -112560,6 +112607,7 @@
         },
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -112696,6 +112744,7 @@
           "cureOnHeal": true
         },
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -112840,6 +112889,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0.5,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -112999,6 +113049,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -113207,6 +113258,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -113347,6 +113399,7 @@
           "cureOnHeal": true
         },
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -113503,6 +113556,7 @@
         },
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -113650,6 +113704,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -113772,6 +113827,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -113892,6 +113948,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -114073,6 +114130,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -114235,6 +114293,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -114370,6 +114429,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -114532,6 +114592,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -114655,6 +114716,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -114770,6 +114832,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -114889,6 +114952,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -115035,6 +115099,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -115157,6 +115222,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -115316,6 +115382,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -115436,6 +115503,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -115566,6 +115634,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -115694,6 +115763,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -115839,6 +115909,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -116040,6 +116111,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -116165,6 +116237,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -116290,6 +116363,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -116416,6 +116490,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -116541,6 +116616,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -116676,6 +116752,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -116872,6 +116949,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -117002,6 +117080,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -117128,6 +117207,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -117262,6 +117342,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -117408,6 +117489,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -117545,6 +117627,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -117674,6 +117757,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -117795,6 +117879,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -117911,6 +117996,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -118027,6 +118113,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -118174,6 +118261,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -118288,6 +118376,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -118442,6 +118531,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -118591,6 +118681,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -118740,6 +118831,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -118856,6 +118948,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -118973,6 +119066,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -119089,6 +119183,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -119247,6 +119342,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -119361,6 +119457,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -119495,6 +119592,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -119640,6 +119738,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -119765,6 +119864,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -119895,6 +119995,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -120042,6 +120143,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -120163,6 +120265,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -120318,6 +120421,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -120432,6 +120536,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -120590,6 +120695,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -120749,6 +120855,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -120908,6 +121015,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 3,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -121052,6 +121160,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -121182,6 +121291,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -121298,6 +121408,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -121455,6 +121566,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -121605,6 +121717,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -121735,6 +121848,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -121860,6 +121974,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -122002,6 +122117,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -122119,6 +122235,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -122246,6 +122363,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -122393,6 +122511,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -122520,6 +122639,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -122637,6 +122757,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -122749,6 +122870,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -122863,6 +122985,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -122990,6 +123113,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -123102,6 +123226,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -123229,6 +123354,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -123376,6 +123502,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -123513,6 +123640,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -123634,6 +123762,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -123774,6 +123903,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -123975,6 +124105,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -124173,6 +124304,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -124353,6 +124485,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -124491,6 +124624,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -124637,6 +124771,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -124875,6 +125010,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -125027,6 +125163,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -125232,6 +125369,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -125398,6 +125536,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -125510,6 +125649,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -125785,6 +125925,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -126070,6 +126211,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -126333,6 +126475,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -126492,6 +126635,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -126640,6 +126784,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -126795,6 +126940,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -127007,6 +127153,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -127198,6 +127345,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -127335,6 +127483,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -127538,6 +127687,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -127700,6 +127850,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0.5,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -127906,6 +128057,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -128029,6 +128181,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -128152,6 +128305,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -128275,6 +128429,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -128398,6 +128553,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -128521,6 +128677,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -128644,6 +128801,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -128767,6 +128925,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -128890,6 +129049,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -129016,6 +129176,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -129142,6 +129303,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -129265,6 +129427,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -129388,6 +129551,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -129511,6 +129675,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -129634,6 +129799,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -129785,6 +129951,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -129909,6 +130076,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -130073,6 +130241,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -130225,6 +130394,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -130391,6 +130561,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -130534,6 +130705,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -130651,6 +130823,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -130774,6 +130947,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -130888,6 +131062,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -131017,6 +131192,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 4,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -131142,6 +131318,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -131275,6 +131452,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -131439,6 +131617,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -131585,6 +131764,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -131750,6 +131930,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -131893,6 +132074,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -132031,6 +132213,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -132200,6 +132383,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -132336,6 +132520,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -132611,6 +132796,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -132758,6 +132944,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -132922,6 +133109,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -133076,6 +133264,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -133218,6 +133407,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -133362,6 +133552,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -133485,6 +133676,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -133623,6 +133815,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -133746,6 +133939,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -133874,6 +134068,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -134052,6 +134247,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -134202,6 +134398,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -134290,7 +134487,7 @@
         "attackStunEvery": 0,
         "attackStunDuration": 0,
         "attackElement": "neural",
-        "attackElementScale": 0,
+        "attackElementScale": 0.2,
         "deathExplosion": null,
         "aura": null,
         "magicResistanceBonus": 0,
@@ -134325,6 +134522,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -134439,6 +134637,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -134571,6 +134770,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -134743,6 +134943,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -134866,6 +135067,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -135002,7 +135204,7 @@
         "attackStunEvery": 0,
         "attackStunDuration": 0,
         "attackElement": "neural",
-        "attackElementScale": 0,
+        "attackElementScale": 0.15,
         "deathExplosion": null,
         "aura": null,
         "magicResistanceBonus": 0,
@@ -135045,6 +135247,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -135176,6 +135379,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": true,
@@ -135315,6 +135519,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -135438,6 +135643,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -135651,6 +135857,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -135819,6 +136026,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -135941,7 +136149,7 @@
         "attackStunEvery": 0,
         "attackStunDuration": 0,
         "attackElement": "neural",
-        "attackElementScale": 0,
+        "attackElementScale": 0.15,
         "deathExplosion": null,
         "aura": null,
         "magicResistanceBonus": 0,
@@ -135984,6 +136192,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -136107,6 +136316,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -136268,6 +136478,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -136410,6 +136621,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -136529,6 +136741,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -136639,7 +136852,9 @@
         "daggers": null,
         "revive": null,
         "specialSkill": null,
-        "attackProfile": null,
+        "attackProfile": {
+          "allInRange": true
+        },
         "periodicSpawn": null,
         "spawnOnDeath": null,
         "specialAtkScale": 0,
@@ -136652,6 +136867,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,
@@ -136802,6 +137018,7 @@
         "deathZone": null,
         "bleeding": null,
         "statusResistance": 0,
+        "blockCost": 0,
         "behaviorInferred": true
       },
       "modifiedForMode": false,

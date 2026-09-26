@@ -216,7 +216,11 @@ export function enemyBehaviorProfile(raw={}){
  const randomPoolEligible=behavior.randomPoolEligible??(complexity!=='complex');
  const stunMatch=text.match(/攻击\s*(\d+)次后[^。；;]*晕眩/),stunBefore=stunMatch?Number(stunMatch[1]):(/数次攻击后[^。；;]*晕眩/.test(text)?Number(raw.skills?.[0]?.spCost)||3:0);
  const elementKey=/侵蚀损伤/.test(text)?'corrosion':/凋亡损伤/.test(text)?'necrosis':/灼燃损伤/.test(text)?'burn':/神经损伤/.test(text)?'neural':null;
- const elementScale=Number(talentBb['epdamage.attack@ep_damage_ratio']??talentBb['EpDamage.attack@ep_damage_ratio']??talentBb['empty.attack@ep_damage_ratio']??talentBb['combat.attack@ep_damage_ratio']??talentBb['ep_damage_ratio']??talentBb['attack.attack@ep_damage_ratio']);
+ // 「攻击附带 X% 攻击力的元素损伤」的倍数键。原表按天赋分组用了不同前缀，逐组登记；
+ // `ep.` 是临时收音师「位于摄影区域范围外时，攻击附加20%攻击力的神经损伤」
+ // （本期没有摄影区判定，按 M27 口径恒生效），`inside.` 是主角/反派阵营角色的
+ // 「攻击附加攻击力15%的神经损伤」（PRTS 天赋正文把它列在模式说明之前，属无条件）。
+ const elementScale=Number(talentBb['epdamage.attack@ep_damage_ratio']??talentBb['EpDamage.attack@ep_damage_ratio']??talentBb['empty.attack@ep_damage_ratio']??talentBb['combat.attack@ep_damage_ratio']??talentBb['ep_damage_ratio']??talentBb['attack.attack@ep_damage_ratio']??talentBb['ep.ep_damage_ratio']??talentBb['inside.attack@ep_damage_ratio']);
  const inferredExplosion= /死亡[^。；;]*(?:产生|造成|爆炸)/.test(text)?{type:/法术/.test(text)?'arts':'physical',scale:Number(bb['boom.atk_scale'])||1,radius:Number(behavior.deathExplosionRadius??raw.deathExplosionRadius)||1,requiresFire:/点燃状态/.test(text)}:null;
  let explosion=Object.hasOwn(behavior,'deathExplosion')?(behavior.deathExplosion||null):inferredExplosion;
  // 冰爆虫：倍率/寒冷读本期黑板；半径与延迟依据PRTS修订414012。
@@ -329,6 +333,9 @@ export function enemyBehaviorProfile(raw={}){
   deathZone:zoneDeath,
   bleeding:bleedingTrait,
   statusResistance:resistValue,
+  // 占用阻挡数（PRTS「占用N个阻挡数」）：默认 1；「萨卡兹悖谬暴虐兵长」占 3，于是剩余阻挡数不足 3 的单位
+  // 根本挡不住它（resolveBlocks 用 used+need<=cap 判定），「越长尘」占 4。
+  blockCost:Number(behavior.blockCost)>0?Number(behavior.blockCost):0,
   behaviorInferred:true
  };
 }

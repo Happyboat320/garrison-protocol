@@ -27,6 +27,18 @@
 
 复杂敌人通过 `enemyBehavior.randomPoolEligible=false` 排除出随机池，先放入固定波次。
 
+**每一条排除都必须留档（2026-09-23）**：`complexity` 正则自动判定的 complex 只是兜底，不能当作登记 —— 任何 `randomPoolEligible:false` 的敌人都必须在 `enemy-behavior-overrides.json` 里有自己的条目和 `reason`；`tests/native-enemy-audit-fixes.test.mjs` 有全表门禁。放开仍然逐条走「补完专属实现＋定向测试」。本轮把 27 只漏登记的补上（覆盖表 71 → 98 条），详见 [审计修复记录](ENEMY_AUDIT_FIX_2026-09-23.md)。
+
+## 普攻伤害类型（2026-09-23 口径）
+
+敌人普攻的伤害类型**只有一个来源**：`enemy_handbook_table.json` 的 `enemyData[id].damageType`（`PHYSIC`／`MAGIC`／`NO_DAMAGE`，多类型按原表顺序、第一项为常态），由 `scripts/build-native.mjs` 烘成 `raw.damageTypes`，运行时唯一入口是 `dist/native-battle.js` 的 `enemyBaseDamageType(raw)`。
+
+**禁止再从描述文本推断**（原实现判 `description.includes('法术')`）：那会把「法术抗性较高」「位于源石污染区内时，攻击造成法术伤害」这类防御/条件文案的物理近战整批判成法伤，也会把描述没写「法术」的真法伤派成物理。条件型的第二类型（污染、技能、形态）由各自专属实现显式改写 `e.damageType`，不进普攻默认值。
+
+## 占用阻挡数（2026-09-23 口径）
+
+PRTS 的「占用 N 个阻挡数」通过覆盖表的 `blockCost` 登记（本期：萨卡兹悖谬暴虐兵长 3、越长尘 4），由 `enemyBehaviorProfile` 透出、`spawn` 写入实例；`resolveBlocks` 用 `used+need<=cap` 判定，所以「占用 3」天然等价于「剩余阻挡数小于 3 的单位挡不住」。不要在运输/形态模块里再写死阻挡占用。
+
 逐关卡覆盖写在 `data/modes/alliance-lower/enemy-behavior-overrides.json`，可单独指定移动策略、连射次数、停移时长和随机池资格，构建时同时写入协议目录与战斗运行时。
 
 ## 已接入的公共能力
