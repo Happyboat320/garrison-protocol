@@ -18,7 +18,7 @@ const QUEUE_CAP=256,ANCESTOR_CAP=32;
 export function emptySettle(){return {nextEventId:1,nextAttackId:1,nextEffectId:1,nextSeq:1,queue:[],consumed:[],byId:{},fault:null};}
 export function ensureBattleShape(s){
  s.battleSchemaVersion??=BATTLE_SCHEMA_VERSION;
- s.cost??=20;s.costInitial??=20;s.costMin??=0;s.costMax??=99;s.costRecoveryInterval??=1;s.costRecoveryClock??=0;s.enemyCostRecoveryMultiplier??=1;s.enemyRespawnTimeMultiplier??=1;s.mlyssFirstRhineDiscountUsed??=false;s.bondLateranoAmmoStacks??=0;s.bondEgirReviveCount??=0;s.bondYanGuardiansSpawned??=false;
+ s.cost??=20;s.costInitial??=20;s.costMin??=0;s.costMax??=99;s.costRecoveryInterval??=1;s.costRecoveryClock??=0;s.enemyCostRecoveryMultiplier??=1;s.enemyRespawnTimeMultiplier??=1;s.mlyssFirstRhineDiscountUsed??=false;s.bondLateranoAmmoStacks??=0;s.bondEgirReviveCount??=0;s.bondYanGuardiansSpawned??=false;s.lastDeployedKazimierz??=false;
  s.enemyProjectiles??=[];s.pendingEnemySpawns??=[];s.logicEffects??=[];s.summons??=[];s.logicLog??=[];
  s.settle={...emptySettle(),...s.settle,byId:s.settle?.byId||{}};
  s.settle.consumed=s.settle.consumed||[];s.settle.queue=s.settle.queue||[];
@@ -1224,7 +1224,14 @@ export function dispatch(battle,type,payload){
   const t=activeTalentsOf(battle,target).find(x=>x.name==='沃土予身');
   if(t)enqueue(battle,{kind:'heal',sourceUid:target.uid,targetUid:target.uid,amount:target.maxHp*(t.values.hp_ratio||.2),parentEventId:event?.eventId,effectId:'mudrok-t1-heal'});
  }
- if(type==='deploy'){onOperatorDeploy(battle,payload.target);bondDeploy(battle,payload.target);}
+ if(type==='deploy'){
+  const deployed=payload.target;
+  onOperatorDeploy(battle,deployed);
+  bondDeploy(battle,deployed);
+  // 「上一名部署干员」（耀骑士临光「不畏苦暗」）：部署时天赋读的是**上一次**部署者，读完再记录本次。
+  // 召唤物不是干员，部署它既不计数也不覆盖记录。
+  if(deployed&&deployed.kind!=='summon')battle.s.lastDeployedKazimierz=battle.owns?.(deployed,'kazimierzShip')??false;
+ }
  if(type==='skill-start'){bondSkillStart(battle,payload.target);const specialSuppress=onSkillStart(battle,payload.target);return !!payload.genericSuppress||!!specialSuppress;}
  if(type==='skill-end'){bondSkillEnd(battle,payload.target);onSkillEnd(battle,payload.target,payload.reason);}
  if(type==='exit')onOperatorExit(battle,payload.target,payload.reason);
@@ -1284,7 +1291,21 @@ function onOperatorDeploy(battle,u){
  // 不是场上的召唤物；按用户口径（2026-09-19）本期不实现，所以这里不生成任何实体。
  // 她其余的效果照旧：技能一的范围寒冷／反隐、技能三的部署费用与待部署区费用互换、雪境先驱的谢拉格增益。
  if(u.id==='char_1014_nearl2'&&(u.source?.skillIndex??battle.profile(u).skillIndex)===1){const bb=skillBB(battle,u);u.skillLeft=Number(battle.profile(u).skill.duration)||25;for(let n=0;n<(Number(bb.times)||3);n++)grantGuard(battle,u,{charges:1,sourceUid:u.uid,id:'nearl2-s2-'+n});}
- if(u.id==='char_1014_nearl2'){const t=activeTalentsOf(battle,u).find(x=>x.name==='不畏苦暗'),bb=t&&t.values;if(t)for(const e of enemyActors(battle.s).filter(e=>e.hp>0&&chebyshev(e,u)<=4)){dealDamage(battle,{source:u,target:e,amount:battle.stats(u).atk*(Number(bb.atk_scale)||.8),type:'true',cause:'skill'});applyStatus(e,'stun',Number(bb.stun)||3,{source:u.uid,resistible:false});}}
+ // 耀骑士临光「不畏苦暗」：部署时对**天赋自带 rangeId**（原表 `x-5`＝自身＋上下左右四格）内的敌人造成真伤并晕眩；
+ // 「上一名部署干员势力为【卡西米尔】时额外造成一次伤害」读 battle.s.lastDeployedKazimierz（每次部署后更新）。
+ if(u.id==='char_1014_nearl2'){
+  const t=activeTalentsOf(battle,u).find(x=>x.name==='不畏苦暗'),bb=t&&t.values;
+  if(t){
+   const cells=t.rangeId?battle.cellsForRangeId(u,t.rangeId):null,area=cells?cells.map(c=>[c.x,c.y]):null;
+   const inArea=e=>area?containsTarget(area,e):Math.max(Math.abs(e.x-u.x),Math.abs(e.y-u.y))<=1;   // 没有 rangeId 时退回「周围四格」
+   const repeats=1+(battle.s.lastDeployedKazimierz?1:0);
+   for(const e of enemyActors(battle.s).filter(e=>e.hp>0&&inArea(e)))
+    for(let n=0;n<repeats;n++){
+     dealDamage(battle,{source:u,target:e,amount:battle.stats(u).atk*(Number(bb.atk_scale)||.8),type:'true',cause:'skill'});
+     applyStatus(e,'stun',Number(bb.stun)||3,{source:u.uid,resistible:false});
+    }
+  }
+ }
  if(u.id==='char_391_rosmon'){const t=activeTalentsOf(battle,u).find(x=>x.name==='感知稳定');if(t){const caster=battle.s.units.find(v=>v.uid!==u.uid&&v.deployed&&v.hp>0&&battle.profile(v).profession==='CASTER');u.rosmonPartner=caster?.uid??null;}}
  if(u.initialSpBonus){u.sp+=u.initialSpBonus;u.initialSpBonus=0;}
  u.duskFirstAttack=false;for(const g of battle.profile(u).garrisons||[]){const b=blackboard(g.blackboard);if(b.key==='act2autochess_gar_eff_attrByBond_add_onstart'&&b.bond_id){const stacks=Math.floor((battle.layers[b.bond_id]||0)/(Number(b.divide_num)||1));u.garrisonDeployBuff={atk:Number(b.atk||0)*stacks,maxHp:Number(b.max_hp||0)*stacks,endsAt:battle.s.time+(Number(b.duration)||0)};}}

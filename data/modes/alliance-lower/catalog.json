@@ -261,7 +261,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -576,7 +577,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -765,7 +767,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -995,7 +998,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -1259,7 +1263,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -1627,7 +1632,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -2005,7 +2011,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -2404,7 +2411,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -2412,6 +2420,7 @@
             "description": "",
             "blackboard": [],
             "prefabKey": "10",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -2695,7 +2704,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -3040,7 +3050,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -3365,7 +3376,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -3711,7 +3723,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -3904,7 +3917,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -4176,7 +4190,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -4190,6 +4205,7 @@
               }
             ],
             "prefabKey": "20_root",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -4504,7 +4520,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -4898,7 +4915,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -4912,6 +4930,7 @@
               }
             ],
             "prefabKey": "10",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -5190,7 +5209,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -5515,7 +5535,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -5742,7 +5763,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": "x-4"
           }
         ],
         "trait": null,
@@ -6016,7 +6038,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": "x-4"
           }
         ],
         "trait": null,
@@ -6283,7 +6306,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -6644,7 +6668,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -6658,6 +6683,7 @@
               }
             ],
             "prefabKey": "10",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -6893,7 +6919,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -7149,7 +7176,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -7444,7 +7472,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -7801,7 +7830,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -8058,7 +8088,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -8441,6 +8472,7 @@
               }
             ],
             "prefabKey": "10",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -8713,7 +8745,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -9031,7 +9064,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -9045,6 +9079,7 @@
               }
             ],
             "prefabKey": "10",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -9310,7 +9345,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": "x-5"
           }
         ],
         "trait": null,
@@ -9623,7 +9659,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": "x-5"
           },
           {
             "slot": 1,
@@ -9636,7 +9673,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
@@ -9644,6 +9682,7 @@
             "description": "",
             "blackboard": [],
             "prefabKey": "10",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -9922,7 +9961,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -10262,7 +10302,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -10549,7 +10590,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -10858,7 +10900,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -11171,7 +11214,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -11578,7 +11622,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -11592,6 +11637,7 @@
               }
             ],
             "prefabKey": "10",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -11948,7 +11994,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -12346,7 +12393,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -12738,7 +12786,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -13225,7 +13274,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -13244,6 +13294,7 @@
               }
             ],
             "prefabKey": "10_root",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -13541,7 +13592,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -13855,7 +13907,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -14074,7 +14127,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -14335,7 +14389,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -14635,7 +14690,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -15002,7 +15058,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -15347,7 +15404,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -15769,7 +15827,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -16065,7 +16124,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -16413,7 +16473,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -16735,7 +16796,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -17074,7 +17136,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1+"
+            "prefabKey": "1+",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -17336,7 +17399,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -17590,7 +17654,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -17858,7 +17923,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -18200,7 +18266,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -18214,6 +18281,7 @@
               }
             ],
             "prefabKey": "10",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -18470,7 +18538,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -18798,7 +18867,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -19057,7 +19127,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -19338,7 +19409,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -19627,7 +19699,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -19962,7 +20035,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -20300,7 +20374,8 @@
             "name": "“在路上”",
             "description": "在【萨卡兹的无终奇语】中，被招募时希望消耗-2，且作为负荷干员时使负荷临界点额外+3",
             "blackboard": [],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -20728,7 +20803,8 @@
             "name": "“在路上”",
             "description": "在【萨卡兹的无终奇语】中，被招募时希望消耗-2，且作为负荷干员时使负荷临界点额外+9",
             "blackboard": [],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -20741,7 +20817,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
@@ -20755,6 +20832,7 @@
               }
             ],
             "prefabKey": "10",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -21082,7 +21160,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -21100,7 +21179,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -21469,7 +21549,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -21487,7 +21568,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -21748,7 +21830,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": "x-4"
           }
         ],
         "trait": {
@@ -22076,7 +22159,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": "x-4"
           }
         ],
         "trait": {
@@ -22373,7 +22457,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": "x-4"
           }
         ],
         "trait": {
@@ -22712,7 +22797,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": "x-4"
           }
         ],
         "trait": {
@@ -23149,7 +23235,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -23172,7 +23259,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -23666,7 +23754,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -23689,7 +23778,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -23997,7 +24087,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -24010,7 +24101,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -24350,7 +24442,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -24363,7 +24456,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -24646,7 +24740,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -24971,7 +25066,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -25312,7 +25408,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": "x-5"
           }
         ],
         "trait": {
@@ -25740,7 +25837,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": "x-5"
           }
         ],
         "trait": {
@@ -26099,7 +26197,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -26480,7 +26579,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -26793,7 +26893,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -27168,7 +27269,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -27474,7 +27576,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -27881,7 +27984,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -28237,7 +28341,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -28250,7 +28355,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -28584,7 +28690,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -28597,7 +28704,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -28882,7 +28990,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -29259,7 +29368,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -29657,7 +29767,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -29670,7 +29781,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -30080,7 +30192,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -30093,7 +30206,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -30297,7 +30411,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -30543,7 +30658,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -30840,7 +30956,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -31179,7 +31296,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -31456,7 +31574,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -31479,7 +31598,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -31803,7 +31923,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -31826,7 +31947,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -32236,7 +32358,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -32249,7 +32372,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -32768,7 +32892,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -32781,7 +32906,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -33126,7 +33252,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -33543,7 +33670,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -33885,7 +34013,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -33898,7 +34027,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -34284,7 +34414,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -34297,7 +34428,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
@@ -34311,6 +34443,7 @@
               }
             ],
             "prefabKey": "10",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -34642,7 +34775,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -34660,7 +34794,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -35064,7 +35199,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -35082,7 +35218,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
@@ -35090,6 +35227,7 @@
             "description": "",
             "blackboard": [],
             "prefabKey": "11",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -35395,7 +35533,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -35408,7 +35547,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -35754,7 +35894,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -35767,7 +35908,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -36088,7 +36230,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -36101,7 +36244,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -36522,7 +36666,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -36535,7 +36680,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
@@ -36549,6 +36695,7 @@
               }
             ],
             "prefabKey": "-1",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -36886,7 +37033,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -37245,7 +37393,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -37578,7 +37727,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -37591,7 +37741,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -38024,7 +38175,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -38037,7 +38189,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
@@ -38051,6 +38204,7 @@
               }
             ],
             "prefabKey": "10",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -38410,7 +38564,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -38428,7 +38583,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -38861,7 +39017,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -38879,7 +39036,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
@@ -38893,6 +39051,7 @@
               }
             ],
             "prefabKey": "10",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -39202,7 +39361,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -39543,7 +39703,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -39872,21 +40033,24 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
             "name": null,
             "description": "-",
             "blackboard": [],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
             "name": null,
             "description": "-",
             "blackboard": [],
-            "prefabKey": "3"
+            "prefabKey": "3",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -40337,6 +40501,7 @@
               }
             ],
             "prefabKey": "1",
+            "rangeId": null,
             "fromModule": true
           },
           {
@@ -40344,14 +40509,16 @@
             "name": null,
             "description": "-",
             "blackboard": [],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
             "name": null,
             "description": "-",
             "blackboard": [],
-            "prefabKey": "3"
+            "prefabKey": "3",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -40655,7 +40822,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -40673,7 +40841,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -41029,7 +41198,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -41047,7 +41217,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -41410,7 +41581,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -41428,7 +41600,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -41843,7 +42016,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -41861,7 +42035,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -42162,7 +42337,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -42531,7 +42707,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -42539,6 +42716,7 @@
             "description": "",
             "blackboard": [],
             "prefabKey": "10",
+            "rangeId": "3-1",
             "fromModule": true
           }
         ],
@@ -42821,7 +42999,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -42839,7 +43018,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -43163,7 +43343,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -43181,7 +43362,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -43452,7 +43634,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -43465,7 +43648,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -43777,7 +43961,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -43790,7 +43975,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -44196,7 +44382,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -44209,7 +44396,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -44657,7 +44845,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -44670,7 +44859,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -44908,7 +45098,8 @@
             "name": "前锋剑术",
             "description": "触发闪避时，下次攻击变为二连击并攻击所有阻挡的敌人",
             "blackboard": [],
-            "prefabKey": "1+"
+            "prefabKey": "1+",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -44921,7 +45112,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -45233,7 +45425,8 @@
             "name": "前锋剑术",
             "description": "触发闪避时，下次攻击变为二连击并攻击所有阻挡的敌人",
             "blackboard": [],
-            "prefabKey": "1+"
+            "prefabKey": "1+",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -45246,7 +45439,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
@@ -45260,6 +45454,7 @@
               }
             ],
             "prefabKey": "20_root",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -45605,7 +45800,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -45618,7 +45814,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -46015,7 +46212,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -46028,7 +46226,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -46245,7 +46444,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -46530,7 +46730,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -46538,6 +46739,7 @@
             "description": "",
             "blackboard": [],
             "prefabKey": "10",
+            "rangeId": "y-3",
             "fromModule": true
           }
         ],
@@ -46867,14 +47069,16 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
             "name": "鹰眼视觉",
             "description": "攻击范围内敌人的<$ba.invisible>隐匿</>效果失效",
             "blackboard": [],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -47270,14 +47474,16 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
             "name": "鹰眼视觉",
             "description": "攻击范围内敌人的<$ba.invisible>隐匿</>效果失效",
             "blackboard": [],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -47708,7 +47914,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -47731,7 +47938,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -48189,7 +48397,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -48212,7 +48421,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -48548,7 +48758,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -48561,7 +48772,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -48979,7 +49191,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -48992,7 +49205,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -49387,7 +49601,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -49400,7 +49615,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -49869,7 +50085,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -49882,7 +50099,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
@@ -49901,6 +50119,7 @@
               }
             ],
             "prefabKey": "10_root",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -50163,7 +50382,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -50452,7 +50672,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -50760,7 +50981,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -50778,7 +51000,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -51128,7 +51351,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -51146,7 +51370,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -51565,7 +51790,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -51583,7 +51809,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -52069,7 +52296,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -52087,7 +52315,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -52514,7 +52743,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -52532,7 +52762,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -53001,7 +53232,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -53019,7 +53251,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -53454,7 +53687,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -53477,21 +53711,24 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
             "name": null,
             "description": null,
             "blackboard": [],
-            "prefabKey": "3"
+            "prefabKey": "3",
+            "rangeId": null
           },
           {
             "slot": 3,
             "name": null,
             "description": null,
             "blackboard": [],
-            "prefabKey": "4"
+            "prefabKey": "4",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -53948,7 +54185,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -53971,21 +54209,24 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
             "name": null,
             "description": null,
             "blackboard": [],
-            "prefabKey": "3"
+            "prefabKey": "3",
+            "rangeId": null
           },
           {
             "slot": 3,
             "name": null,
             "description": null,
             "blackboard": [],
-            "prefabKey": "4"
+            "prefabKey": "4",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -54344,7 +54585,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -54382,14 +54624,16 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 2,
             "name": null,
             "description": null,
             "blackboard": [],
-            "prefabKey": "-1"
+            "prefabKey": "-1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -54790,7 +55034,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -54828,14 +55073,16 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 2,
             "name": null,
             "description": null,
             "blackboard": [],
-            "prefabKey": "-1"
+            "prefabKey": "-1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -55304,7 +55551,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -55327,7 +55575,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
@@ -55345,7 +55594,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "3"
+            "prefabKey": "3",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -55876,7 +56126,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -55899,7 +56150,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
@@ -55917,7 +56169,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "3"
+            "prefabKey": "3",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -56304,7 +56557,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -56317,7 +56571,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -56726,7 +56981,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -56739,7 +56995,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -57085,7 +57342,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -57113,7 +57371,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -57501,7 +57760,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -57529,7 +57789,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -57821,7 +58082,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -57839,7 +58101,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -58225,7 +58488,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -58243,7 +58507,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
@@ -58257,6 +58522,7 @@
               }
             ],
             "prefabKey": "10",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -58589,7 +58855,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -58602,7 +58869,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -58961,7 +59229,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -58974,7 +59243,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -59294,7 +59564,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -59307,7 +59578,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -59695,7 +59967,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -59708,7 +59981,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
@@ -59716,6 +59990,7 @@
             "description": "",
             "blackboard": [],
             "prefabKey": "10",
+            "rangeId": "3-1",
             "fromModule": true
           }
         ],
@@ -60028,7 +60303,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": "x-4"
           },
           {
             "slot": 1,
@@ -60041,7 +60317,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -60435,7 +60712,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": "x-4"
           },
           {
             "slot": 1,
@@ -60448,7 +60726,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -60937,7 +61216,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -60960,7 +61240,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
@@ -60973,7 +61254,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "-1"
+            "prefabKey": "-1",
+            "rangeId": null
           },
           {
             "slot": 3,
@@ -60986,7 +61268,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "-2"
+            "prefabKey": "-2",
+            "rangeId": null
           },
           {
             "slot": 4,
@@ -60999,28 +61282,32 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "-3"
+            "prefabKey": "-3",
+            "rangeId": null
           },
           {
             "slot": 5,
             "name": null,
             "description": null,
             "blackboard": [],
-            "prefabKey": "-4"
+            "prefabKey": "-4",
+            "rangeId": null
           },
           {
             "slot": 6,
             "name": null,
             "description": null,
             "blackboard": [],
-            "prefabKey": "-5"
+            "prefabKey": "-5",
+            "rangeId": null
           },
           {
             "slot": 7,
             "name": null,
             "description": null,
             "blackboard": [],
-            "prefabKey": "-6"
+            "prefabKey": "-6",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -61471,7 +61758,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -61494,7 +61782,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
@@ -61507,7 +61796,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "-1"
+            "prefabKey": "-1",
+            "rangeId": null
           },
           {
             "slot": 3,
@@ -61520,7 +61810,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "-2"
+            "prefabKey": "-2",
+            "rangeId": null
           },
           {
             "slot": 4,
@@ -61533,28 +61824,32 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "-3"
+            "prefabKey": "-3",
+            "rangeId": null
           },
           {
             "slot": 5,
             "name": null,
             "description": null,
             "blackboard": [],
-            "prefabKey": "-4"
+            "prefabKey": "-4",
+            "rangeId": null
           },
           {
             "slot": 6,
             "name": null,
             "description": null,
             "blackboard": [],
-            "prefabKey": "-5"
+            "prefabKey": "-5",
+            "rangeId": null
           },
           {
             "slot": 7,
             "name": null,
             "description": null,
             "blackboard": [],
-            "prefabKey": "-6"
+            "prefabKey": "-6",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -62030,7 +62325,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -62063,7 +62359,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -62613,7 +62910,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -62646,7 +62944,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
@@ -62660,6 +62959,7 @@
               }
             ],
             "prefabKey": "10",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -63016,7 +63316,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -63034,7 +63335,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -63437,7 +63739,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -63455,7 +63758,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -63859,7 +64163,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -63877,7 +64182,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -64396,7 +64702,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -64414,7 +64721,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
@@ -64428,6 +64736,7 @@
               }
             ],
             "prefabKey": "10_root",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -64785,7 +65094,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -64798,7 +65108,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -65187,7 +65498,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -65200,7 +65512,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -65569,7 +65882,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -65959,7 +66273,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -66337,7 +66652,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -66762,7 +67078,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -67202,7 +67519,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -67230,7 +67548,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -67765,7 +68084,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -67790,6 +68110,7 @@
               }
             ],
             "prefabKey": "2",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -68351,7 +68672,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -68379,7 +68701,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -69148,6 +69471,7 @@
               }
             ],
             "prefabKey": "1",
+            "rangeId": null,
             "fromModule": true
           },
           {
@@ -69176,7 +69500,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
@@ -69195,6 +69520,7 @@
               }
             ],
             "prefabKey": "10",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -69613,7 +69939,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -69641,7 +69968,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -70255,7 +70583,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -70280,6 +70609,7 @@
               }
             ],
             "prefabKey": "2",
+            "rangeId": null,
             "fromModule": true
           },
           {
@@ -70299,6 +70629,7 @@
               }
             ],
             "prefabKey": "20",
+            "rangeId": null,
             "fromModule": true
           },
           {
@@ -70318,6 +70649,7 @@
               }
             ],
             "prefabKey": "21",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -70628,7 +70960,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -70646,7 +70979,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -71170,6 +71504,7 @@
               }
             ],
             "prefabKey": "1",
+            "rangeId": null,
             "fromModule": true
           },
           {
@@ -71188,7 +71523,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
@@ -71207,6 +71543,7 @@
               }
             ],
             "prefabKey": "10_root",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -71622,7 +71959,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -71635,7 +71973,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -72211,7 +72550,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -72228,6 +72568,7 @@
               }
             ],
             "prefabKey": "10",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -72607,7 +72948,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -72620,7 +72962,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -73105,6 +73448,7 @@
               }
             ],
             "prefabKey": "1",
+            "rangeId": null,
             "fromModule": true
           },
           {
@@ -73118,7 +73462,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -73494,7 +73839,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": "x-4"
           },
           {
             "slot": 1,
@@ -73507,7 +73853,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -73971,6 +74318,7 @@
               }
             ],
             "prefabKey": "1",
+            "rangeId": "x-4",
             "fromModule": true
           },
           {
@@ -73984,7 +74332,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -74466,7 +74815,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -74479,7 +74829,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -75095,7 +75446,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -75112,6 +75464,7 @@
               }
             ],
             "prefabKey": "2",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -75468,7 +75821,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -75481,7 +75835,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -75931,7 +76286,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -75948,6 +76304,7 @@
               }
             ],
             "prefabKey": "2",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -76264,7 +76621,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -76282,7 +76640,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -76821,6 +77180,7 @@
               }
             ],
             "prefabKey": "1",
+            "rangeId": null,
             "fromModule": true
           },
           {
@@ -76839,7 +77199,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -77239,7 +77600,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -77252,7 +77614,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -77766,6 +78129,7 @@
               }
             ],
             "prefabKey": "1",
+            "rangeId": null,
             "fromModule": true
           },
           {
@@ -77779,7 +78143,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -78276,7 +78641,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -78294,21 +78660,24 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
             "name": null,
             "description": null,
             "blackboard": [],
-            "prefabKey": "4"
+            "prefabKey": "4",
+            "rangeId": null
           },
           {
             "slot": 3,
             "name": null,
             "description": null,
             "blackboard": [],
-            "prefabKey": "3"
+            "prefabKey": "3",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -78941,6 +79310,7 @@
               }
             ],
             "prefabKey": "1",
+            "rangeId": null,
             "fromModule": true
           },
           {
@@ -78959,21 +79329,24 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
             "name": null,
             "description": null,
             "blackboard": [],
-            "prefabKey": "4"
+            "prefabKey": "4",
+            "rangeId": null
           },
           {
             "slot": 3,
             "name": null,
             "description": null,
             "blackboard": [],
-            "prefabKey": "3"
+            "prefabKey": "3",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -79373,7 +79746,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -79391,7 +79765,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -79897,6 +80272,7 @@
               }
             ],
             "prefabKey": "1",
+            "rangeId": null,
             "fromModule": true
           },
           {
@@ -79915,7 +80291,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -80271,7 +80648,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -80289,7 +80667,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -80777,6 +81156,7 @@
               }
             ],
             "prefabKey": "1",
+            "rangeId": null,
             "fromModule": true
           },
           {
@@ -80795,7 +81175,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -81157,7 +81538,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -81185,7 +81567,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -81673,6 +82056,7 @@
               }
             ],
             "prefabKey": "10_root",
+            "rangeId": null,
             "fromModule": true
           },
           {
@@ -81701,7 +82085,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -82065,7 +82450,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": "x-5"
           },
           {
             "slot": 1,
@@ -82078,7 +82464,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -82558,7 +82945,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": "x-5"
           },
           {
             "slot": 1,
@@ -82571,6 +82959,7 @@
               }
             ],
             "prefabKey": "2",
+            "rangeId": null,
             "fromModule": true
           }
         ],
@@ -83046,7 +83435,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -83064,14 +83454,16 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           },
           {
             "slot": 2,
             "name": null,
             "description": null,
             "blackboard": [],
-            "prefabKey": "3"
+            "prefabKey": "3",
+            "rangeId": null
           },
           {
             "slot": 3,
@@ -83084,7 +83476,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "M0_1"
+            "prefabKey": "M0_1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -83693,7 +84086,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -83710,6 +84104,7 @@
               }
             ],
             "prefabKey": "2",
+            "rangeId": null,
             "fromModule": true
           },
           {
@@ -83717,7 +84112,8 @@
             "name": null,
             "description": null,
             "blackboard": [],
-            "prefabKey": "3"
+            "prefabKey": "3",
+            "rangeId": null
           },
           {
             "slot": 3,
@@ -83730,7 +84126,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "M0_1"
+            "prefabKey": "M0_1",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -84162,7 +84559,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -84175,7 +84573,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -84704,6 +85103,7 @@
               }
             ],
             "prefabKey": "1",
+            "rangeId": null,
             "fromModule": true
           },
           {
@@ -84717,7 +85117,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": null,
@@ -85067,7 +85468,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -85085,7 +85487,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "2"
+            "prefabKey": "2",
+            "rangeId": null
           }
         ],
         "trait": {
@@ -85569,7 +85972,8 @@
                 "valueStr": null
               }
             ],
-            "prefabKey": "1"
+            "prefabKey": "1",
+            "rangeId": null
           },
           {
             "slot": 1,
@@ -85586,6 +85990,7 @@
               }
             ],
             "prefabKey": "2",
+            "rangeId": null,
             "fromModule": true
           }
         ],

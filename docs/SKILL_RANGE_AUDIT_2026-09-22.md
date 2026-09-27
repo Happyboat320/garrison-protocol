@@ -192,6 +192,15 @@
 回归：`tests/native-podego-bottle.test.mjs`（3 条：瓶子落点/半径 0.9/落地生效/5 次伤害/可对空；地灵 S2 只停顿不掉血；
 「兜底圈白名单」的源码＋实机双门禁——后者会遍历全部 325 个技能组合，禁止任何技能同时出现兜底圈与专属圈）。
 
+## 天赋自带的 `rangeId` 也必须走范围表（2026-09-23 追加）
+
+干员天赋同样有范围：原表候选里除了 `blackboard` 还带 `rangeId`（例：耀骑士临光「不畏苦暗」＝`x-5`，即**自身＋上下左右四格**）。两个坑：
+
+1. `protocol.resolveActiveTalents` 解析天赋时曾经**只保留 `slot/name/description/blackboard/prefabKey`，把 `rangeId` 丢掉**，于是消费端只能拿包围半径近似 ——「不畏苦暗」被写成 `chebyshev<=4`（9×9＝81 格），把两格、四格外的敌人也打进去了。现在候选与模组覆盖两条路径都带 `rangeId`（模组覆盖沿用原天赋的），消费端用 `battle.cellsForRangeId(u,t.rangeId)` + `containsTarget`，**没有 `rangeId` 时才退回包围近似**。
+2. `rangeId` 是编译期烘进 `runtime-data.js` 的（`profiles[].activeTalents`），改完必须 `npm run build`，否则运行时读到的还是旧数组。
+
+回归：`tests/native-kazimierz-gaps.test.mjs` 第一条（`x-5` 的格子集合 + 只有上下左右四格受击）。细节见 [卡西米尔盟约与相关干员核查](KAZIMIERZ_AUDIT_2026-09-23.md)。
+
 ## 连续坐标：范围判定不许拿格心做相等比较（2026-09-23 复盘）
 
 用户 2026-09-23 报「银灰、初雪等范围内冻结概率叠层的效果依然无法正常触发」。根因不在卫戍本身，

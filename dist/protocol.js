@@ -251,7 +251,7 @@ export function resolveActiveTalents(entity,status,{potentialRank=0,modulePhase=
  const slots=[];
  for(const [index,slot] of (entity?.talents||[]).entries()){
   const pick=(slot.candidates||[]).filter(c=>talentCandidateOpen(c,status,potentialRank)).at(-1);
-  if(pick)slots.push({slot:index,name:pick.name,description:pick.description,blackboard:pick.blackboard||[],prefabKey:pick.prefabKey||null});
+  if(pick)slots.push({slot:index,name:pick.name,description:pick.description,blackboard:pick.blackboard||[],prefabKey:pick.prefabKey||null,rangeId:pick.rangeId??null});
  }
  for(const part of modulePhase?.parts||[]){
   if(part.isToken)continue;
@@ -259,9 +259,9 @@ export function resolveActiveTalents(entity,status,{potentialRank=0,modulePhase=
   if(!cands?.length)continue;
   const pick=cands.filter(c=>talentCandidateOpen(c,status,potentialRank)).at(-1);
   if(!pick)continue;
-  const row={slot:slots.length,name:pick.name,description:pick.description||pick.upgradeDescription,blackboard:pick.blackboard||[],prefabKey:pick.prefabKey||null,fromModule:true};
+  const row={slot:slots.length,name:pick.name,description:pick.description||pick.upgradeDescription,blackboard:pick.blackboard||[],prefabKey:pick.prefabKey||null,rangeId:pick.rangeId??null,fromModule:true};
   const i=Number.isInteger(pick.talentIndex)&&pick.talentIndex>=0?slots.findIndex(s=>s.slot===pick.talentIndex):slots.findIndex(s=>pick.name&&s.name===pick.name);
-  if(i>=0){const previous=slots[i];row.slot=previous.slot;row.name??=previous.name;row.description??=previous.description;const merged={...blackboard(previous.blackboard),...blackboard(row.blackboard)};row.blackboard=Object.entries(merged).map(([key,value])=>({key,value}));slots[i]=row;}else slots.push(row);
+  if(i>=0){const previous=slots[i];row.slot=previous.slot;row.name??=previous.name;row.description??=previous.description;row.rangeId??=previous.rangeId;const merged={...blackboard(previous.blackboard),...blackboard(row.blackboard)};row.blackboard=Object.entries(merged).map(([key,value])=>({key,value}));slots[i]=row;}else slots.push(row);
  }
  return slots;
 }

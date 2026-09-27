@@ -46,6 +46,17 @@ export function talentValues(talent){
  return out;
 }
 const has=(text,re)=>re.test(String(text||''));
+// 嘲讽类天赋：原表有「更容易受到攻击」「不容易受到敌人攻击」「不容易成为敌人的目标」几种写法，
+// 其中带「技能开启时／技能未开启时」的是**条件式**，只在条件成立时生效
+// （远牙「屏息」、薄绿「地质学者」只在技能开启时；玛恩纳「无动于衷」没有条件，常驻）。
+function tauntTalentActive(text,battle,u){
+ const raw=String(text||'');
+ const clause=raw.split(/[；;。]/).find(part=>/更容易受到|不容易受到|不容易成为/.test(part));
+ if(!clause)return false;
+ if(/技能未开启时/.test(clause))return !(battle?.skillActive?.(u)??false);
+ if(/技能开启时/.test(clause))return !!(battle?.skillActive?.(u)??false);
+ return true;
+}
 const direct=(text,word)=>has(text,new RegExp('(?:^|[，。； ])'+word+'[+：]'))&&!has(text,/每次|每击|若|受到|技能期间|开启技能|部署后|首次/);
 export function coinCapFor(profile){
  const match=String(profile?.skill?.description||'').match(/金币上限为(\d+)/);
@@ -206,7 +217,7 @@ export function statMods(battle,u){
   if(Number.isFinite(as)&&direct(text,'攻击速度')){out.attackSpeed+=as;note('attackSpeed','add',as,sourceName);}
   if(Number.isFinite(blocks)&&direct(text,'阻挡数')){out.add.blockCnt+=blocks;note('blockCnt','add',blocks,sourceName);}
   if(Number.isFinite(taunt)&&direct(text,'嘲讽等级')){out.add.tauntLevel+=taunt;note('tauntLevel','add',taunt,sourceName);}
-  if(Number.isFinite(taunt)&&has(text,/不容易受到敌人攻击|更容易受到敌人攻击/)){out.add.tauntLevel+=taunt;note('tauntLevel','add',taunt,sourceName);}
+  if(Number.isFinite(taunt)&&tauntTalentActive(text,battle,u)){out.add.tauntLevel+=taunt;note('tauntLevel','add',taunt,sourceName);}
   if(Number.isFinite(sp)&&has(text,/技力自然回复速度/))out.auras.push({stat:'spRecoveryPerSec',layer:'maxSame',value:sp,text,source:u});
   if(Number.isFinite(atk)&&has(text,/所有友方|全体友方|所有【/))out.auras.push({stat:'atk',layer:'ratio',value:atk,text,source:u});
   if(Number.isFinite(def)&&has(text,/所有友方|全体友方|所有【/))out.auras.push({stat:'def',layer:'ratio',value:def,text,source:u});
@@ -599,7 +610,7 @@ export function onEvent(battle,type,payload,ctx){
  }
  if(type==='after-damage'&&source?.id==='char_1032_excu2'&&target&&source.kind!=='summon'&&battle.skillActive(source)){const idx=source.source?.skillIndex??battle.profile(source).skillIndex;const bb=skillBB(battle,source);if(idx===1&&source.ammo<=source.ammoMax){if(source.lastDamagedAt===battle.s.time&&battle.economy.random()<Number(bb.prob||0))source.ammo=Math.min(source.ammoMax,source.ammo+Number(bb.recover_cnt||1));}if(idx===2){source.excu2Targets??=[];if(!source.excu2Targets.includes(target.uid))source.excu2Targets.push(target.uid);const talent=activeTalents(battle,source).find(t=>t.name==='受选之人'),tb=talent&&talentValues(talent),used=Math.max(0,(source.ammoMax||0)-(source.ammo||0)),prob=Number(tb?.prob||0)+used*(Number(tb?.prob_add)||0);if(talent&&battle.economy.random()<prob)ctx.dealDamage(battle,{source,target,amount:battle.stats(source).atk,type:'physical',cause:'extra',skill:true,effectId:'excu2-talent:'+source.uid+':'+(payload.event?.eventId||0)});}}
  if(type==='after-damage'&&source?.id==='char_4064_mlynar'&&target&&source.kind!=='summon'&&battle.skillActive(source)&&((source.source?.skillIndex??battle.profile(source).skillIndex)===2)){const talent=activeTalents(battle,source).find(t=>t.name==='无动于衷'),tb=talent&&talentValues(talent);if(talent&&target.block!=null){const blocker=battle.s.units.find(u=>u.uid===target.block);if(blocker&&battle.profile(blocker)?.bonds?.includes('kazimierzShip'))ctx.dealDamage(battle,{source,target,amount:battle.stats(source).atk*Number(tb.atk_scale||.15),type:'true',cause:'extra'});}}
- if(type==='after-damage'&&target&&source&&source.kind!=='summon'&&battle.s.units.includes(target)&&!battle.s.units.includes(source)){const mly=battle.s.units.find(v=>v.deployed&&v.hp>0&&v.id==='char_4064_mlynar'&&battle.skillActive(v)&&(v.source?.skillIndex??battle.profile(v).skillIndex)===2),talent=mly&&activeTalents(battle,mly).find(t=>t.name==='无动于衷'),tb=talent&&talentValues(talent);if(mly&&talent&&battle.profile(target)?.bonds?.includes('kazimierzShip'))ctx.dealDamage(battle,{source:mly,target:source,amount:battle.stats(mly).atk*Number(tb.atk_scale||.15),type:'true',cause:'extra'});}
+ if(type==='after-damage'&&target&&source&&source.kind!=='summon'&&battle.s.units.includes(target)&&!battle.s.units.includes(source)){const mly=battle.s.units.find(v=>v.deployed&&v.hp>0&&v.id==='char_4064_mlynar'&&activeTalents(battle,v).some(t=>t.name==='无动于衷')),talent=mly&&activeTalents(battle,mly).find(t=>t.name==='无动于衷'),tb=talent&&talentValues(talent);if(mly&&talent&&battle.profile(target)?.bonds?.includes('kazimierzShip'))ctx.dealDamage(battle,{source:mly,target:source,amount:battle.stats(mly).atk*Number(tb.atk_scale||.15),type:'true',cause:'extra'});}
  if(type==='enemy-death'&&payload.target&&payload.target.elementBurst){payload.target.elementBurst=0;}
  if(type==='barrierDepletedByDamage'&&target?.id==='char_332_archet'){const talent=activeTalents(battle,target).find(t=>t.name==='铁弦');if(talent)ctx.gainSp(target,battle.profile(target).skill,Number(talent.values?.sp)||7,battle.spCost(target));}
  if(type==='before-damage'&&source?.pendingAttackScale&&source.pendingAttackScale.skillCount===source.skillCount&&payload.value>0){payload.value*=Number(source.pendingAttackScale.scale)||1;}
