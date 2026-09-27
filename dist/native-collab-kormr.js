@@ -7,7 +7,63 @@
 // 没有主动技能（skillRefs 为空）。特性「普通攻击连续造成两次伤害」由 BRANCH_POLICIES.sword 提供。
 //
 // 回归：tests/native-collab-kormr.test.mjs（新文件，必须验证「改回本文件前会失败」）
-export const hooks={
- // deploy(battle,unit)：在 native-effects 的 deploy 事件里调用，此时 unit 已经落位。
- deploy(battle,unit){/* TODO */ }
+import {blackboard} from './protocol.js';
+import {applyStatus,permissions} from './status.js';
+import {containsTarget} from './targeting.js';
+
+// 「总计 6 次」只写在天赋文案里：PRTS 黑板只有 atk_scale／final_atk_scale／fear，没有次数键，
+// 所以次数按文案定死（**数值**一律读黑板，缺字段就不给能力）。
+const SLASH_COUNT=6;
+const TALENT=/黑色猎犬/;
+
+// 「周围一定范围」＝天赋自带的 rangeId（无潜能档为 `x-1`：以自身为中心、曼哈顿距离 2 的 13 格），
+// 走权威范围表 battle.cellsForRangeId（方向旋转在 native-battle.cellsForGrids 里），不手写包围半径。
+// 天赋没带 rangeId／范围表缺这条时才退回干员当前攻击范围（同样是 range_table 的数据）。
+function talentCells(battle,unit,talent){
+ const cells=talent.rangeId?battle.cellsForRangeId?.(unit,talent.rangeId):null;
+ return cells?.length?cells:(battle.range(unit).cells||[]);
+}
+// 范围内「最近的 1 名敌人」：距离按棋盘欧氏距离，同距离取 uid 小的（结算稳定）。
+// 可选中条件与 targeting.selectEnemies 一致（隐匿／不可选中／无敌／沉睡不选）；天赋文案没有
+// 「仅地面／可对空」的限定，所以这里不另设对空门禁。
+function nearestEnemy(battle,unit,cells){
+ const pairs=cells.map(c=>[c.x,c.y]);
+ const rows=battle.s.enemies.filter(e=>e.hp>0&&!e.hidden&&!e.untargetable&&!e.invulnerable
+  &&(!e.invisible||e.block!=null)&&!permissions(e).sleeping&&containsTarget(pairs,e));
+ rows.sort((a,b)=>Math.hypot(a.x-unit.x,a.y-unit.y)-Math.hypot(b.x-unit.x,b.y-unit.y)||a.uid-b.uid);
+ return rows[0]||null;
+}
+export const kormrHooks={
+ // deploy(battle,unit)：在 native-effects 的 deploy 分支（dispatch 'deploy'）里调用，此时 unit 已经落位、
+ // hp 已按 stats 重置，所以这里能安全读 battle.stats(unit).atk。
+ deploy(battle,unit){
+  if(!battle||!unit)return;
+  const talent=(battle.profile(unit).activeTalents||[]).find(t=>TALENT.test(t.name||''));
+  if(!talent)return;
+  const values=blackboard(talent.blackboard);
+  const scale=Number(values.atk_scale),finalScale=Number(values.final_atk_scale),fear=Number(values.fear);
+  if(!Number.isFinite(scale)||!Number.isFinite(finalScale))return; // 黑板缺字段：不给这个能力
+  const target=nearestEnemy(battle,unit,talentCells(battle,unit,talent));
+  if(!target)return;
+  const atk=battle.stats(unit).atk;
+  // 「无视闪避」：
+  //   · 斩击是**法术**伤害，天然不吃只对物理生效的酒类闪避（native-effects `enemyWineBuffs().physicalDodge`）；
+  //   · 法术侧唯一的闪避来源是「未被阻挡时的闪避」`target.enemyUnblockedDodge`，它在 `dealDamage` 里
+  //     **逐次读目标当前值**，且整个 native-effects 里没有 ignoreDodge／skipDodge 一类的开关。所以这里在
+  //     这 6 次斩击期间把它压成 0、结算完原样写回（斩击是同步结算，中间不插帧，写回不会丢状态）。
+  const dodge=target.enemyUnblockedDodge;
+  const restore=Number(dodge)>0;
+  if(restore)target.enemyUnblockedDodge=0;
+  try{
+   for(let i=0;i<SLASH_COUNT;i++){
+    if(target.hp<=0)break;
+    const last=i===SLASH_COUNT-1;
+    battle.hit(unit,target,atk*(last?finalScale:scale),'arts',{skill:true});
+   }
+  }finally{
+   if(restore)target.enemyUnblockedDodge=dodge;
+  }
+  // 最后一次斩击「并使目标恐惧」：resistible:false 与叙拉古／妮芙那两处干员施加恐惧的口径一致。
+  if(Number.isFinite(fear)&&fear>0)applyStatus(target,'fear',fear,{source:unit.uid,resistible:false});
+ }
 };

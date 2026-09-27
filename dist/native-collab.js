@@ -6,17 +6,20 @@
 // 依赖方向是单向的：native-effects／native-operator-effects → native-collab → native-collab-*。
 // 四个实现文件**不得**反向 import 这三个模块（会形成循环）；需要的能力用 battle／unit／ctx 参数，
 // 或 protocol.js／status.js／targeting.js 里的纯函数。
-import {hooks as kormr} from './native-collab-kormr.js';
-import {hooks as aigis} from './native-collab-aigis.js';
-import {hooks as yukari} from './native-collab-yukari.js';
-import {hooks as makoto} from './native-collab-makoto.js';
+import {kormrHooks} from './native-collab-kormr.js';
+import {aigisHooks} from './native-collab-aigis.js';
+import {yukariHooks} from './native-collab-yukari.js';
+import {makotoHooks} from './native-collab-makoto.js';
 export const COLLAB_HOOKS={
- char_4220_kormr:kormr,
- char_4218_aigis:aigis,
- char_4219_yukari:yukari,
- char_4217_makoto:makoto
+ char_4220_kormr:kormrHooks,
+ char_4218_aigis:aigisHooks,
+ char_4219_yukari:yukariHooks,
+ char_4217_makoto:makotoHooks
 };
-export function collabFor(unit){return unit?.charId?COLLAB_HOOKS[unit.charId]||null:null;}
+// 取键要认三种形态：名册/档案对象上是 charId；**战斗单位上是 id（＝charId）**，没有 charId 字段
+// （native-battle 建单位时写的是 {uid,id:charId,chessId,source}）；预备态对象上是 source.charId。
+// 只认 charId 会让七个钩子对战场上的联动干员全部静默失效（测试里传假对象时还是绿的），所以三种都认。
+export function collabFor(unit){const key=unit?.charId||unit?.id||unit?.source?.charId;return key?COLLAB_HOOKS[key]||null:null;}
 // 部署瞬间（native-effects 的 deploy 分支）：虎狼丸的天赋斩击挂在这里。
 export function collabDeploy(battle,unit){collabFor(unit)?.deploy?.(battle,unit);}
 // 属性修正（native-operator-effects.statMods）：把结果并进 out（add／ratio／attackSpeed／parts）。

@@ -4,7 +4,9 @@ import {NativeSession} from '../dist/native-session.js';
 import {BRANCH_POLICIES,branchBehavior} from '../dist/native-branches.js';
 import {COLLAB_HOOKS,collabFor} from '../dist/native-collab.js';
 import {prepCatalog} from '../dist/native-prep.js';
+import {damageReductionFor} from '../dist/native-operator-effects.js';
 import {NO_BOND_BAN} from './no-bond-ban.mjs';
+import {openBattle,deployNow,enemy,byId} from './effects-harness.mjs';
 
 // S.E.E.S. 联动四人的实装口径（data/modes/alliance-lower/collab-operators.json）：
 // 只作隐藏档进技能测试场，不给盟约／卫戍，不进商店池、不进战前准备名册。
@@ -116,6 +118,24 @@ test('技能测试场是唯一入口：干员表取全部 profile，加人不依
  assert.equal(NATIVE_DATA.season.charChessDataDict['chess_collab_makoto'].upgradeChessId,null,'隐藏档没有精锐化链');
 });
 
+test('通用减免兜底按文案限定伤害类型（物理减伤不吃法术），联动工作发现的两处一起锁',()=>{
+ // 通用层原来只按文案关键词匹配就套减免值，不看伤害类型：写「受到的物理伤害-X%」的天赋会连法术一起减。
+ // 埃癸斯的天赋回归把它暴露出来；维娜「诸王的叹息」、濯尘芙蓉「重盈」同属这一类（见 docs 的未闭环清单）。
+ const aigis=openBattle([{chessId:'chess_collab_aigis',skillIndex:0}]);
+ deployNow(aigis.b);
+ const a=byId(aigis.b,'char_4218_aigis');
+ assert.equal(damageReductionFor(aigis.b,a,'physical'),.1,'物理受伤吃 10% 减免');
+ assert.equal(damageReductionFor(aigis.b,a,'arts'),0,'法术受伤不该吃这条物理减伤');
+ assert.equal(damageReductionFor(aigis.b,a,'true'),0,'真实伤害不吃');
+ const siege=openBattle([{chessId:'chess_char_6_07_a',skillIndex:0}]);
+ deployNow(siege.b);
+ const s=byId(siege.b,'char_1019_siege2');
+ assert.ok(s,'维娜应当在场上（棋子 chess_char_6_07_a）');
+ const self=damageReductionFor(siege.b,s,'physical'),arts=damageReductionFor(siege.b,s,'arts');
+ assert.ok(self>0,'维娜「诸王的叹息」自身吃物理减伤（实际 '+self+'）');
+ assert.equal(arts,0,'同一条天赋不该减免法术');
+});
+
 test('游击手／裂空炮手的特性数据与分支策略一一对应',()=>{
  const rules=JSON.parse(fs.readFileSync('data/prts/branch-rules.json','utf8')).records;
  const yukari=rules.find(r=>r.id==='supportiveranger'),breaker=rules.find(r=>r.id==='skybreaker');
@@ -154,10 +174,27 @@ test('四张头像已登记进资源清单且文件在位',()=>{
  }
 });
 
+test('部署触发的天赋不会被通用命中兜底重复施加（虎狼丸的恐惧只来自部署斩击）',()=>{
+ // 通用天赋兜底（native-operator-effects 的 after-damage 分支）原来只要黑板里有裸 `fear` 键、
+ // 文案里出现「伤害」，就在**每次命中**时挂一次恐惧。虎狼丸「黑色猎犬」正好两样都占，
+ // 于是他的普通攻击也附带 4 秒恐惧——天赋本意是「部署斩击的最后一下」才恐惧。
+ const {b}=openBattle([{chessId:'chess_collab_kormr',skillIndex:0}]);
+ deployNow(b);
+ const u=byId(b,'char_4220_kormr');
+ assert.ok(u,'虎狼丸应当已经部署');
+ const probe=enemy(b,{x:u.x+1,y:u.y,hp:100000,def:0,res:0});
+ b.hit(u,probe,242,'arts',{});
+ assert.equal(probe.statuses.some(s=>s.kind==='fear'),false,'普通攻击不该附带恐惧（恐惧只来自部署斩击）');
+});
+
 test('联动钩子层按 charId 分派，共享文件里七个入口都还在接线',()=>{
  // 实现按人分文件，共享代码只留一次调用；这条门禁防止以后重构时把接线删掉（四个人的行为会一起静默失效）。
  for(const row of roster)assert.ok(COLLAB_HOOKS[row.charId],`${row.name} 要有钩子实现`);
  assert.equal(collabFor({charId:'char_4217_makoto'}),COLLAB_HOOKS.char_4217_makoto);
+ // 战斗单位上只有 id（＝charId），没有 charId 字段（native-battle 建单位时写 {uid,id,chessId,source}）：
+ // 只认 charId 会让七个钩子在战场上全部静默失效，所以这里按真实形态再锁一遍。
+ assert.equal(collabFor({uid:1,id:'char_4217_makoto',chessId:'chess_collab_makoto'}),COLLAB_HOOKS.char_4217_makoto,'战斗单位按 id 取钩子');
+ assert.equal(collabFor({uid:2,source:{charId:'char_4218_aigis'}}),COLLAB_HOOKS.char_4218_aigis,'预备态对象按 source.charId 取钩子');
  assert.equal(collabFor({charId:'char_498_inside'}),null,'非联动干员不派发钩子');
  assert.equal(collabFor(null),null);
  const effects=fs.readFileSync('dist/native-effects.js','utf8');

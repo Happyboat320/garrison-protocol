@@ -22,7 +22,13 @@ for (const name of names) {
   const exports = [];
   source = source.replace(/^import\s*\{([^}]+)\}\s*from\s*['"]\.\/([^'"]+)['"];?\s*$/gm, (_, bindings, dependency) => {
     if (!names.includes(dependency)) throw new Error(`Unknown dependency: ${dependency}`);
-    return `const {${bindings}} = load(${JSON.stringify(dependency)});`;
+    // 具名导入要支持重命名：`import {hooks as kormr}` 解构时必须写成 `{hooks: kormr}`，
+    // 直接抄 `as` 会生成非法语句（P3 联动模块就是这么把 bundle 构建搞挂的）。
+    const destructured = bindings.split(',').map(part => {
+      const [imported, local] = part.split(/\s+as\s+/).map(token => token.trim());
+      return local && local !== imported ? `${imported}: ${local}` : imported;
+    }).filter(Boolean).join(',');
+    return `const {${destructured}} = load(${JSON.stringify(dependency)});`;
   });
   source = source.replace(/^export\s+(const|let|var|class|function)\s+([A-Za-z_$][\w$]*)/gm, (_, declaration, id) => {
     exports.push(id);
