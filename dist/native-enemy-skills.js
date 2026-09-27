@@ -6,6 +6,11 @@ import {windupSeconds,enemyChainTargets,enemyRayHitDistance,enemyTargetValid,com
 const ATTACK_SKILLS=new Set(['AOEAttack','CrossAttack','PowerAttack','StunAttack','stuncombat','DeathEye','PollutedRangedAtk','ironsandstorm','armorpiercing']);
 const VISUAL_SKILLS=new Set(['BornAnim','StartRun','EndAnim','BeginAnim']);
 
+// 腐败/凋零骑士的技能前摇（用户 2026-09-23 口径）：发动前一秒本体紫色发光闪烁；同伴离场触发强化后缩到半秒。
+export const KNIGHT_WINDUP_SECONDS=1;
+export const KNIGHT_WINDUP_SECONDS_RAGED=.5;
+export function knightWindupSeconds(enemy){return enemy?.knightRage?KNIGHT_WINDUP_SECONDS_RAGED:KNIGHT_WINDUP_SECONDS;}
+
 // 敌人只有一个共享SP槽；每个技能有独立CD。负CD表示不靠CD自动就绪，仍可消耗SP。
 export function initEnemySkills(enemy,raw,now){
  enemy.enemyTags=raw.enemyTags||[];
@@ -116,7 +121,7 @@ export function cancelEnemyCast(battle,enemy,{lostTarget=false}={}){
  if(cast.xiBurst){enemy.formHold=false;enemy.shiftImmune=cast.previousShiftImmune;enemy.shieldLayers=(enemy.shieldLayers||[]).filter(l=>l.id!=='xi-burst');enemy.shield=enemy.shieldLayers.reduce((n,l)=>n+l.remaining,0);endEnemySkill(battle,enemy);return;}
  if(cast.degenCircle||cast.phantomAoe||cast.wildCalling){enemy.formHold=false;endEnemySkill(battle,enemy);return;}
  if(cast.crossShot){enemy.formHold=false;enemy.formInvisible=enemy.baseInvisible;enemy.invisible=enemy.formInvisible&&!enemy.revealed;endEnemySkill(battle,enemy);return;}
- if(cast.knightCharge){enemy.formHold=false;endEnemySkill(battle,enemy);return;}
+ if(cast.knightCharge||cast.knightArrow||cast.refreshShield){enemy.formHold=false;endEnemySkill(battle,enemy);return;}
  if(cast.bomb){enemy.formHold=false;endEnemySkill(battle,enemy,{refund:true});return;}
  if(cast.charge&&!cast.hitAttempted){
   const short=(enemy.statuses||[]).some(s=>s.kind==='stun'||s.kind==='sleep');
@@ -179,6 +184,8 @@ function tryReidRush(battle,enemy){
  const point=routeCells.find(p=>p.x===Math.round(target.x)&&p.y===Math.round(target.y)),old=enemy.route[point.index];
  enemy.route=[...enemy.route.slice(0,enemy.cmd),{...(point.index>=enemy.cmd?old:{}),kind:'move',x:point.x,y:point.y},...enemy.route.slice(Math.max(enemy.cmd,point.index+1))];enemy.cmdLeft=null;
  enemy.reidRushUntil=battle.s.time+Number(skill.bb.duration);enemy.speed=enemy.baseSpeed*(1+Number(skill.bb.move_speed));endEnemySkill(battle,enemy);
+ // PRTS 技能0 备注「※重生后：此技能释放的动画动作期间免疫晕眩」：只有复活之后的冲刺才免晕，冲刺结束还原。
+ if(enemy.enemyForm==='revived'){enemy.reidRushStunImmune=true;enemy.reidRushBaseStun=!!enemy.immunities.stun;enemy.immunities.stun=true;}
  battle.emit('enemy-phase',{uid:enemy.uid,x:enemy.x,y:enemy.y,phase:'enemy-form',form:'冲锋'});
 }
 function tickMouseKingSkills(battle,enemy,control){
@@ -276,7 +283,11 @@ export function tickEnemySkills(battle,enemy,dt){
  if(tickCrownBlink(battle,enemy))return;
  if(enemy.enemyFormKind==='xi')tickXiMarks(battle,enemy);
  if(enemy.enemyFormKind==='zaro'){tickZaroCage(battle,enemy);if(!enemy.hidden&&dt>0)battle.addBloodDebt(Number(enemy.enemyTalent['Passive.sp'])*dt);}
- if(enemy.reidRushUntil!=null&&battle.s.time+1e-9>=enemy.reidRushUntil){enemy.reidRushUntil=null;enemy.speed=enemy.baseSpeed;}
+ if(enemy.reidRushUntil!=null&&battle.s.time+1e-9>=enemy.reidRushUntil){
+  enemy.reidRushUntil=null;enemy.speed=enemy.baseSpeed;
+  // PRTS「重生后：此技能释放的动画动作期间免疫晕眩」——免疫只在这次冲刺期间有效，结束要还原。
+  if(enemy.reidRushStunImmune){enemy.reidRushStunImmune=false;enemy.immunities.stun=!!enemy.reidRushBaseStun;enemy.reidRushBaseStun=false;}
+ }
  checkWEnrage(battle,enemy);
  if(enemy.runUntil!=null&&battle.s.time+1e-9>=enemy.runUntil){enemy.runUntil=null;enemy.speed=enemy.baseSpeed;enemy.unblockable=enemy.baseUnblockable;}
  if(enemy.wineCarrying&&enemy.block!=null){enemy.wineCarrying=false;enemy.canAttack=enemy.baseCanAttack;enemy.speed=enemy.baseSpeed;}
@@ -355,6 +366,30 @@ export function tickEnemySkills(battle,enemy,dt){
   }
  }
  if(enemy.id==='enemy_1509_mousek'){tickMouseKingSkills(battle,enemy,control);return;}
+ if(cast?.knightArrow){
+  // 前摇结束才发射爆炸箭；前摇期间被打断（沉默/隐匿）就取消，不产生弹道。
+  if(enemy.hidden||!control.attack||!control.skill||control.silenced){cancelEnemyCast(battle,enemy);enemy.formHold=false;return;}
+  if(battle.s.time+1e-9>=cast.endsAt){
+   const skill=enemy.enemySkills[cast.index],targets=battle.enemySkillTargets(enemy).slice(0,3);
+   if(targets.length){
+    const attackId=newAttackId(battle),delay=Number(skill.bb['dekght_2[aoe].interval']),amount=battle.enemyAttackDamage(enemy,Number(skill.bb['dekght_2[aoe].atk_scale']));
+    for(const target of targets)addEffect(battle,{kind:'delayed',stackRule:'stack',sourceUid:enemy.uid,targetUid:target.uid,targetDeployGen:target.deployGen,talentOrSkillId:'knight-explosive-arrow',attackId,interval:null,nextAt:battle.s.time+delay,endsAt:battle.s.time+delay,values:{knightBomb:true,type:'arts'},snapshot:{damage:amount},refKind:'owner',persistAfterSourceGone:true});
+   }
+   enemy.formHold=false;enemy.attackCooldown=Math.ceil(enemy.interval*FPS);endEnemySkill(battle,enemy);
+  }
+  return;
+ }
+ if(cast?.refreshShield){
+  // PRTS 泥岩「刷新屏障」：※技能期间持有失衡免疫、晕眩免疫（失衡免疫由 beginEnemySkill 的
+  // extra.shiftImmune 开关，晕眩免疫按 extra.immunities 快照还原）。技能走完前摇才真正刷盾。
+  if(enemy.hidden||!control.skill||control.silenced){cancelEnemyCast(battle,enemy);enemy.formHold=false;return;}
+  if(battle.s.time+1e-9>=cast.endsAt){
+   const skill=enemy.enemySkills[cast.index];
+   battle.refreshMudrockShield(enemy,skill.bb);
+   enemy.formHold=false;enemy.attackCooldown=Math.ceil(enemy.interval*FPS);endEnemySkill(battle,enemy);
+  }
+  return;
+ }
  if(cast?.knightCharge){
   if(enemy.hidden||!control.attack||!control.skill||control.silenced){cancelEnemyCast(battle,enemy);return;}
   if(battle.s.time+1e-9>=cast.endsAt){
@@ -552,17 +587,17 @@ export function tickEnemySkills(battle,enemy,dt){
   }
  }
  if(enemy.id==='enemy_1539_reid'&&dt===0&&!control.silenced)tryReidRush(battle,enemy);
- if(enemy.id==='enemy_1513_dekght_2'&&!control.silenced&&!enemy.action){
-  const skill=enemy.enemySkills.find(s=>s.prefab==='TripleAttack'),targets=battle.enemySkillTargets(enemy).slice(0,3);
-  if(skill&&targets.length&&beginEnemySkill(battle,enemy,skill)){
-   const attackId=newAttackId(battle),delay=Number(skill.bb['dekght_2[aoe].interval']),amount=battle.enemyAttackDamage(enemy,Number(skill.bb['dekght_2[aoe].atk_scale']));
-   for(const target of targets)addEffect(battle,{kind:'delayed',stackRule:'stack',sourceUid:enemy.uid,targetUid:target.uid,targetDeployGen:target.deployGen,talentOrSkillId:'knight-explosive-arrow',attackId,interval:null,nextAt:battle.s.time+delay,endsAt:battle.s.time+delay,values:{knightBomb:true,type:'arts'},snapshot:{damage:amount},refKind:'owner',persistAfterSourceGone:true});
-   enemy.attackCooldown=Math.ceil(enemy.interval*FPS);endEnemySkill(battle,enemy);return;
+ // 腐败/凋零骑士（用户 2026-09-23 口径）：技能发动前先做 1 秒前摇（表现＝本体紫色发光闪烁），
+ // 场上同伴离场触发强化后缩短为 0.5 秒。前摇期间原地不动、不结算伤害，前摇结束才真正发动技能。
+ if(enemy.id==='enemy_1513_dekght_2'&&!control.silenced&&!enemy.action&&!enemy.enemyCast){
+  const skill=enemy.enemySkills.find(s=>s.prefab==='TripleAttack');
+  if(skill&&battle.enemySkillTargets(enemy).length&&beginEnemySkill(battle,enemy,skill,{knightArrow:true,windupUntil:battle.s.time+knightWindupSeconds(enemy),endsAt:battle.s.time+knightWindupSeconds(enemy)})){
+   enemy.formHold=true;return;
   }
  }
- if(enemy.id==='enemy_1513_dekght'&&!control.silenced&&!enemy.action&&enemy.block!=null){
-  const skill=enemy.enemySkills.find(s=>s.prefab==='ChargeAttack'),target=getActor(battle.s,enemy.block);
-  if(skill&&target&&beginEnemySkill(battle,enemy,skill,{knightCharge:true,targetUid:target.uid,targetDeployGen:target.deployGen,endsAt:battle.s.time+Number(skill.bb.duration)})){
+ if(enemy.id==='enemy_1513_dekght'&&!control.silenced&&!enemy.action&&enemy.block!=null&&!enemy.enemyCast){
+  const skill=enemy.enemySkills.find(s=>s.prefab==='ChargeAttack'),target=getActor(battle.s,enemy.block),windup=knightWindupSeconds(enemy);
+  if(skill&&target&&beginEnemySkill(battle,enemy,skill,{knightCharge:true,targetUid:target.uid,targetDeployGen:target.deployGen,windupUntil:battle.s.time+windup,endsAt:battle.s.time+windup+Number(skill.bb.duration)})){
    enemy.formHold=true;enemy.attackCooldown=Math.ceil(enemy.interval*FPS);return;
   }
  }
@@ -572,9 +607,13 @@ export function tickEnemySkills(battle,enemy,dt){
    grantShield(battle,enemy,{id:'tombstone-shield',amount:enemy.maxHp*Number(skill.bb.hp_ratio),sourceUid:enemy.uid});endEnemySkill(battle,enemy);return;
   }
  }
- if(enemy.id==='enemy_1511_mdrock'&&!control.silenced&&!enemy.action){
+ if(enemy.id==='enemy_1511_mdrock'&&!control.silenced&&!enemy.action&&!enemy.enemyCast){
   const skill=enemy.enemySkills.find(s=>s.prefab==='RefreshShield');
-  if(skill&&beginEnemySkill(battle,enemy,skill)){battle.refreshMudrockShield(enemy,skill.bb);endEnemySkill(battle,enemy);return;}
+  // PRTS：重置自身法术屏障 ※技能期间持有失衡免疫、晕眩免疫 —— 前摇期间原地不动并免疫失衡/晕眩。
+  const extra={refreshShield:true,shiftImmune:true,immunities:{...enemy.immunities},endsAt:battle.s.time+windupSeconds(enemy.interval)};
+  if(skill&&beginEnemySkill(battle,enemy,skill,extra)){
+   enemy.immunities.stun=true;enemy.formHold=true;enemy.attackCooldown=Math.ceil(enemy.interval*FPS);return;
+  }
  }
  if(enemy.id==='enemy_1504_cqbw'&&!control.silenced&&!enemy.action){
   const skill=enemy.enemySkills.find(s=>s.prefab==='C4');

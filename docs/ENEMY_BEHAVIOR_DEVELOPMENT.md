@@ -39,6 +39,13 @@
 
 PRTS 的「占用 N 个阻挡数」通过覆盖表的 `blockCost` 登记（本期：萨卡兹悖谬暴虐兵长 3、越长尘 4），由 `enemyBehaviorProfile` 透出、`spawn` 写入实例；`resolveBlocks` 用 `used+need<=cap` 判定，所以「占用 3」天然等价于「剩余阻挡数小于 3 的单位挡不住」。不要在运输/形态模块里再写死阻挡占用。
 
+## 敌人技能的施法窗口与前摇（2026-09-23 口径）
+
+- **施法窗口照 PRTS 的「技能期间持有…」写**：泥岩「刷新屏障」是技能不是即时效果 —— 先走前摇（`windupSeconds(interval)`），前摇期间原地不动、失衡免疫（`beginEnemySkill` 的 `extra.shiftImmune`，结束自动还原）与晕眩免疫（`extra.immunities` 快照），前摇结束才真正刷盾。参考实现见 `native-enemy-skills.js` 的 `cast?.refreshShield`。
+- **腐败/凋零骑士的技能前摇是项目口径（用户 2026-09-23）**：发动前 1 秒本体紫色发光闪烁，同伴离场触发强化后缩到 0.5 秒，值在 `native-enemy-skills.js` 的 `KNIGHT_WINDUP_SECONDS`／`KNIGHT_WINDUP_SECONDS_RAGED`。前摇留档在 `enemyCast.windupUntil`，表现只在 `native-fx.drawEnemyPhase` 里读它画（`reduceFx` 时退化为静态紫光），不进逻辑。
+- 敌人专属技能块之前有一条 `if(enemy.hidden||enemy.enemyCast||!control.skill||!control.attack)return;`：**被缴械的敌人不会放技能**（写测试时不要给敌人上 `disarm` 来挡普攻）。
+- 纯表现（弹道飞行、逐帧动画、连击间隔）按本页开头「可玩性优先」的口径不阻塞；但**机制上能确定的要补**，比如复仇者 PRTS 技能备注「※重生后：此技能释放的动画动作期间免疫晕眩」已接（冲刺结束还原）。
+
 逐关卡覆盖写在 `data/modes/alliance-lower/enemy-behavior-overrides.json`，可单独指定移动策略、连射次数、停移时长和随机池资格，构建时同时写入协议目录与战斗运行时。
 
 ## 已接入的公共能力

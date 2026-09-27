@@ -433,8 +433,8 @@
       "attackSource": "PRTS 2026-09-12快照：萨卡兹百夫长 天赋；本期黑板参数优先"
     },
     "enemy_1502_crowns": {
-      "randomPoolEligible": false,
-      "reason": "闪现与接回路线已接；普通路径检查点边缘跨越的几何仍待对照"
+      "randomPoolEligible": true,
+      "reason": "闪现前进 1.5 格与接回路线已接；按用户口径沿路径位移不会跑过头，已放开随机池"
     },
     "enemy_1504_cqbw": {
       "randomPoolEligible": true,
@@ -443,16 +443,16 @@
     "enemy_1509_mousek": {
       "aura": false,
       "randomPoolEligible": false,
-      "reason": "defup.def是自身法术屏障在场增防，不是友军光环；双技能与标记按独立处理器实现，完整弹道时序仍待对照"
+      "reason": "唱沙、法术屏障在场增防、低血增伤、标记已接；PRTS 只写「释放持续15s的沙狱弹道」，没有跟随/离场与精确施法时间的口径，缺依据先搁置"
     },
     "enemy_1511_mdrock": {
-      "randomPoolEligible": false,
-      "reason": "法术屏障刷新、屏障在场增防与叠攻已接；施法/免疫窗口与破盾溢出同帧顺序仍待补"
+      "randomPoolEligible": true,
+      "reason": "法术屏障刷新已补施法前摇（期间失衡免疫＋晕眩免疫，结束还原）、屏障在场生命+50%/攻速+50、攻击叠攻最多 6 层；破盾溢出与生命结算同帧；已放开随机池"
     },
     "enemy_1512_mcmstr": {
       "initialUnblockable": false,
       "randomPoolEligible": false,
-      "reason": "机械/大祭司转场、两形态攻击、自爆与持续自伤已接；砍伐巨蕈与木桩按豁免移出，只剩形态美术尾项"
+      "reason": "机械/大祭司转场、两形态攻击、自爆与持续自伤已接；砍伐巨蕈与木桩按豁免移出，只剩形态美术（表现项），暂不入池"
     },
     "enemy_1513_dekght": {
       "attackProfile": {
@@ -462,8 +462,8 @@
       },
       "attackSource": "PRTS 2026-09-12快照：腐败骑士 天赋；本期黑板参数优先",
       "deathExplosion": false,
-      "randomPoolEligible": false,
-      "reason": "蓄力锤与十字溅射已接；爆炸箭前摇/飞行与目标提前离场的细节仍待对照"
+      "randomPoolEligible": true,
+      "reason": "蓄力锤前摇已补（发动前 1 秒本体紫色发光闪烁，同伴离场强化后 0.5 秒）、十字溅射、同伴离场强化；已放开随机池"
     },
     "enemy_1513_dekght_2": {
       "attackProfile": {
@@ -471,16 +471,16 @@
       },
       "attackSource": "PRTS 2026-09-12快照：凋零骑士 天赋；本期黑板参数优先",
       "deathExplosion": false,
-      "randomPoolEligible": false,
-      "reason": "爆炸箭延迟结算与双目标已接；前摇/飞行与目标提前离场的细节仍待对照"
+      "randomPoolEligible": true,
+      "reason": "爆炸箭前摇已补（1 秒 / 强化后 0.5 秒紫色闪烁前摇，前摇结束才发射，命中后 2.5 秒爆炸）、最多 3 目标、普攻双目标；已放开随机池"
     },
     "enemy_1516_jakill": {
       "randomPoolEligible": false,
-      "reason": "双形态重生与两种技能已接；二连击间隔与重生期控制窗口仍待对照"
+      "reason": "双形态重生与两种技能已接；PRTS 原文未给装甲穿刺的二连击间隔、也没写重生期的控制口径，缺依据先搁置"
     },
     "enemy_1517_xi": {
       "randomPoolEligible": false,
-      "reason": "已接双形态和重复普攻；专属十字法术、屏障蓄力与明晦交互尚未齐全，禁用随机入池"
+      "reason": "双形态、破桎而出、纬地经天、标记与明晦伤害已接；十字弹道/重复段时序无原文，且「其他初始形态配置」在 50 份关卡里查不到配置，缺依据先搁置"
     },
     "enemy_1521_dslily": {
       "staticRigid": true,
@@ -488,15 +488,15 @@
     },
     "enemy_1525_blkswb": {
       "randomPoolEligible": false,
-      "reason": "血线压制清 SP 与双形态已接；回血再跨血线判定与精确时序仍待补"
+      "reason": "双形态、血线压制清 SP（按字面取「每个 25% 整数倍只触发一次」的单调累计）、无视防御、肆虐风雪、速杀瞬移已接；回血再跨同一血线是否再触发原文未写，缺依据先搁置"
     },
     "enemy_1535_wlfmster": {
       "randomPoolEligible": false,
-      "reason": "形态、重生、威慑与溶血骇惧已接；精确启动/相位时序仍待对照"
+      "reason": "形态、重生、威慑、溶血骇惧、怒嗥已接；精确启动/相位时序无原文，缺依据先搁置"
     },
     "enemy_1539_reid": {
-      "randomPoolEligible": false,
-      "reason": "冲锋、半血状态与一次复活已接；冲锋免晕窗口与折线路径仍待补"
+      "randomPoolEligible": true,
+      "reason": "冲锋已按 PRTS 补「重生后冲刺动画期间免疫晕眩」（结束还原）、半血攻+180%、一次复活；已放开随机池"
     },
     "enemy_2004_balloon": {
       "randomPoolEligible": true,
@@ -518,13 +518,13 @@
     },
     "enemy_2050_smsha": {
       "randomPoolEligible": false,
-      "reason": "三目标跳跃/衰减/寒冷与馈赠链已接；逐跳飞行时序与多来源馈赠叠加仍待补"
+      "reason": "三目标跳跃/衰减/寒冷与馈赠链已接；逐跳飞行时序无原文、「多来源馈赠叠加」也无叠加依据（现按同名刷新），缺依据先搁置"
     },
     "enemy_2052_smgia": {
       "statusResistance": 0.5,
       "statusResistanceSource": "PRTS纠缠藤蔓天赋：抵抗，持续时间减半",
-      "randomPoolEligible": false,
-      "reason": "攻击回复眩晕、抵抗与环境伤害后脆弱已接（活性源石对敌伤害带 environmental 标记）；缺「地块→敌人→脆弱」的端到端回归，暂不入池"
+      "randomPoolEligible": true,
+      "reason": "攻击回复眩晕、抵抗、环境伤害后脆弱已接，并补了「活性源石地块→敌人→脆弱」的真实 step 回归；已放开随机池"
     },
     "enemy_2085_skzjxd": {
       "randomPoolEligible": false,

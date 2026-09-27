@@ -181,5 +181,5 @@ test('每个未进随机池的本期敌人都必须在覆盖表登记 randomPool
  assert.deepEqual(missing,[],'未登记未进池的敌人: '+missing.join('、'));
  assert.equal(Object.keys(NATIVE_DATA.enemies).length,215);
  const excluded=Object.entries(NATIVE_DATA.enemies).filter(([,e])=>enemyBehaviorProfile(e).randomPoolEligible===false).length;
- assert.equal(excluded,38,'本期未进池敌人数量');
+ assert.equal(excluded,32,'本期未进池敌人数量（2026-09-23 放开 6 名领袖后）');
 });

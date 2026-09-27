@@ -156,13 +156,16 @@ test('敌方泥岩本期5500屏障只吸收法术，物理/真实/元素伤害�
 
 test('泥岩破盾移除生命上限增益，17秒刷新恢复，重复刷新替换而不叠屏障或生命',()=>{
  const {b}=arena(),e=spawn(b,'enemy_1511_mdrock');e.hp=e.maxHp*.5;dealDamage(b,{target:e,value:5500,type:'arts'});assert.equal(e.shield,0);assert.equal(e.maxHp,e.baseMaxHp);assert.ok(Math.abs(e.hp-e.maxHp*.5)<1e-8);
- advance(b,16.9);assert.equal(e.shield,0);advance(b,.1);assert.equal(e.shield,5500);assert.equal(e.maxHp,e.baseMaxHp*1.5);assert.ok(Math.abs(e.hp-e.maxHp*.5)<1e-8);
- const max=e.maxHp,hp=e.hp;advance(b,17);assert.equal(e.shield,5500);assert.equal(e.shieldLayers.filter(l=>l.id==='mudrock-arts').length,1);assert.equal(e.maxHp,max);assert.equal(e.hp,hp);
+ advance(b,16.9);assert.equal(e.shield,0);advance(b,.1);
+ // 2026-09-23：刷新屏障现在是技能，先走前摇（期间失衡/晕眩免疫），前摇结束才刷盾
+ assert.ok(e.enemyCast?.refreshShield,'应当先进入施法前摇');const windup=e.enemyCast.endsAt-b.s.time;
+ advance(b,windup+.05);assert.equal(e.shield,5500);assert.equal(e.maxHp,e.baseMaxHp*1.5);assert.ok(Math.abs(e.hp-e.maxHp*.5)<1e-8);
+ const max=e.maxHp,hp=e.hp;advance(b,17);if(e.enemyCast?.refreshShield)advance(b,e.enemyCast.endsAt-b.s.time+.05);assert.equal(e.shield,5500);assert.equal(e.shieldLayers.filter(l=>l.id==='mudrock-arts').length,1);assert.equal(e.maxHp,max);assert.equal(e.hp,hp);
 });
 
 test('泥岩增益只认自身法术屏障，其他屏障不延续增益，读档不再乘一次生命上限',()=>{
  const {b}=arena(),e=spawn(b,'enemy_1511_mdrock');grantShield(b,e,{id:'other',amount:100});dealDamage(b,{target:e,value:5500,type:'arts'});assert.equal(e.shield,100);assert.equal(e.maxHp,e.baseMaxHp);
- advance(b,17);dealDamage(b,{target:e,value:1000,type:'arts'});const restored=NativeBattle.restore(NATIVE_DATA,b.economy,b.map,b.turn,JSON.parse(JSON.stringify(b.s)));assert.ok(restored);const copy=restored.s.enemies[0];assert.equal(copy.maxHp,e.maxHp);assert.equal(copy.hp,e.hp);assert.equal(copy.shield,e.shield);assert.deepEqual(copy.shieldLayers.find(l=>l.id==='mudrock-arts').types,['arts']);
+ advance(b,17);if(e.enemyCast?.refreshShield)advance(b,e.enemyCast.endsAt-b.s.time+.05);dealDamage(b,{target:e,value:1000,type:'arts'});const restored=NativeBattle.restore(NATIVE_DATA,b.economy,b.map,b.turn,JSON.parse(JSON.stringify(b.s)));assert.ok(restored);const copy=restored.s.enemies[0];assert.equal(copy.maxHp,e.maxHp);assert.equal(copy.hp,e.hp);assert.equal(copy.shield,e.shield);assert.deepEqual(copy.shieldLayers.find(l=>l.id==='mudrock-arts').types,['arts']);
 });
 
 test('骑士同伴死亡或漏怪均狂暴且只加一次，不发生误推导的自身死亡爆炸',()=>{

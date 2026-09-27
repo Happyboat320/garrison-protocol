@@ -229,7 +229,10 @@ test('敌方泥岩有效出手即叠攻，当次受益，最多六层，同一�
 
 test('泥岩屏障在场时真实攻速增加50，破盾后周期恢复且控制时不刷新',()=>{
  const {b,enemy}=arena('enemy_1511_mdrock'),times=[],record=b.recordEnemyAttack.bind(b);b.recordEnemyAttack=(e,s)=>{times.push(b.s.time);record(e,s);};b.hurt=()=>{};advance(b,8);assert.ok(times.length>=3);assert.ok(Math.abs(times[1]-times[0]-3)<.04);
- dealDamage(b,{target:enemy,value:5500,type:'arts'});advance(b,8);assert.ok(Math.abs(times.at(-1)-times.at(-2)-4.5)<.04);applyStatus(enemy,'disarm',30);advance(b,2);assert.equal(enemy.shield,0);enemy.statuses=[];enemy.action=null;b.step();assert.equal(enemy.shield,5500);
+ dealDamage(b,{target:enemy,value:5500,type:'arts'});advance(b,8);assert.ok(Math.abs(times.at(-1)-times.at(-2)-4.5)<.04);applyStatus(enemy,'disarm',30);advance(b,2);assert.equal(enemy.shield,0);enemy.statuses=[];enemy.action=null;b.step();
+ // PRTS 泥岩「刷新屏障」是技能：先走施法前摇（期间失衡/晕眩免疫），前摇结束才真正刷盾
+ const castEnd=enemy.enemyCast?.endsAt;assert.ok(castEnd!=null,'刷新屏障应先进入施法前摇');assert.equal(enemy.shield,0,'前摇期间还没有刷盾');
+ advance(b,castEnd-b.s.time+.05);assert.equal(enemy.shield,5500);
 });
 
 test('墓碑未阻挡时40%远程九格溅射，可溅射飞行但不以其为主目标；被阻挡后全倍率单体',()=>{
@@ -250,16 +253,20 @@ test('墓碑不产生原地图费用/再部署削弱，旧存档误挂效果在�
  enemy.costEffects=[{costRecoveryMultiplier:.5,respawnTimeMultiplier:2}];const restored=NativeBattle.restore(NATIVE_DATA,g,b.map,b.turn,JSON.parse(JSON.stringify(b.s)));assert.ok(restored);assert.deepEqual(restored.s.enemies[0].costEffects,[]);restored.refreshEnemyCostEffects();assert.equal(restored.s.enemyCostRecoveryMultiplier,1);
 });
 
-test('腐败骑士22秒后蓄力4秒，300%主伤害与十字溅射共用一次出手',()=>{
+test('腐败骑士22秒后先做1秒前摇再蓄力4秒，300%主伤害与十字溅射共用一次出手',()=>{
  const {b,enemy,allies}=arena('enemy_1513_dekght',{positions:[[3,3],[4,3],[4,4]]});enemy.canAttack=false;const hits=[];b.hurt=(u,e)=>hits.push({uid:u.uid,atk:e.atk,type:e.damageType});
- advance(b,21.9);assert.equal(enemy.enemyCast,undefined);advance(b,.1);assert.equal(enemy.enemyCast?.knightCharge,true);advance(b,3.9);assert.equal(hits.length,0);advance(b,.1);
- assert.deepEqual(hits,[{uid:allies[0].uid,atk:3,type:'physical'},{uid:allies[1].uid,atk:3,type:'physical'}]);assert.equal(enemy.enemyCast,null);assert.ok(Math.abs(enemy.enemySkills[0].nextAt-48)<.04);
+ advance(b,21.9);assert.equal(enemy.enemyCast,undefined);advance(b,.1);assert.equal(enemy.enemyCast?.knightCharge,true);
+ // 用户口径：技能发动前 1 秒是紫色闪烁前摇（此时还没出手），前摇结束后才进入 4 秒蓄力
+ assert.ok(Math.abs(enemy.enemyCast.windupUntil-b.s.time-1)<.04,'默认前摇 1 秒');
+ assert.ok(Math.abs(enemy.enemyCast.endsAt-enemy.enemyCast.windupUntil-Number(enemy.enemySkills[0].bb.duration))<1e-6);
+ advance(b,4.9);assert.equal(hits.length,0,'前摇＋蓄力期间不出手');advance(b,.1);
+ assert.deepEqual(hits,[{uid:allies[0].uid,atk:3,type:'physical'},{uid:allies[1].uid,atk:3,type:'physical'}]);assert.equal(enemy.enemyCast,null);assert.ok(Math.abs(enemy.enemySkills[0].nextAt-49)<.04);
 });
 
 test('腐败骑士蓄力受控会取消，目标脱离阻挡不隔空命中；中途存档继续剩余时间',()=>{
- const {b,g,enemy,allies}=arena('enemy_1513_dekght');enemy.canAttack=false;b.hurt=()=>{};advance(b,23);const restored=NativeBattle.restore(NATIVE_DATA,g,b.map,b.turn,JSON.parse(JSON.stringify(b.s)));assert.ok(restored);let restoredHits=0;restored.hurt=()=>restoredHits++;advance(restored,3.1);assert.equal(restoredHits,1);
+ const {b,g,enemy,allies}=arena('enemy_1513_dekght');enemy.canAttack=false;b.hurt=()=>{};advance(b,23);const restored=NativeBattle.restore(NATIVE_DATA,g,b.map,b.turn,JSON.parse(JSON.stringify(b.s)));assert.ok(restored);let restoredHits=0;restored.hurt=()=>restoredHits++;advance(restored,4.1);assert.equal(restoredHits,1);
  applyStatus(enemy,'stun',1);b.step();assert.equal(enemy.enemyCast,null);assert.equal(enemy.formHold,false);
- enemy.enemySkills[0].nextAt=b.s.time;advance(b,1.1);assert.equal(enemy.enemyCast?.knightCharge,true);allies[0].x=8;let hits=0;b.hurt=()=>hits++;advance(b,4.1);assert.equal(hits,0);
+ enemy.enemySkills[0].nextAt=b.s.time;advance(b,1.1);assert.equal(enemy.enemyCast?.knightCharge,true);allies[0].x=8;let hits=0;b.hurt=()=>hits++;advance(b,5.1);assert.equal(hits,0);
 });
 
 test('凋零骑士普攻为法术，同伴退场后实际伤害与攻速增加且移速为2.5倍',()=>{
@@ -270,13 +277,15 @@ test('凋零骑士普攻为法术，同伴退场后实际伤害与攻速增加�
 
 test('凋零骑士三目标爆炸箭在2.5秒后分别十字爆炸，重叠区域可受到不同箭的伤害',()=>{
  const {b,enemy,allies}=arena('enemy_1513_dekght_2',{x:3,y:4,positions:[[3,3],[2,3],[4,3],[3,2]]});enemy.canAttack=false;const hits=[];b.hurt=(u,e,opts={})=>hits.push({uid:u.uid,amount:opts.damageAmount,type:e.damageType});
- advance(b,22);const arrows=b.s.logicEffects.filter(f=>f.values?.knightBomb);assert.equal(arrows.length,3);assert.ok(arrows.every(f=>f.snapshot.damage===1.6));advance(b,2.4);assert.equal(hits.length,0);advance(b,.1);assert.ok(hits.length>3);assert.ok(hits.every(h=>h.type==='arts'&&h.amount===1.6));assert.ok(hits.filter(h=>h.uid===allies[0].uid).length>=2);assert.equal(b.s.logicEffects.filter(f=>f.values?.knightBomb).length,0);
+ advance(b,23.2);const arrows=b.s.logicEffects.filter(f=>f.values?.knightBomb);assert.equal(arrows.length,3);assert.ok(arrows.every(f=>f.snapshot.damage===1.6));
+ // 前摇结束才发射：先走到每支箭的爆炸时刻前 0.05 秒，确认还没炸，再走 0.1 秒
+ const boom=Math.min(...arrows.map(f=>f.nextAt));advance(b,boom-b.s.time-.05);assert.equal(hits.length,0);advance(b,.1);assert.ok(hits.length>3);assert.ok(hits.every(h=>h.type==='arts'&&h.amount===1.6));assert.ok(hits.filter(h=>h.uid===allies[0].uid).length>=2);assert.equal(b.s.logicEffects.filter(f=>f.values?.knightBomb).length,0);
 });
 
 test('爆炸箭读档保留命中标记，来源死亡仍爆炸，已撤退目标的旧标记不追随再部署',()=>{
- const {b,g,enemy,allies}=arena('enemy_1513_dekght_2',{x:3,y:4,positions:[[3,3],[2,3]]});enemy.canAttack=false;advance(b,23);
- const restored=NativeBattle.restore(NATIVE_DATA,g,b.map,b.turn,JSON.parse(JSON.stringify(b.s)));assert.ok(restored);restored.spawn({id:'enemy_1007_slime',route:0});restored.s.enemies.at(-1).canAttack=false;commitExit(restored,{target:restored.s.enemies[0]});const hits=[];restored.hurt=(u,e,opts)=>hits.push(opts);advance(restored,1.6);assert.ok(hits.length>0);assert.ok(hits.every(h=>h.sourceLess));
- for(const u of allies){commitExit(b,{target:u,reason:'retreat'});b.deploy(u);applyStatus(u,'disarm',60);}let stale=0;b.hurt=()=>stale++;advance(b,1.6);assert.equal(stale,0);
+ const {b,g,enemy,allies}=arena('enemy_1513_dekght_2',{x:3,y:4,positions:[[3,3],[2,3]]});enemy.canAttack=false;advance(b,23.2);
+ const restored=NativeBattle.restore(NATIVE_DATA,g,b.map,b.turn,JSON.parse(JSON.stringify(b.s)));assert.ok(restored);restored.spawn({id:'enemy_1007_slime',route:0});restored.s.enemies.at(-1).canAttack=false;commitExit(restored,{target:restored.s.enemies[0]});const hits=[];restored.hurt=(u,e,opts)=>hits.push(opts);advance(restored,2.6);assert.ok(hits.length>0);assert.ok(hits.every(h=>h.sourceLess));
+ for(const u of allies){commitExit(b,{target:u,reason:'retreat'});b.deploy(u);applyStatus(u,'disarm',60);}let stale=0;b.hurt=()=>stale++;advance(b,2.6);assert.equal(stale,0);
 });
 
 test('迷路巨像未被阻挡也会独立投石，选择最近未晕眩目标而非部署仇恨，先眩晕再伤害',()=>{

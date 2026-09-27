@@ -648,22 +648,22 @@ export const ENEMY_ACTIVITY_GROUPS = {
   "enemy_1502_crowns": {
     "activity": "初始",
     "url": "https://prts.wiki/w/%E5%BC%91%E5%90%9B%E8%80%85(%E6%95%8C%E6%96%B9)",
-    "eligible": false
+    "eligible": true
   },
   "enemy_1511_mdrock": {
     "activity": "沃伦姆德的薄暮",
     "url": "https://prts.wiki/w/%E6%B3%A5%E5%B2%A9(%E6%95%8C%E6%96%B9)",
-    "eligible": false
+    "eligible": true
   },
   "enemy_1513_dekght": {
     "activity": "玛莉娅临光",
     "url": "https://prts.wiki/w/%E8%85%90%E8%B4%A5%E9%AA%91%E5%A3%AB",
-    "eligible": false
+    "eligible": true
   },
   "enemy_1513_dekght_2": {
     "activity": "玛莉娅临光",
     "url": "https://prts.wiki/w/%E5%87%8B%E9%9B%B6%E9%AA%91%E5%A3%AB",
-    "eligible": false
+    "eligible": true
   },
   "enemy_2005_axetro": {
     "activity": "刻俄柏的灰蕈迷境",
@@ -738,7 +738,7 @@ export const ENEMY_ACTIVITY_GROUPS = {
   "enemy_1539_reid": {
     "activity": "起源行动",
     "url": "https://prts.wiki/w/%E2%80%9C%E5%A4%8D%E4%BB%87%E8%80%85%E2%80%9D",
-    "eligible": false
+    "eligible": true
   },
   "enemy_2048_smgrd": {
     "activity": "探索者的银凇止境",
@@ -753,7 +753,7 @@ export const ENEMY_ACTIVITY_GROUPS = {
   "enemy_2052_smgia": {
     "activity": "探索者的银凇止境",
     "url": "https://prts.wiki/w/%E7%BA%A0%E7%BC%A0%E8%97%A4%E8%94%93",
-    "eligible": false
+    "eligible": true
   },
   "enemy_9012_acloon": {
     "activity": "卫戍协议：盟约",

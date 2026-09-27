@@ -819,6 +819,24 @@ export function drawEnemyPhase(c,point,z,battle,{reduceFx=false,formatText=null}
   if(fade>.15){c.fillStyle=cfg.color+Math.min(1,fade*1.6).toFixed(3)+')';c.font='bold 12px sans-serif';c.textAlign='center';c.fillText(formatText?formatText(text):text,p.x,p.y-lift-z.th*.62);}
   c.restore();drew=true;
  }
+ // 腐败/凋零骑士的技能前摇：本体紫色发光闪烁（战斗里没有 DOM 头像，所以画在单位身上）。
+ // 纯表现层：只读 battle 状态里的 windupUntil，不写任何逻辑字段。
+ for(const e of s.enemies||[])if(e.hp>0&&!e.hidden&&e.enemyCast?.windupUntil!=null&&e.enemyCast.windupUntil>s.time){
+  const p=point(e.x,e.y),lift=e.flying?15:0,left=Math.max(0,e.enemyCast.windupUntil-s.time);
+  const pulse=reduceFx?.62:.52+.48*Math.sin(s.time*22);
+  const radius=z.tw*(.4+.16*pulse);
+  c.save();
+  const glow=c.createRadialGradient(p.x,p.y-lift,0,p.x,p.y-lift,radius*1.7);
+  glow.addColorStop(0,`rgba(198,138,255,${(.34+.34*pulse).toFixed(3)})`);
+  glow.addColorStop(.55,`rgba(158,92,236,${(.22+.2*pulse).toFixed(3)})`);
+  glow.addColorStop(1,'rgba(110,52,190,0)');
+  c.fillStyle=glow;c.beginPath();c.arc(p.x,p.y-lift,radius*1.7,0,Math.PI*2);c.fill();
+  c.lineWidth=2.4;c.strokeStyle=`rgba(224,180,255,${(.45+.5*pulse).toFixed(3)})`;
+  c.beginPath();c.ellipse(p.x,p.y-lift,radius,z.th*.46,0,0,Math.PI*2);c.stroke();
+  c.font='bold 11px sans-serif';c.textAlign='center';c.fillStyle='#e6c8ff';
+  const windupText='蓄力 '+left.toFixed(1);c.fillText(formatText?formatText(windupText):windupText,p.x,p.y-lift-z.th*.62);
+  c.restore();drew=true;
+ }
  return drew;
 }
 
