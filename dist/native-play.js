@@ -8,6 +8,8 @@ import {activeBondBan,banConfigIsDefault,bannedOperatorsHtml,bondBanBriefingHtml
 import {loadPrepSkills,prepDirtyCount,prepOperatorRow,renderPreparePage,savePrepSkills} from './native-prep.js';
 // 本地战绩档案（最近 10 场）＋特殊标记：导出/导入存档时一起带走，见 docs/SAVE_ARCHIVE.md。
 import {appendRun,archiveFromRecord,alreadyRecorded,exportRecord,loadArchive,mergeArchives,normalizeArchive,runRecord,saveArchive} from './native-archive.js';
+// 「输入密码」的密码表与效果（纯函数）：见 dist/native-passcode.js。
+import {PASSCODE_MAX,applyPasscode} from './native-passcode.js';
 import {NATIVE_DATA} from './runtime-data.js';
 import {NativeSession} from './native-session.js';
 import {NativeBattle} from './native-battle.js';
@@ -124,8 +126,7 @@ function renderModal(){
 }
 
 // 大厅「资料与工具 → 输入密码」：弹数字键盘，支持数字／删除／清空／确定。
-// 密码本身不做任何事（用户 2026-09-22：具体触发的功能之后补充），确认后统一交给 `passcodeSubmit`。
-const PASSCODE_MAX=12;
+// 密码表与效果在 native-passcode.js：命中就置位本地存档的特殊标记并弹窗，没命中只提示「什么都没有发生」（用户 2026-09-27 口径）。
 function renderPasscodePad(){
  const digits=state.passcode?.digits||'';
  modal(`<h2>输入密码</h2><p class="native-passcode-hint">用下方数字键盘输入，确认后交给后续功能处理。</p><div class="native-passcode-display">${digits?esc(digits.split('').join(' ')):'<span>未输入</span>'}</div><div class="native-keypad">${['1','2','3','4','5','6','7','8','9'].map(d=>`<button data-act="passcode-key" data-key="${d}">${d}</button>`).join('')}<button data-act="passcode-key" data-key="back" aria-label="删除一位">⌫</button><button data-act="passcode-key" data-key="0">0</button><button data-act="passcode-key" data-key="clear">清空</button></div><div class="native-keypad-actions"><button data-act="passcode-key" data-key="ok" class="native-primary">确定</button></div>`);
@@ -138,8 +139,14 @@ function passcodeKey(key){
  else if(/^\d$/.test(key)&&p.digits.length<PASSCODE_MAX)p.digits+=key;
  renderPasscodePad();
 }
-// 密码确认后的唯一接线点：功能待补，先只回执。
-function passcodeSubmit(code){notice('已输入密码 '+code+'（功能待接入）');}
+// 密码确认后的唯一接线点（用户 2026-09-27 口径）：
+// `20100305` → 弹窗「策略：S.E.E.S.已解锁」＋把本地存档的 flags.sees 写成 true；其它数字只提示「什么都没有发生」。
+function passcodeSubmit(code){
+ const result=applyPasscode(archiveNow(),code);
+ if(!result.hit){notice('什么都没有发生');return;}
+ state.archive=saveArchive(archiveStorage(),result.archive);
+ modal(`<h2>${esc(result.hit.title)}</h2><p>特殊标记【${esc(result.hit.name)}】已写入本地存档（当前：<b>开</b>）。可在「战前准备」页查看，导出存档时会一起带走。</p><div class="native-keypad-actions"><button class="native-primary" data-act="close">知道了</button></div>`);
+}
 function showBranches(id=null){
  const all=data.branchRules.records,records=id?all.filter(r=>r.id===id):all;
  modal(`<h2>职业分支规则</h2><p>已记录 ${all.length} 个历史分支，${all.filter(r=>r.inCurrentMode).length} 个出现在本期固定预设中。这里区分分支基础逻辑与干员专属技能、天赋、模组；复杂机制仍有待补齐项。</p><div class="native-branch-catalog">${records.map(r=>`<details ${id?'open':''}><summary><b>${esc(r.name)}</b><span>${r.inCurrentMode?'本期包含':'非本期固定预设'} · ${r.runtime.status==='partial'?'部分接入':'基础行为已接入'}</span></summary><p>${esc(r.baseTrait)}</p><p>${r.pending.length?'待补齐：'+r.pending.map(esc).join('、'):'专属技能／天赋／模组例外另行处理。'}</p><a href="${r.sources[1].url}" target="_blank" rel="noreferrer">PRTS 特性细则 · 修订 ${r.sources[1].revision} ↗</a></details>`).join('')}</div>`);

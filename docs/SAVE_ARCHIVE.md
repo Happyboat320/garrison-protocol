@@ -67,11 +67,23 @@
 
 用户原话里的「最终轮盟约清空」经确认为笔误，实际是**最终轮盟约情况**（已按上表实现）。
 
+### 4.1 输入密码（2026-09-27 口径）
+
+「资料与工具 → 输入密码」的数字键盘确认后走 `dist/native-passcode.js` 的密码表：
+
+| 输入 | 结果 |
+| --- | --- |
+| `20100305` | 弹窗 **「策略：S.E.E.S.已解锁」**，并把本地档案的特殊标记 `flags.sees` 写成 `true`（写回 `garrison-archive-v1`，导出存档时一起带走） |
+| 其它任意数字 | **什么都不做**，只提示「什么都没有发生」（档案一个字节都不改） |
+
+密码表 `PASSCODES` 是纯数据：以后新增密码加一条 `{code,flag,name,title}` 即可，`flag` 必须在 `native-archive` 的 `ARCHIVE_FLAG_DEFAULTS` 里有默认值（有门禁用例守着）。按用户口径，`sees` 目前**只是存档标记**：不等于把四人放进商店池或名册，他们仍然只是技能测试场里的隐藏档。
+
 ## 5. 接线清单
 
 | 文件 | 改动 |
 | --- | --- |
 | `dist/native-archive.js` | 新增：档案结构、规范化、读写、`runRecord` 取数、`exportRecord`／`archiveFromRecord`、合并与去重 |
+| `dist/native-passcode.js` | 新增：密码表 `PASSCODES` 与纯函数 `matchPasscode`／`applyPasscode`（命中→置位标记） |
 | `dist/native-archive.css` | 新增：档案区样式 |
 | `dist/native-play.js` | 档案 helper 与 `recordRunIfOver`、档案区样式 `<link>`、导出／导入分支、大厅 `导出存档` 按钮注入、`prep-flags-sees` 动作、战前准备页传 `archive`、战报提示 |
 | `dist/native-prep.js` | `renderPreparePage(...,{archive})`：特殊标记开关 + 最近对局列表 |

@@ -14,15 +14,19 @@ const read=file=>readFile(path.join(root,'dist',file),'utf8');
 // 大厅是纯字符串渲染：直接渲染真实数据断言最终 HTML，比在源码里找片段更可靠。
 const lobbyHtml=(game=null)=>renderLobby({data:NATIVE_DATA,state:{mode:'mode_single_normal',map:'random',band:null,game},avatar:()=>'<img alt="">'});
 
-test('大厅不再有被删掉的四个入口，战前准备挪进任务配置',()=>{
+test('大厅不再有被删掉的入口，战前准备挪进任务配置',async()=>{
  for(const [label,html] of [['没有存档',lobbyHtml()],['有存档',lobbyHtml({s:{round:2}})]]){
   assert.doesNotMatch(html,/data-act="limits"/,label+'：右上角的「已知差异」要删掉');
   assert.doesNotMatch(html,/费用规则/,label+'：任务配置里的「费用规则」备注要删掉');
   assert.doesNotMatch(html,/data-act="branches"/,label+'：资料与工具里的「职业分支规则」要删掉');
   assert.doesNotMatch(html,/legacy\.html|旧版演示/,label+'：「旧版演示与资料库」入口要删掉');
-  assert.doesNotMatch(html,/native-loadout-note|native-tool-link/,label+'：删掉的两块 DOM 不留空壳');
-  assert.match(html,/native-loadout-actions"><button data-act="prepare">战前准备<\/button>(<button data-act="resume">恢复本地模拟<\/button>)?<button data-act="import">导入存档<\/button><\/div><\/section>/,label+'：战前准备要落在任务配置的动作行里，且排在「恢复本地模拟」上面');
+  assert.doesNotMatch(html,/data-act="sandbox"|战斗技能测试场/,label+'：主菜单的「战斗技能测试场」入口要删掉');
+  assert.doesNotMatch(html,/native-loadout-note|native-tool-link|sandbox-entry/,label+'：删掉的几块 DOM 不留空壳');
+  assert.match(html,/native-loadout-actions"><button class="native-prep-entry" data-act="prepare"><span class="native-prep-entry-icon" aria-hidden="true">◈<\/span><span class="native-prep-entry-label">战前准备<\/span><\/button>(<button data-act="resume">恢复本地模拟<\/button>)?<button data-act="import">导入存档<\/button><\/div><\/section>/,label+'：战前准备要落在任务配置的动作行里（带图标的主入口），且排在「恢复本地模拟」上面');
  }
+ // 只是删了入口：技能测试场的代码与动作还在（将来可能挂到「输入密码」后面）
+ const play=await read('native-play.js');
+ assert.match(play,/if\(a==='sandbox'\)\{enterPlayChrome\(\);openSandbox\(\);return;\}/,'技能测试场的动作不要跟着删，只删入口');
 });
 
 test('资料与工具底部新增「输入密码」入口',()=>{
@@ -49,7 +53,10 @@ test('数字键盘：数字／删除／清空／确定都接上，确认后的�
  assert.match(play,/if\(key==='clear'\)p\.digits=''/,'清空把已输入的清掉');
  assert.match(play,/else if\(key==='back'\)p\.digits=p\.digits\.slice\(0,-1\)/,'删除只去掉一位');
  assert.match(play,/if\(!p\.digits\)\{notice\('请先输入密码'\);return;\}/,'空密码按确定要给提示');
- assert.match(play,/function passcodeSubmit\(code\)\{notice\('已输入密码 '/,'确认后的动作要有唯一接线点（功能待补，只回执）');
+ // 2026-09-27：确认后的动作改成走密码表（20100305→弹窗「策略：S.E.E.S.已解锁」并置位存档标记；
+ // 其它数字只提示「什么都没有发生」）。完整回归在 tests/native-passcode-sees.test.mjs。
+ assert.match(play,/function passcodeSubmit\(code\)\{/,'确认后的动作要有唯一接线点');
+ assert.match(play,/applyPasscode\(archiveNow\(\),code\)/,'接线点要走 native-passcode 的密码表');
  assert.match(play,/passcodeSubmit\(code\);/, '确定要真的调用那个接线点');
  assert.match(css,/\.native-keypad\{[^}]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/,'键盘是 3 列网格');
  assert.match(css,/\.native-keypad-actions button\{width:100%/,'确定键独占一行');
