@@ -2,6 +2,7 @@ import test from 'node:test';import assert from 'node:assert/strict';import fs f
 import {NATIVE_DATA} from '../dist/runtime-data.js';
 import {NativeSession} from '../dist/native-session.js';
 import {BRANCH_POLICIES,branchBehavior} from '../dist/native-branches.js';
+import {COLLAB_HOOKS,collabFor} from '../dist/native-collab.js';
 import {prepCatalog} from '../dist/native-prep.js';
 import {NO_BOND_BAN} from './no-bond-ban.mjs';
 
@@ -151,4 +152,21 @@ test('四张头像已登记进资源清单且文件在位',()=>{
   assert.equal(entry.height,180);
   assert.match(entry.sourcePage,/prts\.wiki/,'来源页要留档');
  }
+});
+
+test('联动钩子层按 charId 分派，共享文件里七个入口都还在接线',()=>{
+ // 实现按人分文件，共享代码只留一次调用；这条门禁防止以后重构时把接线删掉（四个人的行为会一起静默失效）。
+ for(const row of roster)assert.ok(COLLAB_HOOKS[row.charId],`${row.name} 要有钩子实现`);
+ assert.equal(collabFor({charId:'char_4217_makoto'}),COLLAB_HOOKS.char_4217_makoto);
+ assert.equal(collabFor({charId:'char_498_inside'}),null,'非联动干员不派发钩子');
+ assert.equal(collabFor(null),null);
+ const effects=fs.readFileSync('dist/native-effects.js','utf8');
+ for(const call of ['collabDeploy(battle,deployed)','collabEvent(battle,type,payload,ctx)','collabTick(battle,u,collabCtx)'])
+  assert.ok(effects.includes(call),'native-effects 里缺少 '+call);
+ const operator=fs.readFileSync('dist/native-operator-effects.js','utf8');
+ for(const call of ['collabStatMods(battle,u,out)','collabSkillStart(battle,u,ctx)','collabAttackModifier(battle,source,target,out)','collabDamageReduction(battle,target,type,attacker,reduction)'])
+  assert.ok(operator.includes(call),'native-operator-effects 里缺少 '+call);
+ const browser=fs.readFileSync('scripts/build-browser.mjs','utf8');
+ for(const file of ['native-collab.js','native-collab-kormr.js','native-collab-aigis.js','native-collab-yukari.js','native-collab-makoto.js'])
+  assert.ok(browser.includes("'"+file+"'"),'打包清单要登记 '+file);
 });

@@ -208,12 +208,38 @@
 | `data/prts/branch-rules.json` | 新增游击手记录（`supportiveranger`）；裂空炮手 `baseTrait` 按 revision 427899 更正，补 `runtime.splashDuringSkill = 1.1` |
 | `dist/native-branches.js` | `BRANCH_POLICIES` 新增 `supportiveranger`；`skybreaker` 补 `splashDuringSkill`；`branchBehavior` 支持「技能期间改溅射」；`SKILL_ANTIAIR` 新增结城理 S3（PRTS 备注「塔纳托斯·改普通攻击可对空」） |
 | `tests/native-collab-operators.test.mjs` | 新增 8 条回归：登记表↔运行时一致、属性／技能／天赋黑板与 rel77 逐项一致、隐藏档不进商店与名册、技能测试场可达、分支数据与策略一一对应、头像在位 |
+| `dist/native-collab.js` | 新增：联动干员的钩子派发（`deploy`／`statMods`／`skillStart`／`tick`／`attackModifier`／`damageReduction`／`event` 七个入口），按 charId 取实现 |
+| `dist/native-collab-{kormr,aigis,yukari,makoto}.js` | 新增：四名干员各自的技能／天赋实现（依赖方向单向：effects → collab → collab-*，实现文件不得反向 import） |
+| `dist/native-effects.js` | 接线三处：`deploy` 分支调 `collabDeploy`、`dispatch` 末尾调 `collabEvent`、`tickLogic` 的单位循环调 `collabTick` |
+| `dist/native-operator-effects.js` | 接线四处：`statMods`／`operatorSkillStart`／`attackModifier`／`damageReductionFor` 各加一次钩子调用 |
+| `scripts/build-browser.mjs` | 登记五个新模块 |
 | `tests/native-air-targeting.test.mjs` | 「本期地面干员」的可见性判定改用 `charShopChessDatas[chessId].isHidden`（原来读 profile 上不存在的 `isHidden`，隐藏档会漏进本期门禁） |
 | `tests/alliance-data.test.mjs` | 资源清单数量 376 → 380 |
 
 ## 5. 已实现 / 未实现
 
-已完成（本阶段）：四个干员的数据、头像、隐藏档、分支特性、对空表、测试与门禁。也就是说，**技能测试场里已经能选出这四个人、看到完整属性／技能文案／分支特性**，且他们不会出现在商店、名册或盟约面板里。
+已完成（本阶段）：四个干员的数据、头像、隐藏档、分支特性、对空表、技能／天赋钩子骨架、测试与门禁。也就是说，**技能测试场里已经能选出这四个人、看到完整属性／技能文案／分支特性**，且他们不会出现在商店、名册或盟约面板里。
+
+技能与天赋的战斗行为按人分文件实现，回归各自独立（这样四个人的实现互不干扰，也不会再把 `native-operator-effects.js` 的逐名分支撑大）：
+
+| 实现文件 | 回归 |
+| --- | --- |
+| `dist/native-collab-kormr.js` | `tests/native-collab-kormr.test.mjs` |
+| `dist/native-collab-aigis.js` | `tests/native-collab-aigis.test.mjs` |
+| `dist/native-collab-yukari.js` | `tests/native-collab-yukari.test.mjs` |
+| `dist/native-collab-makoto.js` | `tests/native-collab-makoto.test.mjs` |
+
+钩子入口（都在 `dist/native-collab.js`，共享文件里各只加一次调用）：
+
+| 钩子 | 调用点 | 用途 |
+| --- | --- | --- |
+| `deploy(battle,unit)` | `native-effects` 的 `deploy` 事件 | 虎狼丸的天赋斩击 |
+| `statMods(battle,unit,out)` | `native-operator-effects.statMods` | 技能／替身形态的属性加成 |
+| `skillStart(battle,unit,ctx)` | `native-operator-effects.operatorSkillStart` | 开技那一帧的伤害链与施加（返回 true 会压制通用兜底） |
+| `attackModifier(battle,unit,target,value)` | `native-operator-effects.attackModifier` | 造成的伤害乘算（埃癸斯的物理增伤、人格面具的攻击档案） |
+| `damageReduction(battle,unit,type,attacker,reduction)` | `native-operator-effects.damageReductionFor` | 受到的伤害减免（埃癸斯的物理减伤） |
+| `tick(battle,unit,ctx)` | `native-effects.tickLogic` 的单位循环 | 逐帧／每秒结算（斩杀复查、每秒治疗） |
+| `event(battle,unit,type,payload,ctx)` | `native-effects.dispatch` 末尾 | 监听者视角的事件（技能结束的治疗、友军开技触发的触发型效果、替身结束的总攻击） |
 
 下一阶段（技能与天赋的实际战斗行为）：
 
