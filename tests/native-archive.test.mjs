@@ -99,7 +99,7 @@ test('坏数据不会进档案，特殊标记默认 false 且只认布尔值',()
  const archive=normalizeArchive({runs:[{id:'ok',at:1,mapId:'m'},{id:'no-at',mapId:'m'},{at:2,mapId:'m'},null,'x',{id:'bad-lineup',at:3,mapId:'m',finalLineup:[{x:1},{chessId:'chess_char_1_01_a',name:'隐现'}],types:'nope'}],flags:{sees:'yes',unknown:true},prepSkills:{char_1019_siege2:2,bogus:'x'}});
  assert.deepEqual(archive.runs.map(r=>r.id).sort(),['bad-lineup','ok']);
  assert.equal(archive.flags.sees,false,'非布尔值的标记回落到默认 false');
- assert.deepEqual(Object.keys(archive.flags),['sees'],'未知标记不入档');
+ assert.deepEqual(Object.keys(archive.flags),['sees','egg325','cat'],'未知标记不入档，三个已知标记各就各位');
  assert.deepEqual(archive.prepSkills,{char_1019_siege2:2});
  const run=archive.runs.find(r=>r.id==='bad-lineup');
  assert.equal(run.types.length,0);

@@ -87,6 +87,21 @@ function saveCheckpoint(){if(!state.game||state.sandbox)return;try{const record=
 const archiveStorage=()=>{try{return typeof localStorage!=='undefined'?localStorage:null;}catch{return null;}};
 function archiveNow(){return loadArchive(archiveStorage());}
 function archiveWithPrepSkills(archive){return normalizeArchive({...archive,prepSkills:loadPrepSkills(data)||{}});}
+// 隐藏模式（用户 2026-09-27 口径）：「325 模式」「海猫模式」默认不在大厅「行动难度」里出现，
+// 只有用密码解锁（archive.flags.egg325／cat）后才把选项放回来。做法是在大厅渲染后摘掉对应的 <option>，
+// 不动 native-lobby 的模板（那里另有并行改动）。
+function gateLockedModes(){
+ try{
+  const select=document.getElementById('native-mode');if(!select)return false;
+  const flags=archiveNow().flags,locked=[[EGG_MODE_ID,'egg325'],[CAT_MODE_ID,'cat']];let removed=false;
+  for(const [modeId,flag] of locked){
+   if(flags[flag])continue;
+   const option=[...select.options].find(o=>o.value===modeId);
+   if(option){option.remove();removed=true;if(select.value===modeId)select.value=select.options[0]?.value||select.value;}
+  }
+  return removed;
+ }catch{return false;}
+}
 function recordRunIfOver(g){
  if(!g||state.sandbox)return null;
  const s=g.s;if(!(s.phase==='finished'||s.hp<=0))return null;
@@ -230,7 +245,7 @@ function render(){
   const bannedNames=(blocked?.bonds||[]).map(id=>data.season.bondInfoDict[id]?.name||id).join('／');
   notice(`${data.profiles[blocked?.chessId]?.name||'该干员'}属于本局被禁用的【${bannedNames||'盟约'}】，本次无法获得。`);
  }
- if(state.view==='lobby'){root.innerHTML=renderLobby({data,state,avatar});root.querySelector('.native-tool-grid')?.insertAdjacentHTML('afterbegin',poolDirty()?'<div class="native-pool-update"><div><span>CONFIGURATION UPDATE</span><b>敌人池／禁用配置已改动</b><small>与默认配置不一致，点击右侧按钮把两者一起恢复默认</small></div><button class="native-pool-update-action" data-act="pool-defaults">恢复默认配置</button></div>':'');/* 主界面的「导出存档」（用户 2026-09-27 需求）：插在动作行末尾，和「导入存档」成对。 */root.querySelector('.native-loadout-actions')?.insertAdjacentHTML('beforeend','<button data-act="export">导出存档</button>');renderModal();return;}
+ if(state.view==='lobby'){root.innerHTML=renderLobby({data,state,avatar});root.querySelector('.native-tool-grid')?.insertAdjacentHTML('afterbegin',poolDirty()?'<div class="native-pool-update"><div><span>CONFIGURATION UPDATE</span><b>敌人池／禁用配置已改动</b><small>与默认配置不一致，点击右侧按钮把两者一起恢复默认</small></div><button class="native-pool-update-action" data-act="pool-defaults">恢复默认配置</button></div>':'');/* 主界面的「导出存档」（用户 2026-09-27 需求）：插在动作行末尾，和「导入存档」成对。 */root.querySelector('.native-loadout-actions')?.insertAdjacentHTML('beforeend','<button data-act="export">导出存档</button>');gateLockedModes();renderModal();return;}
   if(state.view==='strategy-select'){root.innerHTML=renderStrategySelectScreen();decorateStrategyCatalog();renderModal();return;}
  if(state.view==='briefing'){root.innerHTML=renderBriefingScreen();renderModal();return;}
   if(state.view==='prepare'){const p=prepState();root.innerHTML=renderPreparePage(data,p,{esc,avatar});if(p.scroll)window.scrollTo(0,p.scroll);renderModal();return;}

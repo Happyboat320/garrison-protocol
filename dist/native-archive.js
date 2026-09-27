@@ -13,8 +13,10 @@ export const ARCHIVE_KEY='garrison-archive-v1';
 export const ARCHIVE_LIMIT=10;
 export const ARCHIVE_VERSION=1;
 export const ARCHIVE_FORMAT='garrison-protocol-save';
-// 特殊标记的默认值：S.E.E.S. 默认关（用户 2026-09-27 口径：先只当存档标记，不接线到玩法）。
-export const ARCHIVE_FLAG_DEFAULTS=Object.freeze({sees:false});
+// 特殊标记的默认值：这三个都是**隐藏内容**，默认关（用户 2026-09-27 口径）。
+// S.E.E.S.＝联动内容标记；egg325／cat＝「325 模式」「海猫模式」的解锁标记——没解锁时这两个模式
+// 连选项都不出现在大厅的「行动难度」里（见 native-play 的 gateLockedModes）。
+export const ARCHIVE_FLAG_DEFAULTS=Object.freeze({sees:false,egg325:false,cat:false});
 
 export function emptyArchive(){return {version:ARCHIVE_VERSION,runs:[],prepSkills:{},flags:{...ARCHIVE_FLAG_DEFAULTS}};}
 
