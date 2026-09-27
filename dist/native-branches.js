@@ -21,7 +21,8 @@ export const BRANCH_POLICIES={
  loopshooter:{returnProjectile:true,pending:['回旋轨迹与速度校准']},stalker:{style:'all',evasion:.5,taunt:-1},geek:{antiAir:true,hpDrain:.01},
  bearer:{blockZeroDuringSkill:true},agent:{antiAir:true},shotprotector:{antiAir:true},hookmaster:{antiAir:true,highland:true,pending:['位移力度与碰撞']},
  tactician:{antiAir:true,pending:['战术点与援军']},summoner:{damageType:'arts',antiAir:true,pending:['召唤物生命周期']},soulcaster:{damageType:'arts',antiAir:true,pending:['击杀召唤与召唤物索敌']},
- duelist:{spRequiresBlock:true,pending:['模组解除阻回的例外']},dollkeeper:{pending:['各模组替身专属例外']},skywalker:{pending:['起飞与空中阻挡']},skybreaker:{antiAir:true,airOnlyIdle:true,pending:['起飞／降落']},
+ duelist:{spRequiresBlock:true,pending:['模组解除阻回的例外']},dollkeeper:{pending:['各模组替身专属例外']},skywalker:{pending:['起飞与空中阻挡']},skybreaker:{antiAir:true,airOnlyIdle:true,splashDuringSkill:1.1,pending:['起飞／降落']},
+ supportiveranger:{antiAir:true,triggerEffect:true,pending:['触发型效果的逐条登记']},
  ritualist:{damageType:'arts',antiAir:true,pending:['元素损伤']},underminer:{damageType:'arts',antiAir:true},
  merchant:{},charger:{pending:['击杀回费与撤退费用返还']},traper:{antiAir:true,pending:['陷阱单位与部署条件']},alchemist:{pending:[]},counsellor:{pending:['待部署区支援']},mercenary:{pending:['部署费用强化']}
 };
@@ -40,6 +41,7 @@ export const SKILL_ANTIAIR={
  char_4116_blkkgt:{2:true},   // 锏「归于宁静」：※可对空
  char_4026_vulpis:{1:true},   // 忍冬「坠刃拷问」：※可对空
  char_1028_texas2:{2:true},   // 缄默德克萨斯「剑雨滂沱」：※效果可对空
+ char_4217_makoto:{2:true},   // 结城理「开辟明日的剑刃」：※<塔纳托斯·改>普通攻击可对空（S1/S2 的替身写明「不可对空」，故不入表）
  char_172_svrash:{1:false}    // 银灰「雪境生存法则」：※攻击范围缩小时，不再攻击空中单位
 };
 export function skillAntiAir(charId,skillIndex){
@@ -58,6 +60,6 @@ export function branchTrait(profile){
  const trait=candidates.at(-1);return {...trait,values:blackboard(trait?.blackboard)};
 }
 export function branchBehavior(profile,active=false){
- const rule=BRANCH_POLICIES[profile.branch]||{},kind=rule.healsDuringSkill&&active?'heal':rule.kind||(profile.profession==='MEDIC'?'heal':'damage');
- return {...rule,kind,style:rule.style||'single',damageType:rule.artsDuringSkill&&active?'arts':rule.damageType||(['CASTER','SUPPORT'].includes(profile.profession)?'arts':'physical'),antiAir:rule.antiAir??(profile.position==='RANGED'),attack:rule.attack!==false&&!(rule.attackWhen==='skill'&&!active)};
+ const rule=BRANCH_POLICIES[profile.branch]||{},kind=rule.healsDuringSkill&&active?'heal':rule.kind||(profile.profession==='MEDIC'?'heal':'damage'),splash=!!(rule.splashDuringSkill&&active);
+ return {...rule,kind,style:splash?'splash':rule.style||'single',radius:splash?rule.splashDuringSkill:rule.radius,damageType:rule.artsDuringSkill&&active?'arts':rule.damageType||(['CASTER','SUPPORT'].includes(profile.profession)?'arts':'physical'),antiAir:rule.antiAir??(profile.position==='RANGED'),attack:rule.attack!==false&&!(rule.attackWhen==='skill'&&!active)};
 }

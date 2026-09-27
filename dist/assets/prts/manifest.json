@@ -4514,6 +4514,54 @@
       "sha1": "b0afb46126b6de27e0a1ddd1df6bcd235eb021fd",
       "width": 158,
       "height": 158
+    },
+    "char_4220_kormr": {
+      "id": "char_4220_kormr",
+      "title": "File:头像_虎狼丸.png",
+      "kind": "operator",
+      "file": "assets/prts/char_4220_kormr.png",
+      "url": "https://media.prts.wiki/5/56/%E5%A4%B4%E5%83%8F_%E8%99%8E%E7%8B%BC%E4%B8%B8.png",
+      "sourcePage": "https://prts.wiki/w/%E6%96%87%E4%BB%B6:%E5%A4%B4%E5%83%8F_%E8%99%8E%E7%8B%BC%E4%B8%B8.png",
+      "sha256": "224b81730d5695c446345ca3b1d113de7b058b8072bb5491520c4a35ffea9be6",
+      "sha1": "97944cafc19fce43f5f01ea73681507857101cc1",
+      "width": 180,
+      "height": 180
+    },
+    "char_4218_aigis": {
+      "id": "char_4218_aigis",
+      "title": "File:头像_埃癸斯.png",
+      "kind": "operator",
+      "file": "assets/prts/char_4218_aigis.png",
+      "url": "https://media.prts.wiki/a/ae/%E5%A4%B4%E5%83%8F_%E5%9F%83%E7%99%B8%E6%96%AF.png",
+      "sourcePage": "https://prts.wiki/w/%E6%96%87%E4%BB%B6:%E5%A4%B4%E5%83%8F_%E5%9F%83%E7%99%B8%E6%96%AF.png",
+      "sha256": "d6c010f85f1b660acd629788694f4216bce71cc5e90e056d908532dc3747486c",
+      "sha1": "21ee010e09ad032645c31a9b7eedd4b2a8894951",
+      "width": 180,
+      "height": 180
+    },
+    "char_4219_yukari": {
+      "id": "char_4219_yukari",
+      "title": "File:头像_岳羽由加莉.png",
+      "kind": "operator",
+      "file": "assets/prts/char_4219_yukari.png",
+      "url": "https://media.prts.wiki/9/98/%E5%A4%B4%E5%83%8F_%E5%B2%B3%E7%BE%BD%E7%94%B1%E5%8A%A0%E8%8E%89.png",
+      "sourcePage": "https://prts.wiki/w/%E6%96%87%E4%BB%B6:%E5%A4%B4%E5%83%8F_%E5%B2%B3%E7%BE%BD%E7%94%B1%E5%8A%A0%E8%8E%89.png",
+      "sha256": "a05e833ef857f8324a6f6826db45df12c1d5d35a0ee048d1184f124ca4ffce97",
+      "sha1": "553eeb74223d8e2760857d2d5d877c753ebf2615",
+      "width": 180,
+      "height": 180
+    },
+    "char_4217_makoto": {
+      "id": "char_4217_makoto",
+      "title": "File:头像_结城理.png",
+      "kind": "operator",
+      "file": "assets/prts/char_4217_makoto.png",
+      "url": "https://media.prts.wiki/5/54/%E5%A4%B4%E5%83%8F_%E7%BB%93%E5%9F%8E%E7%90%86.png",
+      "sourcePage": "https://prts.wiki/w/%E6%96%87%E4%BB%B6:%E5%A4%B4%E5%83%8F_%E7%BB%93%E5%9F%8E%E7%90%86.png",
+      "sha256": "eb1bd82c7d2be321a7e68db0fae08ecc1cbaf23181717239f9ce1b4622b97243",
+      "sha1": "e87dbe65a3fa61cb40cb42ae99c503c179263b5d",
+      "width": 180,
+      "height": 180
     }
   },
   "missing": []

@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-23",
+  "scope": "PRTS 联动（S.E.E.S. 四人组）干员在本客户端的实装登记。项目口径：只作为隐藏档进入技能测试场，暂时不设卫戍效果、不属于任何盟约、不进商店池、不参与商店抽取与晋升奖励。",
+  "accessPath": "dist/native-play.js 的 sandboxOperators 取 data.profiles 全部条目（含 isHidden），因此隐藏档只能在「技能测试场 → 添加干员」里选到；商店/名册/战前准备都按 catalog.roster 走，看不到这四人。",
+  "sources": [
+    {
+      "title": "PRTS 干员一览/data（本地快照，2026-09-12 抓取）",
+      "path": "data/prts/snapshots/2026-09-12-prts/operators.json",
+      "note": "四人都在快照里，含逐阶段属性、天赋候选、技能文案与 PRTS revisionId。"
+    },
+    {
+      "title": "游戏数据 rel77.0（Kengxxiao/ArknightsGameData 公开镜像，本地 2026-09-12 抓取）",
+      "path": "data/gamedata/current",
+      "commit": "0ef7f952dfd018392200157a5c79a6511ba69122",
+      "dataVersion": "Stream://torappu-data/v077/rel77.0 Change:122801 on 2026/09/08",
+      "note": "四人的权威数值来源（character_table／skill_table／range_table／uniequip_table）。本项目不抄写数值，构建时从 data/normalized/current.json 取实体、技能、范围。"
+    },
+    {
+      "title": "PRTS 分支特性信息/data",
+      "url": "https://prts.wiki/w/%E5%88%86%E6%94%AF%E7%89%B9%E6%80%A7%E4%BF%A1%E6%81%AF/data",
+      "note": "游击手＝「可对空＋可以使用触发型效果协助作战」；裂空炮手＝「可对空；非技能期间默认仅攻击飞行单位与自身阻挡的单位；未开启技能时可以且优先攻击自身阻挡的单位；技能期间攻击造成范围伤害，溅射半径1.1」。"
+    },
+    {
+      "title": "分支内部 ID：uniequip_table.json 的 subProfDict",
+      "path": "data/gamedata/current/uniequip_table.json",
+      "note": "游击手的官方内部 ID 是 supportiveranger（professionId 16＝SUPPORT），不是项目自造名。"
+    }
+  ],
+  "operators": [
+    {
+      "charId": "char_4220_kormr",
+      "chessId": "chess_collab_kormr",
+      "name": "虎狼丸",
+      "rarity": 1,
+      "chessLevel": 1,
+      "profession": "WARRIOR",
+      "branch": "sword",
+      "branchName": "剑豪",
+      "position": "MELEE",
+      "rangeId": "1-1",
+      "status": {
+        "evolvePhase": "PHASE_0",
+        "charLevel": 30,
+        "skillLevel": 1,
+        "favorPoint": 0,
+        "equipLevel": 0
+      },
+      "defaultSkillIndex": 0,
+      "potentials": "只按无潜能（potentialRank 0）结算，与其他干员同一口径；天赋的 6 档「天赋效果加强」未建模",
+      "kitSummary": [
+        "无主动技能（skillRefs 为空）。",
+        "天赋「黑色猎犬」：部署后对周围一定范围内最近的 1 名敌人发动总计 6 次无视闪避的斩击，每次造成攻击力100%的法术伤害（pot0），最后一次改为 200% 并使目标恐惧 4 秒。",
+        "属性（PHASE_0／30 级）：生命 904、攻击 242、防御 125、法抗 0、费用 3、阻挡 2、攻击间隔 1.3、再部署 200 秒。"
+      ],
+      "notes": "1 星剑豪，只有 1 个精英阶段；再部署 200 秒、费用 3 的定位与 PRTS 战绩一致。"
+    },
+    {
+      "charId": "char_4218_aigis",
+      "chessId": "chess_collab_aigis",
+      "name": "埃癸斯",
+      "rarity": 5,
+      "chessLevel": 5,
+      "profession": "SNIPER",
+      "branch": "skybreaker",
+      "branchName": "裂空炮手",
+      "position": "RANGED",
+      "rangeId": "3-1",
+      "status": {
+        "evolvePhase": "PHASE_2",
+        "charLevel": 80,
+        "skillLevel": 10,
+        "favorPoint": 0,
+        "equipLevel": 0
+      },
+      "defaultSkillIndex": 0,
+      "potentials": "只按无潜能结算（部署费用-1、再部署-4秒、攻击力+33 等未接入，与其他干员同口径）",
+      "kitSummary": [
+        "天赋「反暗影特殊压制兵装」：造成的物理伤害 +10%、受到的物理伤害 -10%（PHASE_2、pot0）。",
+        "分支特性「裂空炮手」：可对空；非技能期间默认只打飞行单位与自身阻挡的单位，且优先打自身阻挡的单位；技能期间攻击造成范围伤害，溅射半径 1.1。",
+        "S1「启动狂宴模式」（35→24 SP，初始 10→15，持续 20 秒）：攻击力 +40%→+140%、防御 +20%→+70%，未阻挡时随机攻击范围内目标；技能结束后自身晕眩 10 秒。",
+        "S2「全弹发射」（35→24 SP，瞬发）：锁定范围内 1 个目标发射 6 枚导弹，每枚造成 70%→160% 攻击力的物理伤害，之后飞踢目标及其周围敌人造成 150%→300% 攻击力的物理伤害。"
+      ],
+      "notes": "精英化 2 后基础范围从 3-6（只有正前方 3 格）变成 3-1（自身前方一格）。"
+    },
+    {
+      "charId": "char_4219_yukari",
+      "chessId": "chess_collab_yukari",
+      "name": "岳羽由加莉",
+      "rarity": 5,
+      "chessLevel": 5,
+      "profession": "SUPPORT",
+      "branch": "supportiveranger",
+      "branchName": "游击手",
+      "position": "RANGED",
+      "rangeId": "3-18",
+      "status": {
+        "evolvePhase": "PHASE_2",
+        "charLevel": 80,
+        "skillLevel": 10,
+        "favorPoint": 0,
+        "equipLevel": 0
+      },
+      "defaultSkillIndex": 0,
+      "potentials": "只按无潜能结算（部署费用-1、再部署-4/-6秒、攻击力+30 未接入）",
+      "kitSummary": [
+        "天赋「治愈之风」：技能结束后治疗自身和攻击范围内最多 3 名干员相当于攻击力 100% 的生命值（PHASE_2、pot0；PHASE_1 为 2 名／50%）。",
+        "分支特性「游击手」：可对空；可以使用触发型效果协助作战。",
+        "S1「龙卷箭」（35→20 SP，初始 0→10，瞬发）：立即发射三发箭矢，每发对目标造成 50%→80% 攻击力的法术伤害，随后追加一次 200%→400% 攻击力的范围法术伤害并浮空所有目标 1.5 秒。",
+        "S2「明镜止水」（48→30 SP，初始 5→15，瞬发）：为范围内最多 3→4 名我方干员（优先结城理、术师干员）施加触发型效果——该干员施放技能后，自身在 15 秒内获得 10%→30% 术法充盈。"
+      ],
+      "notes": "游击手的触发型效果是本客户端第一次出现的机制类别，需要在效果层新增「技能施放后触发」的挂载点。"
+    },
+    {
+      "charId": "char_4217_makoto",
+      "chessId": "chess_collab_makoto",
+      "name": "结城理",
+      "rarity": 6,
+      "chessLevel": 6,
+      "profession": "SPECIAL",
+      "branch": "dollkeeper",
+      "branchName": "傀儡师",
+      "position": "MELEE",
+      "rangeId": "1-1",
+      "status": {
+        "evolvePhase": "PHASE_2",
+        "charLevel": 90,
+        "skillLevel": 10,
+        "favorPoint": 0,
+        "equipLevel": 0
+      },
+      "defaultSkillIndex": 0,
+      "potentials": "只按无潜能结算（部署费用-1、第二天赋/第一天赋效果增强、攻击力+34 未接入）",
+      "kitSummary": [
+        "分支特性「傀儡师」：受到致命伤时不撤退，切换成替身作战（替身阻挡数为 0），持续 20 秒后自身再次替换。",
+        "天赋一「不羁之力」：切换为替身状态时停顿周围一定范围内敌人 5→8 秒；替身状态下召唤人格面具作战，攻击间隔增大（+0.4）、攻击力 +40%→+80%、生命值 +35%，作战能力随技能选择而改变。",
+        "天赋二「S.E.E.S. 总攻击」：替身状态结束后，带领 S.E.E.S. 小队发动总攻击，对小队队员周围一定范围内所有敌人造成 180%→430% 攻击力的真实伤害（可叠加）。",
+        "S1「俄耳甫斯的竖琴」（20→7 SP，被动／主动切换替身）：替身状态召唤俄耳甫斯，攻击造成 110%→280% 攻击力的法术伤害；范围内有生命值低于 50% 的友方干员时改为治疗其 30%→60% 攻击力的生命值。",
+        "S2「塔纳托斯的囚锁」（24→12 SP）：替身状态召唤塔纳托斯，攻击对至多 3→4 名敌人造成 120%→250% 攻击力的法术伤害并有 35% 概率恐惧 1.5 秒；范围内恐惧中的敌人若生命值低于结城理攻击力的 200%→280% 则立刻倒下。",
+        "S3「开辟明日的剑刃」（29→15 SP，初始 0→10）：替身状态初始召唤塔纳托斯，攻速 +15→+60，攻击对至多 3→4 名敌人造成 140%→230% 攻击力的弱点伤害；塔纳托斯在场时，开启技能或受到致命伤改为召唤俄耳甫斯，阻挡数 +2，使范围内友方干员获得 25%→40% 物理与法术闪避，并每秒治疗范围内最多 3→4 名友方干员相当于攻击力 20%→35% 的生命值，直到替身状态结束。"
+      ],
+      "notes": "人格面具（俄耳甫斯／塔纳托斯）在游戏数据里不是独立单位，其数值全部挂在这三个技能的替补身黑板（attack@*）上，所以客户端按「替身形态换攻击档案」实现，不新增召唤物实体。"
+    }
+  ],
+  "buildWiring": {
+    "script": "scripts/build-native.mjs",
+    "behavior": "构建时把四人的实体/技能/范围并入 base，并在 season.charChessDataDict／charShopChessDatas 里补 4 条 isHidden+无盟约+无卫戍的隐藏档；不打补丁到 data/modes/alliance-lower/source.json（历史快照保持原样，与 chess_virtual_* 同一做法）。",
+    "invariants": [
+      "catalog.roster（112 名可见名册）不含这四人：build-protocol 只收 charId && !isHidden。",
+      "商店抽取不会命中：NativeSession.eligible 过滤 isHidden。",
+      "卫戍与盟约不受影响：bondIds、garrisonIds 都为空数组。",
+      "技能测试场能看到：native-play 的 sandboxOperators 取 data.profiles 全部条目。"
+    ]
+  }
+}

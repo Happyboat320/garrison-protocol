@@ -3197,7 +3197,7 @@
       "name": "裂空炮手",
       "profession": "SNIPER",
       "inCurrentMode": false,
-      "baseTrait": "部署后起飞，起飞后只攻击空中敌人；技能开启时降落且攻击造成群体物理伤害",
+      "baseTrait": "可对空；非技能期间默认仅攻击飞行单位与自身阻挡的单位。未开启技能的情况下，可以且优先攻击自身阻挡的单位（即使目标处于攻击范围外）。技能期间攻击造成范围伤害，溅射半径1.1",
       "representative": "char_4213_skybx",
       "sources": [
         {
@@ -3222,12 +3222,14 @@
         "style": "single",
         "damageType": "physical",
         "attack": true,
-        "status": "partial"
+        "status": "partial",
+        "splashDuringSkill": 1.1
       },
       "pending": [
         "起飞／降落"
       ],
-      "traitVariants": []
+      "traitVariants": [],
+      "baseTraitLegacy": "部署后起飞，起飞后只攻击空中敌人；技能开启时降落且攻击造成群体物理伤害（2026-09-23 更正前的旧「分支一览」口径）"
     },
     {
       "id": "phalanx",
@@ -4039,6 +4041,40 @@
       "traitVariants": []
     },
     {
+      "id": "supportiveranger",
+      "name": "游击手",
+      "profession": "SUPPORT",
+      "inCurrentMode": false,
+      "baseTrait": "可以使用触发型效果协助作战；可对空",
+      "representative": "char_4219_yukari",
+      "sources": [
+        {
+          "title": "分支特性信息/data",
+          "revision": 427899,
+          "url": "https://prts.wiki/w/%E5%88%86%E6%94%AF%E7%89%B9%E6%80%A7%E4%BF%A1%E6%81%AF%2Fdata?oldid=427899#%E6%B8%B8%E5%87%BB%E6%89%8B"
+        },
+        {
+          "title": "uniequip_table.json subProfDict",
+          "path": "data/gamedata/current/uniequip_table.json",
+          "note": "内部 ID supportiveranger（professionId 16＝SUPPORT）。「分支一览」revision 326449 成文早于该分支上线，不含此条。"
+        }
+      ],
+      "wikiDetailSectionFound": true,
+      "runtime": {
+        "antiAir": true,
+        "triggerEffect": true,
+        "kind": "damage",
+        "style": "single",
+        "damageType": "arts",
+        "attack": true,
+        "status": "partial"
+      },
+      "pending": [
+        "触发型效果的逐条登记"
+      ],
+      "traitVariants": []
+    },
+    {
       "id": "traper",
       "name": "陷阱师",
       "profession": "SPECIAL",
@@ -4114,6 +4150,12 @@
           "trait": null
         }
       ]
+    }
+  ],
+  "amendments": [
+    {
+      "at": "2026-09-23",
+      "note": "S.E.E.S. 联动干员实装：补游击手（supportiveranger）记录；按 revision 427899 更正裂空炮手 baseTrait 并登记技能期间溅射半径 1.1。"
     }
   ]
 }

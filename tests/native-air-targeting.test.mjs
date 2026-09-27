@@ -56,7 +56,9 @@ test('本期地面干员里，PRTS 标注可对空的技能都已经进表（uti
  // 不改变攻击能否打空，因此不进对空表；除它们以外凡是 PRTS 写「可对空」的技能都必须在表里。
  const UTILITY=new Set(['char_107_liskam','char_4087_ines','char_2026_yu','char_4010_etlchi','char_1033_swire2','char_1045_svash2']);
  const visible=new Set();
- for(const p of Object.values(NATIVE_DATA.profiles||{}))if(p?.charId&&!p.isHidden)visible.add(p.charId);
+ // 隐藏档（chess_virtual_*／S.E.E.S. 联动四人）不是本期预设，这条门禁只覆盖 112 名可见干员；
+ // 隐藏档自己的 PRTS 备注由 SKILL_ANTIAIR 表本身的第 1 条门禁（按备注核对已入表的项）覆盖。
+ for(const p of Object.values(NATIVE_DATA.profiles||{}))if(p?.charId&&!NATIVE_DATA.season.charShopChessDatas[p.chessId]?.isHidden)visible.add(p.charId);
  const missing=[];
  for(const [charId,record] of prtsByChar){
   if(!visible.has(charId))continue;
