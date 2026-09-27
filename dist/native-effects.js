@@ -8,6 +8,8 @@ import {blackboard,resolveActiveTalents,nativeAttributes,bondBlackboard,bondLaye
 import {BOND_TEXT_CONSTANTS} from './native-bond-keys.js';
 import {gainSp,initSpOf} from './native-sp.js';
 import {statMods,onEvent,operatorSkillStart,periodicMods,skillConfig,targetFilter,damageReductionFor,attackPenetration,talentValues,grantCoins,coinCapFor,coinGainAtSkillStart,tokenCostFor} from './native-operator-effects.js';
+// 联动干员（S.E.E.S. 四人组）的钩子：部署／事件／逐帧三个入口在这里派发，实现在 native-collab-*.js。
+import {collabDeploy,collabTick,collabEvent} from './native-collab.js';
 import {FLIGHT_PRESETS,FLIGHT_MODES,stepFlight,faceTarget,setFlightVelocity,distanceBetween,ensureFlight,orbitStep,fanHeadings,randomPointInSquare} from './native-flight.js';
 
 export const BATTLE_SCHEMA_VERSION=1;
@@ -614,7 +616,7 @@ export function tickLogic(battle,dt){
  for(const fx of battle.s.logicEffects.slice())if(fx.endsAt!=null&&now>=fx.endsAt)dropEffect(battle,fx,'expired');
  updateAreas(battle);
  tickAuras(battle);
- for(const u of battle.s.units){periodicMods(battle,u,ctxFor(battle));bondPeriodic(battle,u);}
+ for(const u of battle.s.units){const collabCtx=ctxFor(battle);periodicMods(battle,u,collabCtx);bondPeriodic(battle,u);collabTick(battle,u,collabCtx);}
  tickSummons(battle,dt);
  tickWhitwEyes(battle,dt);
  syncReveals(battle);
@@ -1166,6 +1168,7 @@ export function dispatch(battle,type,payload){
  if(type==='skill-start')payload.genericSuppress=operatorSkillStart(battle,target,ctx);
  else onEvent(battle,type,payload,ctx);
  equipmentEvent(battle,type,payload,ctx);
+ collabEvent(battle,type,payload,ctx);
  if(type==='after-damage'&&payload.cause!=='dot'&&payload.cause!=='reflect'){
   if(target&&battle.s.units.includes(target)&&target.id==='char_107_liskam'&&target.deployed){
    const t=activeTalentsOf(battle,target).find(x=>x.name==='战术防御');
@@ -1228,6 +1231,7 @@ export function dispatch(battle,type,payload){
   const deployed=payload.target;
   onOperatorDeploy(battle,deployed);
   bondDeploy(battle,deployed);
+  collabDeploy(battle,deployed);
   // 「上一名部署干员」（耀骑士临光「不畏苦暗」）：部署时天赋读的是**上一次**部署者，读完再记录本次。
   // 召唤物不是干员，部署它既不计数也不覆盖记录。
   if(deployed&&deployed.kind!=='summon')battle.s.lastDeployedKazimierz=battle.owns?.(deployed,'kazimierzShip')??false;

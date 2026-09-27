@@ -1,6 +1,8 @@
 import {applyStatus,removeStatus} from './status.js';
 import {directionOf} from './protocol.js';
 import {containsTarget} from './targeting.js';
+// 联动干员（S.E.E.S. 四人组）的专属实现走独立派发，避免继续往下面几个大函数里堆逐名分支。
+import {collabStatMods,collabSkillStart,collabAttackModifier,collabDamageReduction} from './native-collab.js';
 
 // 目标此刻是否处于某类元素爆发期间。爆发状态本身由 `native-effects.applyElementDamage` 维护
 // （`elementBurstType` / `elementBurstUntil`，爆发期间元素条锁定），这里只做只读判定——
@@ -224,6 +226,7 @@ export function statMods(battle,u){
   if(Number.isFinite(as)&&has(text,/所有友方|全体友方|全场友方|攻击范围内的友方|所有【|周围/))out.auras.push({stat:'attackSpeed',layer:'maxSame',value:as,text,source:u});
   if(Number.isFinite(hp)&&has(text,/所有友方|全体友方|全场友方|攻击范围内的友方|所有【|周围/))out.auras.push({stat:'maxHp',layer:'ratio',value:hp,text,source:u});
  }
+ collabStatMods(battle,u,out);
  return out;
 }
 export function attackModifier(battle,source,target,value){
@@ -245,6 +248,7 @@ export function attackModifier(battle,source,target,value){
  if(source.id==='char_350_surtr'&&battle.skillActive?.(source)&&(source.source?.skillIndex??battle.profile(source).skillIndex)===1){const bb=skillConfig(battle.profile(source)).bb;if(battle.targets(source).length===1)out*=Number(bb['attack@surtr_s_2[critical].atk_scale'])||1.5;}
  if(source.id==='char_2015_dusk'&&battle.skillActive?.(source)&&(source.source?.skillIndex??battle.profile(source).skillIndex)===1&&target.maxHp>0&&target.hp/target.maxHp<.5)out*=Number(skill.bb.damage_scale)||1.25;
  if(source.id==='char_4064_mlynar'){const t=activeTalents(battle,source).find(t=>t.name==='游侠'),tb=t&&talentValues(t);if(t){const nearby=battle.s.enemies.filter(e=>e.hp>0&&Math.max(Math.abs(e.x-source.x),Math.abs(e.y-source.y))<=1).length;out*=nearby>=Number(tb.cnt||3)?Number(tb.atk_scale_up)||1.15:Number(tb.atk_scale_base)||1.1;}}
+ out=collabAttackModifier(battle,source,target,out);
  return out;
 }
 export function attackPenetration(battle,source,target){
@@ -271,6 +275,7 @@ export function damageReductionFor(battle,target,type,attacker=null){
   const radius=text.match(/周围(?:最多)?(\d+|一|两|二|四|八)格/);const limit=radius?({一:1,两:2,二:2,四:4,八:8}[radius[1]]??Number(radius[1])):0;
   if(auraSource.uid===target.uid||(limit&&Math.max(Math.abs((auraSource.x??0)-(target.x??0)),Math.abs((auraSource.y??0)-(target.y??0)))<=limit)||(!limit&&/所有|全体/.test(text)))reduction=Math.max(reduction,Math.min(1,value));
  }
+ reduction=collabDamageReduction(battle,target,type,attacker,reduction);
  return reduction;
 }
 function inRange(battle,source,target,skill=false){return battle.inside(source,target,skill);}
@@ -521,6 +526,7 @@ export function operatorSkillStart(battle,u,ctx){
  if(has(text,/不再成为其他角色的治疗目标|无法成为其他角色的治疗目标/))u.unhealable=true;
  if(!has(text,/技能结束/)&&has(text,/对周围所有敌人|攻击范围内所有敌人|立即对攻击范围内至多/)&&Number.isFinite(config.atkScale)&&(bb.atkScale!=null||has(text,/造成.*伤害/))){for(const e of allTargets(battle,u,true).slice(0,config.multiTarget===Infinity?Infinity:(config.multiTarget||999)))ctx.dealDamage(battle,{source:u,target:e,amount:battle.stats(u).atk*config.atkScale,type:config.damageType||'physical',cause:'skill',skill:true});suppressDefault=true;}
  if(has(text,/立即.*治疗|立即.*恢复.*生命/)&&Number.isFinite(config.healScale)){for(const a of allAllies(battle,u,true))ctx.applyHeal(battle,{source:u,target:a,amount:battle.stats(u).atk*config.healScale});suppressDefault=true;}
+ if(collabSkillStart(battle,u,ctx))suppressDefault=true;
  return suppressDefault;
 }
 export function onEvent(battle,type,payload,ctx){
