@@ -555,6 +555,27 @@ export function drawDisplace(c,point,z,battle,{reduceFx=false}={}){
  }
  return drew;
 }
+// 【S.E.E.S.】核心盟约的「弱点追击」：在触发位置画一圈扩散的白金环 + 比例标签。
+// 事件由 `native-battle.seesCoreStrike` 发射（`{x,y,layers,percent}`），**纯表现**、不参与结算；
+// `reduceFx` 只留静止环与标签。
+const SEES_CORE_FX=.7;
+export function drawSeesCore(c,point,z,battle,{reduceFx=false,formatText=null}={}){
+ const s=battle?.s;if(!s)return false;
+ const hits=recent(s.events,s.time,'sees-core',SEES_CORE_FX);
+ if(!hits.length)return false;
+ for(const e of hits){
+  const p=point(e.x,e.y),k=reduceFx?1:Math.min(1,Math.max(0,s.time-e.t)/SEES_CORE_FX),alpha=reduceFx?.55:Math.max(0,.62*(1-k));
+  c.save();
+  c.strokeStyle=`rgba(255,244,206,${alpha})`;c.lineWidth=Math.max(1.5,z.tw*.06);
+  ring(c,p,z.tw*(.5+.9*k),z.tw*(.34+.62*k));
+  if(!reduceFx){c.strokeStyle=`rgba(150,214,255,${alpha*.85})`;ring(c,p,z.tw*(.34+.66*k),z.tw*(.22+.46*k));}
+  c.fillStyle=`rgba(255,246,214,${reduceFx?.85:Math.max(0,1-k)})`;c.font='bold 12px sans-serif';c.textAlign='center';
+  const text=`S.E.E.S. 弱点追击 ${(Number(e.percent||0)*100).toFixed(1)}%`;
+  c.fillText(formatText?formatText(text):text,p.x,p.y-z.tw*.72);
+  c.restore();
+ }
+ return true;
+}
 export function drawFx(c,point,z,battle,opts={}){ const s=battle.s,t=s.time,reduce=!!opts.reduceFx;
  drawCombatFx(c,point,z,battle,reduce);
  drawZones(c,point,z,battle,{reduceFx:reduce});
@@ -566,6 +587,7 @@ export function drawFx(c,point,z,battle,opts={}){ const s=battle.s,t=s.time,redu
  drawEnemyPhase(c,point,z,battle,{reduceFx:reduce,formatText:opts.formatText});
  drawEnemyProjectiles(c,point,z,battle,{reduceFx:reduce});
  drawIceWind(c,z,battle,{reduceFx:reduce});
+ drawSeesCore(c,point,z,battle,{reduceFx:reduce,formatText:opts.formatText});
  for(const e of s.effects||[]){
   if(e.type!=='healing'&&e.type!=='evade'&&e.type!=='block')continue;
   const p=point(e.x,e.y);c.fillStyle=e.type==='healing'?'#8fe8b5':'#f6e7c8';c.font='12px sans-serif';c.textAlign='center';c.fillText(opts.formatText?opts.formatText(e.text):e.text,p.x,p.y-24-(.6-e.life)*30);
@@ -698,9 +720,44 @@ export const FORM_TINT_STYLE={
 // 傀儡师（归溟幽灵鲨等）进入替身状态时，给头像盖一层**动态紫色特效**：紫色罩色 + 两条反向旋转的
 // 弧环 + 一条上下扫过的高光带，让「这是替身、不是本体」一眼看得出来。reduceFx 时只留静止的一圈紫罩。
 // 判定只看 actor.dollForm（native-effects 的 tickDoll 维护），与其它 overlay 一样不参与任何规则结算。
+// 结城理（char_4217_makoto）的傀儡师替身是**人格面具**，按 `actor.persona` 换配色（用户 2026-09-27 口径，
+// 依据 docs/PERSONA3_COLLAB_OPERATORS.md §5.4.1）：塔纳托斯＝半透明黑罩 + 深蓝流动；俄耳甫斯＝半透明白罩
+// + 金色流动；`null`／未设置（归溟幽灵鲨等其它傀儡师）保持原来的紫色通用罩色。
+export const DOLL_PERSONA_STYLE={thanatos:{tint:'rgba(0,0,0,.45)',flow:'#1b3fd8'},orpheus:{tint:'rgba(255,255,255,.45)',flow:'#e8c46a'}};
+// '#rrggbb' → 'rgba(r,g,b,a)'：流动色只有一条十六进制定义，透明度在绘制处算，避免再抄一份色值。
+function tintAlpha(hex,alpha){
+ const raw=String(hex||'').replace('#',''),full=raw.length===3?raw.split('').map(c=>c+c).join(''):raw;
+ const n=parseInt(full,16);
+ return Number.isFinite(n)?`rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${alpha})`:String(hex||'');
+}
 export function drawDollOverlay(c,actor,box,opts={}){
  if(!actor||!actor.dollForm||!box||!(box.w>0)||!(box.h>0))return false;
  const reduce=!!opts.reduceFx,time=Number(opts.time)||0,cx=box.x+box.w/2,cy=box.y+box.h/2;
+ const persona=DOLL_PERSONA_STYLE[actor.persona]||null;   // null／未知值 ⇒ 保持原来的紫色通用罩色
+ // 有 persona（结城理的人格面具）：半透明黑／白罩色 + 深蓝／金色流动；reduceFx 下只留静止罩色。
+ if(persona){
+  c.save();
+  c.fillStyle=persona.tint;
+  c.fillRect(box.x,box.y,box.w,box.h);
+  if(!reduce){
+   c.save();
+   c.globalCompositeOperation='lighter';
+   const r=Math.max(box.w,box.h)*.44;
+   for(const [dir,alpha] of [[1,.52],[-1,.34]]){
+    c.strokeStyle=tintAlpha(persona.flow,alpha);
+    c.lineWidth=Math.max(1.5,box.w*.07);
+    c.beginPath();c.arc(cx,cy,r*(1+.04*Math.sin(time*3.4)),time*2.4*dir,time*2.4*dir+Math.PI*1.15);c.stroke();
+   }
+   // 上下扫过的一条流光带（规格给的流动色是单一十六进制，用实色 + 正弦起落做出流动感）。
+   const sweep=Math.abs((time*.8)%1.35)-.15,y=box.y+box.h*(1-sweep);
+   const band=Math.max(0,Math.sin(Math.max(0,sweep)*Math.PI));
+   if(band>0){c.strokeStyle=tintAlpha(persona.flow,band*.5);c.lineWidth=Math.max(1,box.h*.14);c.beginPath();c.moveTo(box.x,y);c.lineTo(box.x+box.w,y);c.stroke();}
+   c.restore();
+  }
+  c.restore();
+  return true;
+ }
+ // 通用紫色（归溟幽灵鲨等）：原有画法一个字都没改，既有回归（native-summon-lifecycle）继续成立。
  c.save();
  const wash=c.createLinearGradient?c.createLinearGradient(box.x,box.y,box.x,box.y+box.h):null;
  if(wash){wash.addColorStop(0,'rgba(158,96,226,0.46)');wash.addColorStop(.55,'rgba(122,72,198,0.22)');wash.addColorStop(1,'rgba(92,52,172,0.5)');c.fillStyle=wash;}

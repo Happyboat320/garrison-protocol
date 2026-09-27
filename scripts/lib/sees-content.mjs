@@ -131,7 +131,10 @@ export function applySeesContent(source, content = loadSeesContent()) {
     season.trapShopChessDatas[item.itemId] = {
       itemId: item.itemId,
       goldenItemId: item.goldenItemId,
-      hideInShop: false,
+      // hideInShop 是「不在默认可见集合里」：`catalog.items[].hidden` 就是它，战前准备按它过滤。
+      // 臂章只在解锁（flags.sees）且本局选了 band_sees 时才该出现，所以默认隐藏在数据层，
+      // 由 native-sees.dataForPrep 在解锁时摘掉、由 native-sees.itemAllowed 在本局放行进装备池。
+      hideInShop: true,
       sees: true,
       itemLevel: item.itemLevel,
       iconLevel: 0,

@@ -21,9 +21,9 @@
 //   （`deployAt` 升序，同一帧按 uid 升序）。触发型效果存在接收者自己的 `unit.yukariTriggers`
 //   （同来源去重、覆盖刷新），开技时消费一次并转成 `unit.yukariArcane={until,value,sourceUid}`
 //   ＋一条 `magicArcane` 状态（时长交给状态表逐帧走）。
-//   **口径缺口**：本客户端没有「任意干员增伤」的通用通道（`attackModifier` 是按来源干员分派的，
-//   只有 4 名联动干员有钩子；`statusAttributeChanges` 只有 attackDown／attackSpeed 一类），
-//   所以术法充盈目前只做到「状态＋计时窗口＋对自己作为伤害来源时真的进结算」，见 hooks.attackModifier。
+//   **2026-09-27 更新**：共享层补了「任意干员增伤」通道——`native-operator-effects.attackModifier` 会读
+//   任何伤害来源的 `unit.yukariArcane` 窗口并按 (1+damage_up) 乘算，所以友军吃到的术法充盈现在真的进结算
+//   （以前只有由加莉自己作为伤害来源时才算）；本文件只负责写／清窗口。
 //
 // 回归：tests/native-collab-yukari.test.mjs
 import {blackboard} from './protocol.js';
@@ -159,12 +159,7 @@ export const yukariHooks={
   }
   if(unit.yukariArcane&&battle.s.time>=unit.yukariArcane.until)unit.yukariArcane=null;
  },
- // 术法充盈的数值只有一条可达通道：`collabAttackModifier` 按**伤害来源**派发，而本文件只能给
- // 岳羽由加莉自己挂钩子，所以只有「她自己吃到术法充盈后打出的伤害」会真的乘上 (1+damage_up)。
- // 其他干员没有通用增伤通道（详见文件头「口径缺口」），这一点写在测试与交接报告里。
- attackModifier(battle,unit,target,value){
-  const arc=unit.yukariArcane;
-  if(!arc||!(Number(arc.value)>0)||battle.s.time>=arc.until)return value;
-  return value*(1+Number(arc.value));
- }
+ // 术法充盈的增伤**不在这里算**（2026-09-27 起共享层有了通用通道）：`native-operator-effects.attackModifier`
+ // 会读**任何伤害来源**的 `unit.yukariArcane` 窗口，所以友军吃到的术法充盈也会真的进伤害。
+ // 本文件只负责写窗口、清窗口（consumeTriggers／tick／exit），乘算留给那一条通道，避免同一份加成算两遍。
 };

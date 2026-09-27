@@ -12,6 +12,7 @@
 import {bondIsCore,bondName,bondRoster,bondIds} from './native-bond-ban.js';
 import {richText,DIRECTION_NAMES} from './protocol.js';
 import {ARCHIVE_FLAG_DEFAULTS,loadArchive} from './native-archive.js';
+import {dataForPrep} from './native-sees.js';
 
 export const PREP_SKILL_KEY='garrison-prep-default-skill-v1';
 // 配置版本：只认当前版本，读到别的版本（或没有版本号）一律当作「没设置过」，回落到档案自带档位。
@@ -251,7 +252,10 @@ export function renderPreparePage(data,prep={},ui={}){
  const esc=ui.esc||(value=>String(value??'')),avatar=ui.avatar||(()=>'');
  // 档案由页面自己读（调用方也可以显式传 `ui.archive`，单测就是走这条），这样战前准备的调用签名不用变。
  const archive=ui.archive||loadArchive(storage());
- const catalog=prepCatalog(data),tab=PREP_TABS.includes(prep.tab)?prep.tab:'operator';
+ // S.E.E.S.（用户 2026-09-27 口径）：解锁标记为真时，四名联动干员与「S.E.E.S.臂章」才进这份名册／装备表；
+ // 没解锁时它们在数据里仍是隐藏档，页面与改动前完全一致——dataForPrep 就是这一处开关。
+ const page=dataForPrep(data,archive);
+ const catalog=prepCatalog(page),tab=PREP_TABS.includes(prep.tab)?prep.tab:'operator';
  const skills=prep.skills||{},filters={tier:prep.tier,core:prep.core,extra:prep.extra};
  const operators=filterPrepOperators(catalog.operators,filters),equipment=filterPrepEquipment(catalog.equipment,filters);
  const dirty=prepDirtyCount(skills,prep.saved||{});
@@ -265,7 +269,7 @@ ${archiveSection(archive,esc)}
 <button data-act="prep-tab" data-tab="operator" class="${tab==='operator'?'chosen':''}">全干员 <small>${catalog.operators.length}</small></button>
 <button data-act="prep-tab" data-tab="equipment" class="${tab==='equipment'?'chosen':''}">全装备效果 <small>${catalog.equipment.length}</small></button>
 </div>
-<div class="native-prep-list" id="prep-list">${list.length?(tab==='operator'?list.map(row=>operatorCard(data,row,skills,esc,avatar)).join(''):list.map(item=>equipmentCard(data,item,esc)).join('')):'<p class="native-prep-empty">没有符合当前筛选条件的条目。</p>'}</div>
+<div class="native-prep-list" id="prep-list">${list.length?(tab==='operator'?list.map(row=>operatorCard(page,row,skills,esc,avatar)).join(''):list.map(item=>equipmentCard(page,item,esc)).join('')):'<p class="native-prep-empty">没有符合当前筛选条件的条目。</p>'}</div>
 <section class="native-prep-filters">
 <div class="native-prep-tier-row"><span>阶级</span>${PREP_TIERS.map(tier=>`<button data-act="prep-tier" data-tier="${tier}" class="${Number(prep.tier)===tier?'chosen':''}" aria-pressed="${Number(prep.tier)===tier}">${tier}</button>`).join('')}<small>再点一次取消阶级筛选</small></div>
 <div class="native-prep-bond-row">${bondSelect('prep-core','核心盟约',catalog.bonds.core,prep.core||'')}${bondSelect('prep-extra','附加盟约',catalog.bonds.extra,prep.extra||'')}</div>

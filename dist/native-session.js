@@ -9,6 +9,7 @@ import {bondBanIds,loadBondBan,normalizeBondBan} from './native-bond-ban.js';
 // 干员默认技能（「战前准备」页保存的配置）：购买时按它决定新干员携带哪一档，读档时用来补齐/对齐副本。
 import {applyPrepSkills} from './native-prep.js';
 import {TOKEN_IDS} from './native-effects.js';
+import {itemAllowed,operatorAllowed,seesRun,freeDeploy,settleFundsToLayers,grantCountForLayers,seesGrantCandidates,tartarusLayers} from './native-sees.js';
 
 // 召唤物落点不受主人攻击范围限制的类型（见 summonCardRange 的注释）。
 const SUMMON_FREE_PLACEMENT=new Set(['cathy-device']);
@@ -108,7 +109,7 @@ export class NativeSession extends NativeEconomy {
  // eligible() 是抽卡的唯一准入过滤点（商店、具名池、'later' 池都走它），所以过滤器只挂在这里；
  // 判定与名单本身在 NativeEconomy.bondBanned（商店以外还有固定点名发放要挡，见那边的注释）。
  isOperatorBanned(chessId){return this.bondBanned(chessId);}
- eligible(){return Object.values(this.data.season.charShopChessDatas).filter(o=>o.charId&&!o.isHidden&&!this.isOperatorBanned(o.chessId));}
+ eligible(){return Object.values(this.data.season.charShopChessDatas).filter(o=>operatorAllowed(this.data,o,this)&&!this.isOperatorBanned(o.chessId));}
  // 奖励候选之间不能重复：同一次奖励里出现的卡必须互不相同。
  // exclude 交给 drawFromPool 直接剔除，卡池确实不足时按顺序补位（不能因为去重让奖励变少）。
  drawDistinct(request,count,exclude=[]){
@@ -126,8 +127,8 @@ export class NativeSession extends NativeEconomy {
   if(r.kind==='item'){
    const pool=String(r.pool||''),fixedTier=r.tier||Number(pool.match(/shop_(\d)/)?.[1]),named=NAMED_POOLS[pool];
    const pooled=Boolean(named?.members||named?.bond);
-   let items=this.data.items.filter(i=>!i.hidden&&(pooled||i.rank<=this.s.level));
-   if(fixedTier)items=this.data.items.filter(i=>!i.hidden&&i.rank===fixedTier);
+   let items=this.data.items.filter(i=>itemAllowed(i,this)&&(pooled||i.rank<=this.s.level));
+   if(fixedTier)items=this.data.items.filter(i=>itemAllowed(i,this)&&i.rank===fixedTier);
    const bond=named?.bond||(pool.includes('equip_vict')?'victoriaShip':null);
    if(bond)items=items.filter(i=>i.normal?.giveBondId===bond||this.data.season.trapChessDataDict[i.id]?.giveBondId===bond);
    if(named?.members){const weights=namedWeights(named);items=items.filter(i=>weights.has(i.id));if(items.length)return this.pick(namedPickList(items,weights,i=>i.id)).id;}
@@ -253,7 +254,12 @@ export class NativeSession extends NativeEconomy {
   // 例外：部署占用数 0 的装置（凯瑟琳的支援装置）不占格——PRTS 写「部署占用数 0」，
   // 所以「先把装置摆好、干员后上场」是成立的，摆在同一个格子上也算在装置的攻击范围内。
   if((this.s.summonCards||[]).some(c=>c.ownerUid!==uid&&c.position?.x===x&&c.position?.y===y&&!SUMMON_FREE_PLACEMENT.has(c.type)))return false;
-  if(!old&&!other&&this.s.units.filter(v=>v.position).length>=this.s.capacity)return false;
+  // 虎狼丸的「不占用部署位」：它自己不占名额，所以判定要看「放下去之后」的计数
+  // （8 名普通干员已满时它仍能上场，而它在场也不挡别的干员）。
+  if(!old&&!other){
+   const used=this.s.units.filter(v=>v.position&&!freeDeploy(this.data,v)).length,adds=freeDeploy(this.data,u)?0:1;
+   if(used+adds>this.s.capacity)return false;
+  }
   return !other||!old||valid(other,this.map.grid[old.y][old.x]);
  }
  deploy(uid,x,y,dir){
@@ -316,7 +322,28 @@ export class NativeSession extends NativeEconomy {
    }
   }
  applyTouchReplacement(){if(this.s.bandId!=='band_amedic'||this.s.strategyClaims.touchReplacement)return false;const elites=this.s.units.filter(u=>u.position&&this.data.season.charChessDataDict[u.chessId]?.isGolden).length,target=this.s.units.find(u=>u.touchReserve);if(elites<2||!target)return false;target.chessId='chess_virtual_touch';target.charId='char_613_acmedc';target.rank=6;target.touchReserve=false;this.s.strategyClaims.touchReplacement=1;return true;}
- startBattle(){if(this.s.phase!=='prep'||this.s.rewardPending)return false;this.applyTouchReplacement();const ok=this.beginBattle();if(!ok)return false;if(this.s.phase==='prep')return true;const turn=buildPhasePlan(this.data,this.s.modeId).find(t=>t.round===this.s.round);this.battle=new NativeBattle(this.data,this,this.map,turn);return true;}
+ // S.E.E.S. 策略（band_sees）的回合结算：**开战前**把剩余资金全部换成【塔尔塔罗斯】层数。
+ // 用户口径是「回合结束时消耗剩余所有资金」，而 beginBattle 会把资金清零，所以这是唯一还有余额的时刻；
+ // 层数每跨过 25 层补发一名不高于当前商店阶级的 S.E.E.S. 干员（优先不与场上已有的重复）。
+ // 账本都在 s 上：层数 `bondLayers.tartarusShip`、已发到第几档 `seesGrants`（发不出去就不推进档位，下回合再试）。
+ settleTartarusRound(){
+  if(!seesRun(this))return 0;
+  const gained=settleFundsToLayers(this.data,this,this.s.units);
+  this.setFunds(0);
+  const want=grantCountForLayers(this.data,tartarusLayers(this)),have=Number(this.s.seesGrants)||0;
+  let issued=0;
+  for(let n=have;n<want;n++){
+   const {pool,fresh}=seesGrantCandidates(this.data,this,{exclude:this.s.units.map(u=>u.charId)});
+   const list=fresh.length?fresh:pool;
+   if(!list.length)break;
+   const row=list[Math.min(list.length-1,Math.floor(this.random()*list.length))];
+   if(!this.gain(row.id))break;
+   issued++;
+  }
+  this.s.seesGrants=have+issued;
+  return gained;
+ }
+ startBattle(){if(this.s.phase!=='prep'||this.s.rewardPending)return false;this.applyTouchReplacement();this.settleTartarusRound();const ok=this.beginBattle();if(!ok)return false;if(this.s.phase==='prep')return true;const turn=buildPhasePlan(this.data,this.s.modeId).find(t=>t.round===this.s.round);this.battle=new NativeBattle(this.data,this,this.map,turn);return true;}
  finishCurrentBattle(){if(!this.battle?.s.finished||this.s.phase!=='battle')return;const r=this.battle.s.result;this.s.history.push(r);if(r.kind==='training-dummy'){this.s.runResult=r;this.s.phase='finished';}else{const loss=Math.min(ROUND_LEAK_CAP,r.leaks);this.s.hp=Math.max(0,this.s.hp-loss);this.finishBattle({success:this.s.hp>0,leaks:r.leaks});this.s.lastBattle.loss=loss;if(!this.s.hp)this.s.runResult=r;}this.applyPostBattleTransforms();}
  tick(){if(this.s.phase==='battle'&&this.battle){this.battle.step();this.finishCurrentBattle();}}
  advanceRound(){if(this.s.phase!=='intermission')return false;const locked=this.s.locked,oldOffers=locked?this.s.offers.slice():null,oldItems=locked?this.s.itemOffers.slice():null;this.s.prepApplied=false;const ok=this.nextRound(locked?[]:this.rollOffers());if(!ok)return false;if(locked){const refillOffers=this.rollOffers();this.s.offers=Array.from({length:this.terms().operatorSlots},(_,i)=>oldOffers[i]??refillOffers[i]);if(this.s.level<3)this.s.itemOffers=[];else{const refillItems=Array.from({length:this.terms().itemSlots},()=>this.drawFromPool({kind:'item'}));this.s.itemOffers=Array.from({length:this.terms().itemSlots},(_,i)=>oldItems[i]??refillItems[i]);}}else this.fillItems();this.addFunds(this.s.passiveIncome);this.applyProjectionUpgrades();

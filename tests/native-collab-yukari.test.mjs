@@ -189,21 +189,25 @@ test('岳羽由加莉 S2：术法充盈的数值只从技能黑板读（改黑�
  }finally{row('damage_up').value=original.damage_up;row('duration').value=original.duration;}
 });
 
-test('岳羽由加莉：术法充盈目前只有「自己作为伤害来源」真的进结算（其他干员没有通用增伤通道）',()=>{
+test('术法充盈：任何干员（含友军）在窗口内造成的伤害都乘 (1+damage_up)',()=>{
  const {b,u}=setup(1,[{chessId:'chess_collab_makoto',skillIndex:0}]);
  const makoto=byId(b,'char_4217_makoto');
  makoto.x=u.x+1;makoto.y=u.y;
- cast(b,u,1);
- cast(b,makoto,0);
+ cast(b,u,1);                                                          // S2 给范围内友军挂触发型效果
+ cast(b,makoto,0);                                                     // 友军开技 → 消费触发、拿到窗口
  assert.ok(makoto.statuses.some(s=>s.kind==='magicArcane'&&Math.abs(s.value-0.3)<1e-9),'发到友军身上的术法充盈状态确实存在');
- // 客户端没有「任意干员增伤」的通用通道：attackModifier 只对 4 名联动干员按来源派发，
- // statusAttributeChanges 也只有 attackDown／attackSpeed 一类。所以这里**不**断言 makoto 的伤害数字，
- // 免得将来补上通用通道时把这条门禁撞红；缺口的当前状态写在测试文件与交接报告里。
- const self=structuredClone(u);self.uid=999001;self.x=u.x;self.y=u.y+1;self.statuses=[];self.yukariArcane=null;self.deployed=true;b.s.units.push(self);
- const e=enemy(b,{x:u.x+1,y:u.y+1,hp:1e9,atk:0});
- cast(b,u,0);                                                          // 先让窗口在自己身上生效
- assert.ok(u.yukariArcane,'自身窗口要起效');
- const hp0=e.hp;b.hit(u,e,100,'arts');
- assert.ok(Math.abs(hp0-e.hp-130)<1e-6,'自己的伤害乘上 (1+damage_up)');
- assert.equal(typeof hooks.attackModifier,'function');
+ assert.ok(makoto.yukariArcane&&makoto.yukariArcane.until>b.s.time,'友军的术法充盈窗口在');
+ const e=enemy(b,{x:makoto.x+1,y:makoto.y,hp:1e9,atk:0});
+ const hp0=e.hp;b.hit(makoto,e,100,'arts');
+ assert.ok(Math.abs(hp0-e.hp-130)<1e-6,'友军的伤害乘上 (1+damage_up)：'+(hp0-e.hp));
+ // 窗口过期后回到原值。
+ makoto.yukariArcane.until=b.s.time-.01;
+ const hp1=e.hp;b.hit(makoto,e,100,'arts');
+ assert.ok(Math.abs(hp1-e.hp-100)<1e-6,'过期后不再加成');
+ // 自己作为伤害来源同样走共享层那一条通道；本文件不再自己乘算（否则同一份加成算两遍）。
+ assert.equal(typeof hooks.attackModifier,'undefined','增伤已收到共享层通道，本文件不再挂钩子');
+ const self=enemy(b,{x:u.x,y:u.y+1,hp:1e9,atk:0});
+ u.yukariArcane={until:b.s.time+10,value:.3,sourceUid:u.uid};
+ const hp2=self.hp;b.hit(u,self,100,'arts');
+ assert.ok(Math.abs(hp2-self.hp-130)<1e-6,'自己作为来源也照旧加成');
 });

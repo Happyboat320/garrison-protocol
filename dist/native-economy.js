@@ -3,6 +3,8 @@ import {PreparationState,activeBonds,blackboard,purchasePrice,restoreStock,stock
 import {BOND_TEXT_CONSTANTS} from './native-bond-keys.js';
 import {runGarrison} from './garrison.js';
 import {bannedOperators,bondBanBlockers,bondBanSummary,bondMembers,isOperatorBanned} from './native-bond-ban.js';
+// S.E.E.S. 策略：`bonds()` 里把【塔尔塔罗斯】的计数换成层数（纯读，不改判定）。
+import {seesRun,tartarusLayers} from './native-sees.js';
 
 // Preparation controller for the historical mode. Random pools remain an explicit
 // controller input until their selection rules are verified; absent draws fail atomically.
@@ -31,7 +33,12 @@ export class NativeEconomy extends PreparationState {
   if(request.kind!=='item'&&this.bondBanned(id))throw Error('Banned operator leaked into pool: '+id);
   return id;
  }
- bonds(){return activeBonds(this.data,this.s.units,this.s.modeId);}
+ bonds(){
+  const rows=activeBonds(this.data,this.s.units,this.s.modeId,this.s.bandId);
+  // S.E.E.S. 策略局里【塔尔塔罗斯】没有「干员成员」概念：它的计数就是层数（面板、战报的盟约情况都读这一份）。
+  if(seesRun(this)&&rows.tartarusShip){const layers=tartarusLayers(this);rows.tartarusShip.count=layers;rows.tartarusShip.rawCount=layers;}
+  return rows;
+ }
  // 盟约禁用（用户 2026-09-22 二次修订口径，v3）：干员所属盟约「全部」被禁时才禁用；
  // 干员还能用，其余一律拿不到——**不只是商店**：策略／道具的固定点名发放、卫戍 SERVER_GAIN_CHAR、
  // 援军转让、晋升奖励候选都走这里挡。判定按 charId（精锐与初始是同一名干员），名单在编制台配置。

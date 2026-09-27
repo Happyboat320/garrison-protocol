@@ -49,6 +49,8 @@
 // 另有数据门禁与 2 条「通用层已覆盖、本文件不得重复实现」的用例）
 import {blackboard} from './protocol.js';
 import {permissions} from './status.js';
+// 【塔尔塔罗斯】层数增幅（S.E.E.S. 策略专属；数值取 data.sees.numbers.aigisPerLayer）。
+import {aigisLayerScale,seesRun,TARTARUS_BOND_ID} from './native-sees.js';
 
 // PRTS 技能备注「全弹发射」：※技能的六发导弹弹道飞行速度均为10，伤害半径均为1.1
 // ※技能的飞踢为一个独立的弹道，固定0.12秒后命中，伤害半径2.0。
@@ -81,6 +83,16 @@ function lockedTarget(battle,unit){
 }
 
 export const aigisHooks={
+ // S.E.E.S. 策略的【塔尔塔罗斯】层数增幅：攻击力与生命上限每层 +0.2%（264 层 → +52.8%）。
+ // 走 ratio 通道（与其它百分比加成加算），只在 band_sees 局生效。
+ statMods(battle,unit,out){
+  if(!seesRun(battle.economy))return;
+  const bonus=aigisLayerScale(battle.data,battle.layers?.[TARTARUS_BOND_ID])-1;
+  if(!(bonus>0))return;
+  out.ratio.atk+=bonus;out.ratio.maxHp+=bonus;
+  out.parts.push({stat:'atk',layer:'ratio',v:bonus,src:'塔尔塔罗斯层数'});
+  out.parts.push({stat:'maxHp',layer:'ratio',v:bonus,src:'塔尔塔罗斯层数'});
+ },
  // 天赋「造成」侧：只在物理伤害上乘 damage_scale。
  attackModifier(battle,unit,target,value){
   const scale=Number(talentBoard(battle,unit).damage_scale);

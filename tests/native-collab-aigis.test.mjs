@@ -1,4 +1,4 @@
-import test from 'node:test';import assert from 'node:assert/strict';
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
 import {openBattle,deployNow,enemy,byId} from './effects-harness.mjs';
 import {blackboard} from '../dist/protocol.js';
 import {NATIVE_DATA} from '../dist/runtime-data.js';
@@ -146,4 +146,31 @@ test('S2：地面目标也能锁定（瞬时技没有生效期，裂空炮手 id
  near(target.maxHp-target.hp,atk*scale*bb.times*bb.atk_scale);
  for(let i=0;i<6;i++)b.step();
  near(target.maxHp-target.hp,atk*scale*(bb.times*bb.atk_scale+bb.kick_atk_scale));
+});
+
+// ── S1 技能期间的溅射半径（2026-09-27 补的引擎通道）─────────────────────────────
+// PRTS 技能备注（本地快照 data/prts/snapshots/2026-09-12-prts/operators.json）写：
+//   ※技能期间，攻击弹道的伤害半径变为2.0。
+// 分支「裂空炮手」只登记了 `splashDuringSkill:1.1`，以前没有技能级覆盖入口，所以 S1 一直吃 1.1。
+// 现在通道在 native-branches 的 SKILL_SPLASH／branchBehavior（与 SKILL_ANTIAIR 同一套写法）。
+test('S1：技能期间伤害半径按 PRTS 备注变成 2.0（不是分支的 1.1）（空实现下失败）',()=>{
+ const {b,u}=fight(0);
+ assert.equal(b.behavior(u).radius,undefined,'非技能期取分支 radius（裂空炮手没登记，即 undefined）');
+ u.sp=b.spCost(u);b.activate(u);
+ assert.equal(b.skillActive(u),true,'S1 有 20 秒生效期');
+ assert.equal(b.behavior(u).style,'splash','技能期间是范围攻击');
+ assert.equal(b.behavior(u).radius,2,'PRTS：技能期间伤害半径 2.0');
+ // 覆盖只认这一名干员的这一档技能：换到 S2（瞬时技）不生效。
+ const other=fight(1);
+ other.u.sp=other.b.spCost(other.u);other.b.activate(other.u);
+ assert.notEqual(other.b.behavior(other.u).radius,2,'S2 不在溅射覆盖表里');
+});
+
+test('技能级溅射半径覆盖有 PRTS 备注逐条支撑（登记表门禁）',()=>{
+ const snap=JSON.parse(fs.readFileSync('data/prts/snapshots/2026-09-12-prts/operators.json','utf8'));
+ const list=Array.isArray(snap)?snap:(snap.operators||Object.values(snap));
+ const op=list.find(o=>o.id===`prts:operator:${CHAR}`||o.gameId===CHAR||o.name==='埃癸斯');
+ assert.ok(op,'PRTS 快照里要有埃癸斯');
+ const note=String(op.skills[0].sourceTemplate?.fields?.备注||'');
+ assert.match(note,/伤害半径变为2\.0/,'S1 备注必须写「伤害半径变为2.0」，否则不该进 SKILL_SPLASH');
 });

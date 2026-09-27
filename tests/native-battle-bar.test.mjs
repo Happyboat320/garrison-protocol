@@ -78,7 +78,7 @@ test('所有战斗中生成的敌人都标了 derived（漏一个就会虚增击
 
 test('计数器在场景窗体的标题行里，三个数值都由 updateHud 刷新',async()=>{
  const play=await read('native-play.js');
- assert.match(play,/<span id="native-wave-progress">\$\{s\.units\.filter\(u=>u\.position\)\.length\} \/ \$\{s\.capacity\} 部署<\/span>\$\{s\.phase==='battle'&&!state\.sandbox\?battleBar\(\):''\}/,'计数器要接在场景窗体标题行（.native-field-caption）末尾，不能放页面顶部那一条');
+ assert.match(play,/<span id="native-wave-progress">\$\{deployCount\(s\)\} \/ \$\{s\.capacity\} 部署<\/span>\$\{s\.phase==='battle'&&!state\.sandbox\?battleBar\(\):''\}/,'计数器要接在场景窗体标题行（.native-field-caption）末尾，不能放页面顶部那一条');
  assert.doesNotMatch(play,/<\/header>\$\{s\.phase==='battle'/,'不要再把它插在页头和工作区之间');
  for(const id of ['native-bb-round','native-bb-kills','native-bb-total','native-bb-hp'])assert.match(play,new RegExp(`id="${id}"`),id+' 要有落点');
  assert.match(play,/set\('native-bb-round',g\.s\.round\)/,'左＝当前回合');

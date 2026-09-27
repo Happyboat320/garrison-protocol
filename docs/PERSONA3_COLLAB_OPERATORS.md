@@ -7,15 +7,18 @@
 | 项 | 决定 |
 | --- | --- |
 | 入池方式 | 只作**隐藏档**：`charShopChessDatas[chessId].isHidden = true` |
-| 盟约 | **不给**：`charChessDataDict[chessId].bondIds = []` |
+| 盟约 | **默认不给**：`charChessDataDict[chessId].bondIds = []`；**例外**：选了 S.E.E.S. 策略的局里挂 `seesShip`（见下） |
 | 卫戍 | **不给**：`garrisonIds = []`（干员档案显示「无卫戍效果」） |
-| 商店 | **不进池**：`NativeSession.eligible()` 过滤 `isHidden`，商店／具名池／`later` 池／晋升奖励都抽不到 |
-| 名册 | **不列**：`catalog.roster` 只收 `charId && !isHidden`，战前准备仍是 112 名可见预设 |
-| 精锐化 | **无**：`upgradeChessId = null`，四个隐藏档都没有精锐形态 |
+| 商店 | **默认不进池**：`NativeSession.eligible()` 过滤 `isHidden`，商店／具名池／`later` 池／晋升奖励都抽不到；**例外**：`band_sees` 局（`native-sees.operatorAllowed`）会进池并铺库存 |
+| 名册 | **默认不列**：`catalog.roster` 只收 `charId && !isHidden`，战前准备仍是 112 名可见预设；**例外**：本地存档 `flags.sees` 打开后，`dataForPrep` 会把四人并入名册（116 名） |
+| 阶级 | 商店阶级按 S.E.E.S. 策略的分层口径 **1／2／3／6**（用户 2026-09-27），**覆盖「阶＝星级」的默认规则**；登记表 `collab-operators.json` 的 `chessLevel` 仍按星级记原始阶，运行时以 `sees-content.json` 为准 |
+| 精锐化 | **无**：`upgradeChessId = null`，四个隐藏档都没有精锐形态（所以「由加莉精锐 +4」那一档只有数据与公式，游戏内取不到） |
 | 唯一入口 | **技能测试场**：「添加干员」的列表取 `data.profiles` 全部条目（含隐藏档） |
 | 数值来源 | **不抄写**：实体／技能／范围在构建时从 `data/normalized/current.json`（rel77.0）取，登记表只存 charId／chessId／档位 |
 | 潜能 | 一律按**无潜能**（`potentialRank = 0`）结算，与其他干员同一口径；四人「天赋效果加强／费用-1／攻击力+N」等条目**未建模** |
 | 信赖 | 未建模（本客户端所有干员都不叠加信赖加成） |
+
+**S.E.E.S. 策略带来的例外（用户 2026-09-27）**：进入隐藏内容的解锁状态（`flags.sees`）后，策略选择里会出现【S.E.E.S.】；**只有本局选了这条策略**，四人才进调配池（`operatorAllowed`）、才挂 `seesShip` 盟约并计入【S.E.E.S.】核心盟约的 3/3，臂章也才进装备池。完整口径与施工记录见 `docs/SEES_CONTENT.md` 与 `docs/SEES_STRATEGY_REMAINING.md`，回归 `tests/native-sees.test.mjs`。
 
 登记表：`data/modes/alliance-lower/collab-operators.json`；构建接线：`scripts/build-native.mjs`（与 `chess_virtual_*` 同一做法，不打补丁进历史快照 `source.json`）。
 
@@ -247,7 +250,7 @@
 
 已实现（`dist/native-collab-kormr.js`，12 条回归）：部署后对天赋 `rangeId`（`x-1`）范围内**最近 1 名敌人**发动 6 次独立结算的斩击（5 次 `atk_scale`＋第 6 次 `final_atk_scale`，法术伤害，各留一条 damage 记录），最后一次后按黑板 `fear` 施加恐惧；范围内没有敌人、目标中途被击倒、黑板缺倍率等边界都有用例。
 
-未闭环：① 斩击次数 6 写在代码里（PRTS 文案固定值，黑板没有次数键）；② 「最近」用欧氏距离（文案没写度量），同距离取 uid 小；③ 未区分空中／地面（文案没限定）；④ 「无视闪避」是**在这 6 次期间把目标 `enemyUnblockedDodge` 临时压 0 再写回**（法术侧唯一闪避源；伤害管线还没有 ignoreDodge 开关，将来加了应换成开关）；⑤ 表现层没有专门的斩击特效。
+未闭环：① 斩击次数 6 写在代码里（PRTS 文案固定值，黑板没有次数键）；② 「最近」用欧氏距离（文案没写度量），同距离取 uid 小；③ 未区分空中／地面（文案没限定）；④ ✅ 「无视闪避」已改用共享层开关 `dealDamage({ignoreDodge:true})`（2026-09-27 补，见 §5.6）；⑤ 表现层没有专门的斩击特效。
 
 ### 5.2 埃癸斯
 
@@ -255,25 +258,36 @@
 
 通用层已经覆盖、本文件**故意不再实现**（避免乘两遍，已实测）：S1 的攻／防加成（`native-battle.stats` 的通用技能黑板分支）、S1 结束自晕（`native-effects.onSkillEnd`）、天赋「受到侧」物理减伤（`damageReductionFor`）。天赋「受到侧」在钩子里按同一黑板值显式重述一次，作为口径存档。
 
-未闭环：① S1 期间的**伤害半径**：PRTS 技能备注写 2.0，现在统一吃分支的 `splashDuringSkill=1.1`；`branchBehavior` 没有技能级半径覆盖入口，要改得动 `dist/native-branches.js`；② 「起飞／降落」仍未做（分支自己登记为 `pending`）；③ 飞踢的溅射集合是开技瞬间按目标位置算的快照，目标被推走会有偏差；④ 普攻类型判闸门用的是 `battle.baseDamageType(unit)`，陈策略／弱点装备会把类型改写成「物理与法术里较大的那个」，这种组合下天赋会少算。
+未闭环：① ✅ S1 期间的伤害半径已按 PRTS 备注变成 2.0（2026-09-27 补的技能级覆盖表 `SKILL_SPLASH`，见 §5.6）；② 「起飞／降落」仍未做（分支自己登记为 `pending`；PRTS 修正后的特性文本口径已由 `airOnlyIdle` 覆盖，剩下的是原作的飞行阻挡表现）；③ 飞踢的溅射集合是开技瞬间按目标位置算的快照，目标被推走会有偏差；④ 普攻类型判闸门用的是 `battle.baseDamageType(unit)`，陈策略／弱点装备会把类型改写成「物理与法术里较大的那个」，这种组合下天赋会少算。
 
 ### 5.3 岳羽由加莉
 
 已实现（`dist/native-collab-yukari.js`，7 条回归）：天赋「治愈之风」（技能结束后治疗自身＋范围内生命比例最低的干员，满血的非自身目标不入池，最多 `max_target` 名）；S1「龙卷箭」（3 发 `multi_atk_scale`＋1 次 `final_atk_scale` 范围法术，半径 1.1 的圆判定，按黑板 `levitate` 浮空）；S2「明镜止水」（按 结城理 → 术师 → 部署先后 的顺序给最多 `max_target` 名友军挂触发型效果，友军开技时消费一次，转成 `duration` 秒的术法充盈窗口＋`magicArcane` 状态；施加当帧不自我触发；离场清字段）。两个技能都返回 `true` 压掉通用开技兜底。
 
-口径说明（要记住的两条）：① 她两个技能都是**瞬发**，而客户端只在「持续／弹药技能结束」那一帧派发 `skill-end`，所以「技能结束后」的治疗是 `hooks.tick` 在同一帧补结算的（`tickLogic` 晚于 `activate`），持续技仍走 `skill-end`，两条路共用一份实现且只消费一次；② 术法充盈**只有岳羽由加莉自己作为伤害来源时真的进结算**（`collabAttackModifier` 按来源派发）；友军侧本客户端没有「任意干员增伤」的通用通道，所以只到「状态＋计时窗口」，测试**故意不断言友军伤害数字**，不伪造统计。
+口径说明（要记住的两条）：① 她两个技能都是**瞬发**，而客户端只在「持续／弹药技能结束」那一帧派发 `skill-end`，所以「技能结束后」的治疗是 `hooks.tick` 在同一帧补结算的（`tickLogic` 晚于 `activate`），持续技仍走 `skill-end`，两条路共用一份实现且只消费一次；② 术法充盈的增伤由**共享层通道**结算（`native-operator-effects.attackModifier` 读任何伤害来源的 `unit.yukariArcane` 窗口），本文件只写／清窗口——2026-09-27 起友军吃到的术法充盈也会真的进伤害。
 
-未闭环：① 友军术法充盈的数值进结算（需要共享层新增通道，例如在 `hit`／`attackModifier` 里读所有单位的增伤窗口）；② 「触发型效果」目前只有她这一处实现，分支策略里的 `triggerEffect` 标记还只是个登记。
+未闭环：① ✅ 友军术法充盈的数值已进结算（共享层通道，见 §5.6）；② 「触发型效果」目前只有她这一处实现，分支策略里的 `triggerEffect` 标记还只是个登记。
 
 ### 5.4 结城理
 
-已实现（`dist/native-collab-makoto.js`，23 条回归）：天赋一（切换替身时按黑板 `sluggish` 停顿范围内敌人；替身形态生命上限 ×(1+`max_hp_t1`)、攻击间隔 +`base_attack_time` 秒、攻击力按 `atk`）；天赋二（替身结束后对每个 `teamId==='sees'` 队员的 `range_id` 范围内敌人造成攻击力 ×`atk_scale` 真实伤害，可叠加）；三个人格面具的倍率与附带效果（S1 低血友军改为治疗、S2 概率恐惧＋恐惧斩杀、S3 攻速＋物理闪避光环＋每秒治疗）。进入替身走的是现有「受到致命伤」管线（`runFatal` 的傀儡师分支 → `enterDoll`），切换**延后一帧**完成，以保住 S3 开技那一帧的对空窗口。
+已实现（`dist/native-collab-makoto.js`，29 条回归）：天赋一（切换替身时按黑板 `sluggish` 停顿范围内敌人；替身形态生命上限 ×(1+`max_hp_t1`)、攻击间隔 +`base_attack_time` 秒、攻击力按 `atk`）；天赋二（替身结束后对每个 `teamId==='sees'` 队员的 `range_id` 范围内敌人造成攻击力 ×`atk_scale` 真实伤害，可叠加）；三个人格面具的倍率与附带效果（S1 低血友军改为治疗、S2 概率恐惧＋恐惧斩杀、S3 攻速＋物理闪避光环＋每秒治疗）；**S3 的两段替身（塔纳托斯·改 → 俄耳甫斯·改）与人格面具配色见 §5.4.1**。进入替身走的是现有「受到致命伤」管线（`runFatal` 的傀儡师分支 → `enterDoll`），切换**延后一帧**完成，以保住 S3 开技那一帧的对空窗口。
 
-未闭环（逐条，都是引擎通道限制，不是漏接线）：① **攻击伤害类型改不了**——S1／S2 应法术、S3 应弱点伤害，但命中类型由 `baseDamageType()`／分支决定，替身分支固定物理；② **`attack@max_target` 目标数不生效**——索敌目标数由 `targets()` 按分支／天赋文案算，联动没有钩子，替身形态仍只打 1 名敌人；③ 攻击间隔 +0.4 秒是**换算进攻速通道**的近似（`stats()` 不读 `baseAttackTime` 修正）；④ S3 的 `attack@block_cnt`(2) 不生效（`stats()` 在 `dollForm` 下强制归 0）；⑤ S3「物理与法术闪避」只落了物理那一半（法术闪避没有通道）；⑥ S3「塔纳托斯·改在场时开启技能或受到致命伤改为召唤俄耳甫斯·改」做不到（替身形态下 `activate()` 与 `runFatal` 都被引擎提前 return）；⑦ **替身形态对空没落地**（`behavior()` 替身分支固定 `antiAir:false`，而三个技能 duration 都是 0，`u.skillAir` 窗口只到开技那一帧）——`SKILL_ANTIAIR` 里 S3 的登记目前只保住开技那一帧的既有门禁；⑧ 进入替身走真实致死管线，会被护盾／屏障先吃掉一部分，并在战报里留一条 `knockdown`；⑨ 天赋一的 `atk` 与通用通道耦合（通用通道把它当常驻加成，本文件在基础形态用负项抵消——将来通用通道改成按形态判定，这个负项要跟着删）；⑩ S1 的「改为治疗」是近似语义（仍会走一次 0 伤害的普攻动作）。
+未闭环（逐条，都是引擎通道限制，不是漏接线；第①②⑤⑦条已由 §5.6 的共享通道解决）：① ✅ **攻击伤害类型**已可改（`unit.dollDamageType`：S1／S2 走法术；S3 走弱点伤害，见 §5.6）；② ✅ **`attack@max_target`** 已生效（`unit.attackTargetCountOverride` 覆写普攻目标数）；③ 攻击间隔 +0.4 秒是**换算进攻速通道**的近似（`stats()` 不读 `baseAttackTime` 修正）；④ S3 的 `attack@block_cnt`(2) 只在**俄耳甫斯·改**期间由 `battle.stats` 的返回值覆写生效（塔纳托斯·改仍是 0 阻挡），见 §5.4.1；⑤ ✅ **法术闪避**已有与物理对称的通道（`unit.artsEvadeUntil/artsEvadeProb/artsEvadeOnce`），俄耳甫斯·改的「物理与法术闪避」两半都落进结算；⑥ ✅ S3「塔纳托斯·改在场时开启技能或受到致命伤改为召唤俄耳甫斯·改」**已实现**（battle 实例补丁，见 §5.4.1）；⑦ ✅ **替身形态对空**已可开（`unit.dollAntiAir`，塔纳托斯·改为真）；⑧ 进入替身走真实致死管线，会被护盾／屏障先吃掉一部分，并在战报里留一条 `knockdown`；⑨ 天赋一的 `atk` 与通用通道耦合（通用通道把它当常驻加成，本文件在基础形态用负项抵消——将来通用通道改成按形态判定，这个负项要跟着删）；⑩ S1 的「改为治疗」是近似语义（仍会走一次 0 伤害的普攻动作）。
 
-### 5.4.1 结城理 S3「开辟明日的剑刃」的两段替身与形态配色（用户 2026-09-27 口径，**待实现**）
+### 5.4.1 结城理 S3「开辟明日的剑刃」的两段替身与形态配色（用户 2026-09-27 口径，**已实现**）
 
-上表 §5.4 未闭环第⑥条（「塔纳托斯·改在场时开启技能或受到致命伤改为召唤俄耳甫斯·改」做不到）现由用户明确要求实现，并追加形态配色：
+上表 §5.4 未闭环第⑥条（「塔纳托斯·改在场时开启技能或受到致命伤改为召唤俄耳甫斯·改」做不到）已按用户要求实现，并追加了形态配色。**实现方式与当初设想的「挂在三个已有钩子上」不同**，以实际代码为准：
+
+**已实现**（`dist/native-collab-makoto.js`，新增 6 条回归，合计 29 条）：
+- `unit.persona` 生命周期：进入 S3 替身那一帧 → `'thanatos'`；窗口内**一次**切换（再次点按技能键／受到致命伤）→ `'orpheus'`；替身窗口结束、重新部署、离场/未部署 → 清空；S1／S2 与其它傀儡师一律不写（`native-fx` 走通用紫色）。
+- 俄耳甫斯·改：不普攻（`attackModifier` 返回 0）、阻挡覆写成 2、每秒对范围内未满血友方挂一批**延迟 0.5 秒**的治疗（剂量＝当前攻击力 × `attack@heal_scale`，`values.heal` 走 `applyHeal`、受禁疗制约）。
+- 视觉：`dist/native-fx.js` 新增 `DOLL_PERSONA_STYLE`（塔纳托斯＝半透明黑罩＋深蓝流动，俄耳甫斯＝半透明白罩＋金色流动）＋`tintAlpha`；`drawDollOverlay` 命中 persona 才走新配色，**没有/未知 persona 时整段仍是原来的紫色实现**（`reduceFx` 只留静止罩色）。
+
+**引擎堵点与绕法（重要，别按「应该挂在钩子上」去改回去）**：替身形态下 `native-battle.activate()` 第一行 `if(u.dollForm)return`、`runFatal` 的傀儡师分支要求 `!target.dollForm`、`stats()` 收尾又 `if(u.dollForm)a.blockCnt=0`，三条路都从钩子外部堵死。所以 `dist/native-collab-makoto.js` 在**部署那一刻给这一场 battle 实例**打本地补丁（`patchBattle`，带 `battle.makotoDollPatch` 幂等标记，包装的是实例上的 `activate`／`hurt`／`stats`，原函数照旧调用，不碰原型、不碰上游文件）：`activate` 抢主动切换（用 `unit.makotoSwitchFrame` 记帧，区分玩家按键与引擎同一帧的自动开技复问），`hurt` 抢致命伤那一次（结算前摘 `dollForm` → 引擎按本体挨致命伤走替身分支 → 结算后装回原 `until`、补血、`swapDoll`；只有 >1 血才保护，避免赖场），`stats` 只改返回值给出俄耳甫斯·改的 2 阻挡。
+
+**仍受引擎限制、这次没有解决**（原 ①–⑤、⑦–⑩ 不变）：攻击伤害类型改不了（S3 的弱点伤害仍是物理）、`attack@max_target` 不生效、攻击间隔用攻速近似、法术闪避没有通道、替身形态对空没落地（`SKILL_ANTIAIR` 只保住开技那一帧）、进入替身仍走真实致死管线（护盾先吃一部分、战报留 `knockdown`）、天赋一 `atk` 的负项抵消仍在。
+
+**回归**：`tests/native-collab-makoto.test.mjs` 的 6 条新用例（进入/清空 persona、主动切换、致命伤切换、不普攻＋阻挡 2、延迟治疗、配色），fail-before 实测（还原 dist 后 6 条全挂）。另外 `dist/native-effects.js` 的 `settlePeriodic` 为此多了一条 `fx.values?.heal != null ⇒ applyHeal` 分支——**延迟伤害分支逐字未改**（这条不做就没法表达「延迟治疗」）。
 
 **机制（PRTS 技能备注 revision 425074）**
 - 携带 S3 时，因特性／技能进入替身形态 → 先是**塔纳托斯·改**（普攻可对空、弱点伤害默认法术、持【阻回】）。
@@ -286,11 +300,7 @@
 - 俄耳甫斯（含俄耳甫斯·改）：头像叠加**半透明白**罩色 ＋ **金色流动特效**。
 - 沿用现有唯一入口 `native-fx.drawDollOverlay(c,actor,box,{reduceFx,time})`（`native-play.draw()` 里紧跟 `drawConcealOverlay` 之后调用一次）：改成按 `actor.persona`（`'thanatos' | 'orpheus'`，`null` 时保持现在的紫色通用罩色）取配色；`reduceFx` 下只留静止罩色、不画流动。
 
-**接线点与回归（实现时照这个清单走）**
-1. `dist/native-collab-makoto.js`：替身形态里维护 `unit.persona`；进入 S3 替身 → `'thanatos'`；主动换形态／受到致命伤 → `'orpheus'`；替身结束清空。俄耳甫斯·改的「不普攻 + 阻挡 2 + 每秒延迟治疗」挂在 `statMods`／`attackModifier`／`tick` 三个已有钩子上。
-2. `dist/native-fx.js`：`DOLL_PERSONA_STYLE = {thanatos:{tint:'rgba(0,0,0,.45)',flow:'#1b3fd8'}, orpheus:{tint:'rgba(255,255,255,.45)',flow:'#e8c46a'}}`，`drawDollOverlay` 按 persona 取样式（默认分支保持紫色）。
-3. `dist/native-play.js`：绘制调用不用改（仍是一处），只保证 `actor.persona` 在 actor 上可读。
-4. 回归：`tests/native-collab-makoto.test.mjs` 追加「S3 进入替身 persona=thanatos → 主动/致命伤切换 persona=orpheus → 替身结束清空」，并断言俄耳甫斯·改期间不普攻、阻挡 2、每秒延迟治疗；视觉用假 canvas ctx 记录 `fillStyle`，断言两种 persona 的罩色与流动色（`reduceFx` 下只画罩色）。
+**接线点（当初的计划，实际实现见上面「引擎堵点与绕法」）**：`unit.persona` 与俄耳甫斯·改的三条效果挂在 `statMods`／`attackModifier`／`tick`；`native-fx.drawDollOverlay` 按 persona 取样式；`native-play` 的绘制入口不用改（仍是一处）。
 
 ### 5.5 其他已知缺口
 
@@ -298,6 +308,24 @@
 - 四个干员没有模组（`modules` 为空），因此不需要模组数据。
 - 立绘／动画：只有头像；战斗中的角色绘制沿用通用表现（`dist/assets/prts` 里没有这四人的 spine 资源）。
 - 「起飞／降落」（裂空炮手）与「触发型效果」（游击手）已登记在 `BRANCH_POLICIES` 的 `pending` 里。
+
+### 5.6 本次补的共享层通道（2026-09-27，联动四人用到的引擎缺口）
+
+四人受引擎限制的那几条「做不到」，这一轮改成了**共享层的正经通道**（不是给某个干员开洞），每一条都有回归：
+
+| 通道 | 位置 | 谁在用 | 语义 |
+| --- | --- | --- | --- |
+| `unit.dollDamageType` | `native-battle.behavior()` 的替身分支 | 结城理 S1／S2 → `'arts'` | 替身形态的普攻类型；未设置＝沿用原行为（幽灵鲨那类仍是分支值） |
+| `unit.dollAntiAir` | 同上 | 结城理 S3 的塔纳托斯·改 → `true` | 替身形态可否对空（默认 false，与原行为一致） |
+| `unit.attackTargetCountOverride` | `native-battle` 普攻决策处的 `count` | 结城理 S2／S3 → `attack@max_target` | 本次普攻的目标数覆写（0／未设置＝按分支与技能黑板算） |
+| `unit.artsEvadeUntil`／`artsEvadeProb`／`artsEvadeOnce` | `native-battle.hurt()` 的闪避链 ＋ `deploy()` 重置表 | 结城理 S3 的俄耳甫斯·改光环（友军） | **法术闪避**，与既有的 `physicalEvade*` 完全对称 |
+| `unit.weaknessAttacker` | `native-sees.weaknessSource()` → `native-battle.hit()` 的类型路由 | 结城理 S3、虎狼丸（charId 判定保留） | 「造成的伤害是弱点伤害」的统一标记 |
+| `dealDamage({ignoreDodge:true})` | `native-effects.dealDamage`（闪避判定的唯一入口）＋ `native-battle.hit()` 转发 opts | 虎狼丸天赋斩击 | 无视闪避；以前靠在结算期间压 0 再写回绕过 |
+| `unit.yukariArcane`（窗口） | `native-operator-effects.attackModifier` | 岳羽由加莉 S2 的术法充盈（友军也能吃到） | 「任意干员增伤」的唯一入口，`(1+value)` 乘算 |
+| `SKILL_SPLASH` | `native-branches.branchBehavior`（与 `SKILL_ANTIAIR` 同一套写法） | 埃癸斯 S1 → 2.0 | 技能级溅射半径覆盖，依据 PRTS 技能备注 |
+| `log()` 的 `type` 冲突 | `native-effects` 的 `evade`／`summon` 记录 | — | payload 里再写 `type` 会把日志类型覆盖掉（`logOf(b,'evade')` 永远查不到），已改名 `damageType`／`summonType` |
+
+回归：`tests/native-collab-makoto.test.mjs`（类型／对空／多目标／法术闪避）、`native-collab-yukari.test.mjs`（友军术法充盈进结算）、`native-collab-kormr.test.mjs`（ignoreDodge 开关 + 对照组）、`native-collab-aigis.test.mjs`（S1 半径 2.0 ＋ PRTS 备注门禁）。
 
 ## 6. 联动工作顺带修掉的三个通用层 bug
 

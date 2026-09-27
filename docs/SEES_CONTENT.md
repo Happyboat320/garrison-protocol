@@ -10,6 +10,7 @@
 - 特殊盟约【塔尔塔罗斯】0/0：每获得 25 层，随机获取一个**不高于当前商店阶级**的【S.E.E.S.】干员，尽可能不与场上已有的重复；**层数上限 264，满了不再增长**。
 - 核心盟约【S.E.E.S.】3/3：每 20 秒可触发一次——造成**弱点伤害**时，对全场所有敌人造成等同于场上全体【S.E.E.S.】干员攻击总和的 **n% 真实伤害**；当【塔尔塔罗斯】层数 **>= 264** 时，冷却变为 **1 秒**。
   - **n 随层数线性成长：0 层 5% → 264 层 40%**（用户 2026-09-27 追加口径；此前定的固定 20% 已被取代）。
+  - 文案里不写 `>=`：`native-rich-text` 的门禁会把 `<`／`>` 当成富文本标签残留，数据里一律写成「达到 264 层」。
 - 干员分层效果：
   | 干员 | 阶级 | 效果 |
   | --- | --- | --- |
@@ -20,29 +21,37 @@
 - 装备「S.E.E.S.臂章」3 阶：造成物理／魔法伤害时，额外造成相当于该次伤害 **10%（初始）／20%（精锐）** 的**弱点伤害**；装备者为【S.E.E.S.】盟约时，再额外造成 **10%／20%** 的**真实伤害**。
 - 策略初始生命 **30**。
 
-## 2. 已经落地（本次提交）
+## 2. 已经落地
 
 | 文件 | 内容 |
 | --- | --- |
 | `data/modes/alliance-lower/sees-content.json` | 内容登记表：策略、两条盟约、四名干员的阶级、臂章、**全部数值**（含 `tartarusLayerCap: 264`、`coreTrueDamagePercentBase/Max: 0.05/0.40`、`coreFastThreshold: 264`、`aigisPerLayer: 0.002` 等）与文案 |
-| `scripts/lib/sees-content.mjs` | 构建期注入器：把登记表并进 `source`（策略／盟约／干员阶级与盟约归属／臂章的两档记录＋效果表），供 build-protocol 与 build-native 共用。**目前默认关闭**（两个构建脚本里的调用被注释掉），因为运行时机制还没接线 |
-| `dist/native-sees.js` | 运行时公式与谓词：`seesUnlocked`／`isSeesBand`／`operatorAllowed`／`itemAllowed`／`dataForPrep`／`visibleBands`；层数账本 `tartarusLayers`／`addTartarusLayers`（**封顶 264**）；`coreTrueDamagePercent(data, layers)`（5%→40% 线性）；`coreCooldown(data, layers)`（>=264 → 1 秒，否则 20 秒）；`layersPerFund`（5 + 由加莉 2/4） |
+| `scripts/lib/sees-content.mjs` | 构建期注入器：把登记表并进 `source`（策略／盟约／干员阶级与盟约归属／臂章的两档记录＋效果表），`build-protocol` 与 `build-native` 各调一次（后者**必须在联动干员建档之后**，否则 `bondIds` 会被覆盖回空），并把 sees 清单写进 catalog／运行时 |
+| `dist/native-sees.js` | 运行时公式与谓词（**纯函数模块，不 import session／battle／play**）：`seesUnlocked`／`isSeesBand`／`seesRun`／`operatorAllowed`／`itemAllowed`／`dataForPrep`／`visibleBands`；层数账本 `tartarusLayers`／`addTartarusLayers`（**封顶读数据**）；`coreTrueDamagePercent`（5%→40% 线性）；`coreCooldown`（≥264 → 1 秒，否则 20 秒）；`layersPerFund`（5 ＋ 由加莉 2/4）；`settleFundsToLayers`／`grantCountForLayers`／`seesGrantCandidates`；`isSeesOperator`／`weaknessSource`／`freeDeploy`／`makotoKillLayers`／`aigisLayerScale`／`bondPanelCount` |
+| `dist/native-session.js` | 卡池门控（`eligible`／装备池走 `operatorAllowed`／`itemAllowed`、`ensureStock` 为四人铺库存）、`settleTartarusRound()`（开战前结算）、虎狼丸不占部署位的上限判定 |
+| `dist/native-battle.js` | `seesCoreStrike`（核心盟约的弱点伤害触发与冷却）、`seesArmbandStrike`（臂章追加伤害）、命中类型路由加 `weaknessSource` |
+| `dist/native-equipment.js` | `seesArmbandScales`：读臂章黑板 `weakness_scale`／`true_scale`（`sees_armband_damage` 行） |
+| `dist/native-effects.js` | 结城理「击倒敌人／自身被击倒 +5/+10」（敌人退场、击倒通知、傀儡师致死三处） |
+| `dist/native-collab-aigis.js` | 埃癸斯随【塔尔塔罗斯】层数的攻／血增幅（`statMods` 的 `ratio` 通道） |
+| `dist/native-bond-ban.js` | `SEES_EXCLUSIVE_BONDS`：两条专属盟约不进禁用池、不进盟约下拉 |
+| `dist/native-play.js` / `dist/native-prep.js` / `dist/native.css` | 策略列表与已选策略的可见性回落、战前准备过 `dataForPrep`、侧栏显示层数、策略头像占位块 |
 
 数值与公式都在数据层，代码不写死；臂章的 `giveBondId` 定为 `seesShip`，所以和「形变同构体」一起装备时，`refreshEquipmentBonds` 会把 `seesShip` 发给携带者（转职 SEES 盟约，不需要另写判定）。
 
-## 3. 尚未接线（下一步施工清单）
+## 3. 施工结果（2026-09-27 全部接线完成）
 
-1. **注入打开**：`scripts/build-protocol.mjs`／`scripts/build-native.mjs` 里 `applySeesContent(...)` 取消注释，并恢复 catalog 的 `sees` 清单（`bandId`／`bondIds`／`roster`／`items`／`numbers`）。打开后需要同步更新几处计数门禁：盟约数 23→25、装备 59→60、策略 40→41。
-2. **可见性**：大厅策略选择与简报按 `visibleBands(data, archive)` 过滤（未解锁不显示 `band_sees`），策略头像用占位块；战前准备用 `dataForPrep(data, archive)` + `prepCatalog(data,{sees})` 放行四人与臂章；盟约禁用池与战前准备的盟约下拉把 `seesShip`／`tartarusShip` 排除（它们只在该策略局存在）。
-3. **卡池门控**：`NativeSession.eligible()` 与 `drawFromPool` 的装备分支改成走 `operatorAllowed`／`itemAllowed`；同店库存 `s.stock` 补上四条 SEES 记录，让阶级掷点能找到他们；`takePromotion` 同步放行。
-4. **回合结束结算**：`NativeSession.finishCurrentBattle` 里（band_sees 局）把 `s.funds` 全部换成层数：`addTartarusLayers(layersPerFund(data,this)*funds)`，随后 `setFunds(0)`；每跨过 25 层发一名干员（阶级 ≤ `s.level`，优先不重复场上已有的），走 `gain()`。
-5. **核心盟约触发**：`native-battle.hit()` 里判定「这次是不是弱点伤害」（现有 `equipWeakness`／虎狼丸转化的那条路径），命中时按 `coreCooldown(data, layers)` 节流，对全场敌人按 `coreTrueDamagePercent(data, layers) × 场上 SEES 干员攻击总和` 结算真实伤害。
-6. **干员效果**：虎狼丸「不占部署位」（`s.capacity` 与「N/M 部署」计数排除它）+ 伤害转弱点（复用 `equipWeakness` 的口径）；埃癸斯每层 +0.2% 攻/血（挂在 `dist/native-collab-aigis.js` 的 `statMods` 钩子上）；结城理击倒/被击倒 +5/+10（接在敌人退场与自身替身切换两处）。
-7. **臂章效果**：`native-equipment.js` 读 `sees_armband_damage` 行的 `weakness_scale`／`true_scale`，在 `hit()` 的伤害结算后追加一次弱点伤害与（S.E.E.S. 盟约时的）真实伤害；实现后把 `tests/native-equipment-effects.test.mjs` 的 `PENDING` 登记删掉。
-8. **面板**：盟约侧栏里【塔尔塔罗斯】显示 `tartarusLayers(s)`（而不是成员数）。
-9. 回归：新增 `tests/native-sees.test.mjs`（门控、封顶、公式、发人、触发节流、臂章追加伤害），并对每个数值做「改数据 → 行为跟着变」的断言。
+施工清单与逐条落点、以及**与初版设计不同的三处实现口径**见 [`docs/SEES_STRATEGY_REMAINING.md`](SEES_STRATEGY_REMAINING.md)（那份文件现在是「完成记录 ＋ 剩余缺口」）。摘要：
 
-## 4. 施工状态
+- 注入打开并同步了计数：策略 40→41、装备 59→60、盟约 23→25（禁用机制仍只认原来 23 个）。
+- 可见性：未解锁时策略列表、战前准备名册（112 名／56 件）与改动前**逐项一致**；解锁后四人进名册、臂章进装备页。
+- 卡池：四人平时 `isHidden` 且**没有库存**，只有 `band_sees` 局才 `eligible()` 放行并铺库存；臂章在数据层 `hideInShop:true`，由 `itemAllowed` 在策略局放行进池。
+- 结算：**开战前**（`beginBattle` 会清零资金）把剩余资金 × 每资金层数换成【塔尔塔罗斯】层数，每 25 层发一名干员，已发到第几档记在 `s.seesGrants`；层数额度**不含**衍生敌人带来的击倒。
+- 战斗：核心盟约的弱点伤害触发按 20 秒／1 秒冷却节流；臂章追加弱点伤害（盟约时再追加真实伤害）；虎狼丸转弱点且不占部署位；埃癸斯按层数增幅；结城理击倒加层。
+- 回归：`tests/native-sees.test.mjs`（16 条，含门控／封顶／公式／发人／触发节流／臂章／四名干员效果／接线门禁），并对上限、比例、发放节奏、臂章比例、埃癸斯每层值、由加莉精锐档做了「改数据 → 行为跟着变」的断言。
 
-- 本次只落了**数据登记表＋公式＋谓词模块＋本文件**；注入与上面 9 条接线**都还没做**，所以现在游戏里看不到 S.E.E.S. 内容（策略列表、卡池、战前准备都与改动前一致），`npm test` 1359 全绿。
-- 之所以先关着注入：半接线的状态会让「盟约数／装备数」这类计数门禁变红，宁可先把口径与公式钉死，再一次性接线。
+## 4. 仍然存在的缺口
+
+- **四人没有精锐形态**（`upgradeChessId: null`）：本地资料包（`data/gamedata/current`）没有这四人的卫戍棋数据，**没有权威来源可以照抄精锐档**，所以按「推不出来的宁可不做也不要编」不发明；「岳羽由加莉精锐 +4／结城理精锐 +10」这两档只有公式与合成单位的回归。臂章的 20% 档可达（装备三合一）。
+- 策略头像没有官方资源（`band_sees` 不在 380 项资源清单里），用 `.native-strategy-placeholder` 占位。
+- 两条专属盟约没有原表黑板行：数值与机制由 `native-sees` 承担，面板的「当前动态数值」改由 `protocol.seesPanelLines` 按 `data.sees.numbers` 单独渲染；`strategyCoverage()` 会把 `sees_round_end_fund_to_layers` 报成 `pendingKeys`（有意为之，见 `STRATEGY_EFFECT_AUDIT.md`）。
+- 逐名干员自身仍未闭环的引擎通道见 `docs/PERSONA3_COLLAB_OPERATORS.md` 的「未闭环」小节与 §5.6（伤害类型改写、`attack@max_target`、替身形态对空、法术闪避、友军术法充盈进结算、无视闪避开关、技能级溅射半径均已补齐；剩下的是攻击间隔近似、起飞／降落、触发型效果登记、S1 治疗近似等）。

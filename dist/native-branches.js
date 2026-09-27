@@ -48,6 +48,16 @@ export function skillAntiAir(charId,skillIndex){
  const row=SKILL_ANTIAIR[charId];
  return row&&skillIndex!=null&&Object.prototype.hasOwnProperty.call(row,skillIndex)?row[skillIndex]:null;
 }
+// 技能级的**溅射半径**覆盖（PRTS 技能备注写明的「攻击弹道的伤害半径变为 N」）。与 SKILL_ANTIAIR 同一套写法：
+// 只有登记过的 (charId, skillIndex) 才生效，`null`＝沿用分支的 `splashDuringSkill`／`radius`。
+// 依据：本地快照 data/prts/snapshots/*/operators.json 的 skills[i].sourceTemplate.fields.备注（回归里有门禁）。
+export const SKILL_SPLASH={
+ char_4218_aigis:{0:2}   // 埃癸斯 S1「启动狂宴模式」：※技能期间，攻击弹道的伤害半径变为2.0（分支默认 1.1）
+};
+export function skillSplashRadius(charId,skillIndex){
+ const row=SKILL_SPLASH[charId];
+ return row&&skillIndex!=null&&Object.prototype.hasOwnProperty.call(row,skillIndex)?row[skillIndex]:null;
+}
 // 部署位：PRTS 分支特性写「可以放置于远程位」的两个分支（推击手／钩索师）既能上高台也能下地面，
 // 其余近战分支仍然只能放地面。数据来源 data/prts/branch-rules.json 的 baseTrait，
 // tests/native-deployment-placement.test.mjs 会拿它做门禁。
@@ -61,5 +71,7 @@ export function branchTrait(profile){
 }
 export function branchBehavior(profile,active=false){
  const rule=BRANCH_POLICIES[profile.branch]||{},kind=rule.healsDuringSkill&&active?'heal':rule.kind||(profile.profession==='MEDIC'?'heal':'damage'),splash=!!(rule.splashDuringSkill&&active);
- return {...rule,kind,style:splash?'splash':rule.style||'single',radius:splash?rule.splashDuringSkill:rule.radius,damageType:rule.artsDuringSkill&&active?'arts':rule.damageType||(['CASTER','SUPPORT'].includes(profile.profession)?'arts':'physical'),antiAir:rule.antiAir??(profile.position==='RANGED'),attack:rule.attack!==false&&!(rule.attackWhen==='skill'&&!active)};
+ // 技能级半径覆盖优先于分支值（例：埃癸斯 S1 技能期间 1.1 → 2.0），只在技能生效期算数。
+ const skillRadius=active?skillSplashRadius(profile.charId,profile.skillIndex):null;
+ return {...rule,kind,style:splash?'splash':rule.style||'single',radius:skillRadius??(splash?rule.splashDuringSkill:rule.radius),damageType:rule.artsDuringSkill&&active?'arts':rule.damageType||(['CASTER','SUPPORT'].includes(profile.profession)?'arts':'physical'),antiAir:rule.antiAir??(profile.position==='RANGED'),attack:rule.attack!==false&&!(rule.attackWhen==='skill'&&!active)};
 }

@@ -1,10 +1,13 @@
 // 商店库存：每个商店可售干员在本局内有限个。只统计「从商店买走」的份数；
 // 干员／策略等特殊效果获得的干员不计入库存，出售也不回补（它们没有 purchases 记录）。
+import {isSeesBand,SEES_BOND_ID,TARTARUS_BOND_ID,seesNumbers,tartarusCap,grantEveryLayers,coreTrueDamagePercent,coreCooldown} from './native-sees.js';
 export const STOCK_BY_TIER={1:64,2:64,3:64,4:32,5:16,6:8};
 export function initialStock(data,chessId){const tier=Number(data.season.charShopChessDatas[chessId]?.chessLevel)||1;return STOCK_BY_TIER[tier]??STOCK_BY_TIER[1];}
 // 把关卡数据里的可售干员一次性铺满库存表，缺项按阶级补默认值（老存档或新增干员都能自愈）
+// S.E.E.S. 四人平时 isHidden（不进 112 名册与默认池），只有本局选了 band_sees 时才铺库存——
+// 否则 eligible() 放行了也抽不到：库存路径会判 0 份。
 export function ensureStock(data,s){
- const rows=Object.values(data.season.charShopChessDatas).filter(o=>o.charId&&!o.isHidden);
+ const rows=Object.values(data.season.charShopChessDatas).filter(o=>o.charId&&(!o.isHidden||(o.sees===true&&isSeesBand(s))));
  s.stock??={};
  for(const row of rows){const id=row.chessId;const init=initialStock(data,id);const cur=s.stock[id];if(!Number.isFinite(cur)||cur<0)s.stock[id]=init;}
  return s.stock;
@@ -221,6 +224,26 @@ export function bondScaledParams(data,bondId,layers){
  for(const extra of BOND_PANEL_EXTRA[bondId]||[])if(!out.some(item=>item.key===extra.baseKey))push(extra.baseKey,extra.perKey,extra);
  return out;
 }
+// S.E.E.S. 策略的两条专属盟约**没有原表黑板**（数值与机制都在 data.sees.numbers，由 native-sees 结算），
+// 所以面板的「当前动态数值」在这里按同一份数据补出来——不要在 native-play 里手写、也不要编一块假黑板。
+function seesPanelLines(data,bondId,level){
+ const sees=data?.sees;if(!sees||(bondId!==SEES_BOND_ID&&bondId!==TARTARUS_BOND_ID))return [];
+ const n=seesNumbers(data),cap=tartarusCap(data),grant=grantEveryLayers(data);
+ const pct=(v)=>`${(Number(v)*100).toFixed(2).replace(/\.?0+$/,'')}%`;
+ const layers=`当前 ${level} 层`;
+ if(bondId===TARTARUS_BOND_ID)return [
+  {label:'层数上限',value:`${cap} 层${level>=cap?'（已满）':''}`},
+  {label:'每资金转化层数',value:`${Number(n.tartarusPerFund)||0} 层（场上由加莉：初始 +${Number(n.uikariPerFund?.initial)||0}／精锐 +${Number(n.uikariPerFund?.elite)||0}）`},
+  {label:'发放节奏',value:`每 ${grant} 层发放一名【S.E.E.S.】干员（至多 ${Math.floor(cap/grant)} 名）`},
+  {label:'可获得性',value:`只在本局策略为【S.E.E.S.】时激活 · ${layers}`}
+ ];
+ return [
+  {label:'核心真实伤害比例',value:`${pct(coreTrueDamagePercent(data,level))}（0 层 ${pct(coreTrueDamagePercent(data,0))} → ${cap} 层 ${pct(coreTrueDamagePercent(data,cap))}，随层数线性）`},
+  {label:'触发冷却',value:`${coreCooldown(data,level)} 秒${level>=Number(n.coreFastThreshold)&&Number(n.coreFastThreshold)>0?'（已满层，缩短）':''}`},
+  {label:'触发条件',value:'造成弱点伤害时，对全场敌人结算「场上 S.E.E.S. 干员攻击总和 × 上面这个比例」的真实伤害'},
+  {label:'可获得性',value:`只在本局策略为【S.E.E.S.】时激活 · ${layers}`}
+ ];
+}
 // 面板 HTML：受层数影响的数值 + 少量「阈值／累计」类备注（不含层数参数本身）。
 export function bondCurrentPreviewHtml(data,bondId,layers){
  const {info,values}=bondEffectValues(data,bondId);if(!info)return '';
@@ -232,6 +255,7 @@ export function bondCurrentPreviewHtml(data,bondId,layers){
  if(bondId==='investShip')lines.push(line('「获得时」类特质的触发次数',`${level>=100?3:2}次（${level>=100?'已达到':'100层后达到'}）`));
  if(bondId==='skillfulShip'&&Number(values.power_bond_stack_cnt))lines.push(line('扩大范围阈值',`${values.power_bond_stack_cnt}层`));
  if(bondId==='raidShip'&&Number(values.power_bond_stack_cnt))lines.push(line('闲置强化状态',level>=values.power_bond_stack_cnt?`攻击速度 +${values.power_attack_speed}，攻击/生命提升已生效`:`未激活（需${values.power_bond_stack_cnt}层）`));
+ for(const row of seesPanelLines(data,bondId,level))lines.push(line(row.label,`${row.value}`));
  return lines.length?`<section class="native-bond-current"><h3>当前动态数值 · ${level}层</h3><ul>${lines.join('')}</ul></section>`:'';
 }
 // 富文本 → 显示文本。原表用尖括号区分两类东西：
@@ -329,18 +353,23 @@ export function buildPhasePlan(data,modeId){const turns=data.common.turnInfoData
 // 折扣由 nextRound 每回合 +1（用户 2026-09-22 口径：每经过一回合当前升级费用 -1，直到 0），升级成功后清零。
 export function shopTerms(data,modeId,level,discount=0){const s=data.season.shopLevelDataDict[modeId]?.[level];if(!s)throw Error('Unknown shop level');return {operatorSlots:s.charChessCount,itemSlots:s.itemCount,upgradeCost:level>=6?null:Math.max(0,s.initialUpgradePrice-discount),refreshCost:data.season.constData.shopRefreshPrice};}
 export function purchasePrice(data,chessId){const shop=data.season.charShopChessDatas[chessId];if(shop)return data.season.shopCharChessInfoData[shop.chessLevel][0].purchasePrice;const item=data.season.trapChessDataDict[chessId];if(item)return item.purchasePrice;throw Error('Unknown offer '+chessId);}
-export function activeBonds(data,units,modeId=null){
+export function activeBonds(data,units,modeId=null,band=null){
  const allowed=modeId?new Set(data.season.modeDataDict[modeId].activeBondIdList):null,rows={};
+ // S.E.E.S. 策略局：两条专属盟约不在 modeDataDict 的 activeBondIdList 里，按「本局策略」额外放行。
+ // 【塔尔塔罗斯】是 0/0（阈值恒满足，激活与否只由这个策略决定）；【S.E.E.S.】仍按场上成员数判 3/3。
+ const seesBand=isSeesBand(band),seesAllowed=id=>seesBand&&(id===SEES_BOND_ID||id===TARTARUS_BOND_ID);
  for(const[id,b]of Object.entries(data.season.bondInfoDict)){
+  // S.E.E.S. 的两条专属盟约只在该策略局存在：别的局里连行都不该有（侧栏、战报的盟约情况、战斗里的 on() 都不该看到它们）。
+  if((id===SEES_BOND_ID||id===TARTARUS_BOND_ID)&&!seesBand)continue;
   const eligible=units.filter(u=>u.position!=null||b.activeCondition==='BOARD_AND_DECK');
   const golden=b.activeConditionTemplate==='count_threshold_upward_golden';
   const members=golden?eligible.filter(u=>data.season.charChessDataDict[u.chessId]?.isGolden):eligible.filter(u=>(u.bondIds||data.season.charChessDataDict[u.chessId]?.bondIds||[]).includes(id));
   const count=golden?members.length:new Set(members.map(u=>u.charId)).size;
   const threshold=Number(b.activeParamList[0]),active=b.activeConditionTemplate==='count_threshold_downward'?count>=threshold&&count<Number(b.activeParamList[1]):count>=threshold;
-  rows[id]={count,rawCount:count,active:(!allowed||allowed.has(id))&&active};
+  rows[id]={count,rawCount:count,active:(!allowed||allowed.has(id)||seesAllowed(id))&&active};
  }
  const maniAdd=bondValue(bondEffectBlackboard(data,'maniShip','other_bond_add_trigger_cnt'),'count',1);
- if(rows.maniShip?.active)for(const[id,row]of Object.entries(rows))if(data.common.bondInfoDict[id]?.isPower&&row.rawCount>0){row.count+=maniAdd;row.active=(!allowed||allowed.has(id))&&row.count>=Number(data.season.bondInfoDict[id].activeParamList[0]);}
+ if(rows.maniShip?.active)for(const[id,row]of Object.entries(rows))if(data.common.bondInfoDict[id]?.isPower&&row.rawCount>0){row.count+=maniAdd;row.active=(!allowed||allowed.has(id)||seesAllowed(id))&&row.count>=Number(data.season.bondInfoDict[id].activeParamList[0]);}
  return rows;
 }
 export function applyEnemyOverrides(base,override){

@@ -447,6 +447,21 @@ export function equipMagicPenetration(battle,u){
 }
 // 双模机械臂：自身造成的物理／法术伤害转化为弱点伤害（按敌人防御力与法术抗性取更高的那种）
 export function equipWeakness(battle,u){return !!rawRune(battle,u,'act1autochess_equip_acarm067_global_buff');}
+// 「S.E.E.S.臂章」（S.E.E.S. 策略专属装备，用户 2026-09-27 口径）：效果行的 key 是 `sees_armband_damage`，
+// 行内符文名是 `act1autochess_equip_sees_armband_global_buff`，两个比例都写在黑板里：
+//   · weakness_scale：造成物理／法术伤害时，额外追加相当于该次伤害这个比例的**弱点伤害**；
+//   · true_scale    ：装备者是【S.E.E.S.】盟约时，再追加相当于该次伤害这个比例的**真实伤害**。
+// 数值不写死，读黑板（初始 10%/10%、精锐 20%/20% 都由构建期注入）。
+export const SEES_ARMBAND_KEY='sees_armband_damage',SEES_ARMBAND_RUNE='act1autochess_equip_sees_armband_global_buff';
+export function seesArmbandRow(battle,u){
+ for(const item of equipmentList(u))for(const row of rowsOf(battle,item.chessId))if(row.key===SEES_ARMBAND_KEY||row.rune===SEES_ARMBAND_RUNE)return row;
+ return null;
+}
+export function seesArmbandScales(battle,u){
+ const row=seesArmbandRow(battle,u);
+ if(!row)return null;
+ return {weakness:num(row.bb,'weakness_scale',0),pure:num(row.bb,'true_scale',0)};
+}
 
 // ── 统一入口：native-effects 的 dispatch 里调用 ──
 export function equipmentEvent(battle,type,payload,ctx){

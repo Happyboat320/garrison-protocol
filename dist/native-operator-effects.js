@@ -248,6 +248,11 @@ export function attackModifier(battle,source,target,value){
  if(source.id==='char_350_surtr'&&battle.skillActive?.(source)&&(source.source?.skillIndex??battle.profile(source).skillIndex)===1){const bb=skillConfig(battle.profile(source)).bb;if(battle.targets(source).length===1)out*=Number(bb['attack@surtr_s_2[critical].atk_scale'])||1.5;}
  if(source.id==='char_2015_dusk'&&battle.skillActive?.(source)&&(source.source?.skillIndex??battle.profile(source).skillIndex)===1&&target.maxHp>0&&target.hp/target.maxHp<.5)out*=Number(skill.bb.damage_scale)||1.25;
  if(source.id==='char_4064_mlynar'){const t=activeTalents(battle,source).find(t=>t.name==='游侠'),tb=t&&talentValues(t);if(t){const nearby=battle.s.enemies.filter(e=>e.hp>0&&Math.max(Math.abs(e.x-source.x),Math.abs(e.y-source.y))<=1).length;out*=nearby>=Number(tb.cnt||3)?Number(tb.atk_scale_up)||1.15:Number(tb.atk_scale_base)||1.1;}}
+ // 岳羽由加莉「明镜止水」的**术法充盈**：任何干员只要在自己的窗口内造成伤害，就按 (1+value) 结算。
+ // 这是共享层唯一的「任意干员增伤」通道入口——窗口由 native-collab-yukari 写（`unit.yukariArcane`），
+ // 这里只读，所以友军吃到的术法充盈也会真的进伤害（以前只有由加莉自己作为来源时才算）。
+ const arcane=source?.yukariArcane;
+ if(arcane&&battle.s.time<Number(arcane.until)&&Number(arcane.value)>0)out*=1+Number(arcane.value);
  out=collabAttackModifier(battle,source,target,out);
  return out;
 }

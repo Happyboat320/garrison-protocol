@@ -42,7 +42,11 @@ export const BOND_BAN_DEFAULT_NEVER=Object.freeze([...BOND_BAN_EXCLUDED.filter(i
 // 三种状态：固定禁用 / 参与随机 / 固定不被禁。
 export const BAN_MODES=Object.freeze(['fixed','random','never']);
 
-export function bondIds(data){return Object.keys(data?.season?.bondInfoDict||{});}
+// 参与禁用机制的盟约＝整张表**去掉 S.E.E.S. 策略专属的两条**：它们不存在于未选该策略的局里，
+// 放进禁用池会让禁用方案、简报缺席名单、战前准备的盟约下拉都指向一个本局根本不存在的盟约。
+// （S.E.E.S. 策略局里这两条也不需要被禁：策略本身已经把它们带进来了。）
+export const SEES_EXCLUSIVE_BONDS=Object.freeze(['seesShip','tartarusShip']);
+export function bondIds(data){return Object.keys(data?.season?.bondInfoDict||{}).filter(id=>!SEES_EXCLUSIVE_BONDS.includes(id));}
 export function bondIsCore(data,id){return data?.common?.bondInfoDict?.[id]?.isPower===true;}
 export function bondName(data,id){return data?.season?.bondInfoDict?.[id]?.name||id;}
 export function bondIsBanExcluded(id){return BOND_BAN_EXCLUDED.includes(id);}

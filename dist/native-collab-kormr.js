@@ -46,22 +46,13 @@ export const kormrHooks={
   const target=nearestEnemy(battle,unit,talentCells(battle,unit,talent));
   if(!target)return;
   const atk=battle.stats(unit).atk;
-  // 「无视闪避」：
-  //   · 斩击是**法术**伤害，天然不吃只对物理生效的酒类闪避（native-effects `enemyWineBuffs().physicalDodge`）；
-  //   · 法术侧唯一的闪避来源是「未被阻挡时的闪避」`target.enemyUnblockedDodge`，它在 `dealDamage` 里
-  //     **逐次读目标当前值**，且整个 native-effects 里没有 ignoreDodge／skipDodge 一类的开关。所以这里在
-  //     这 6 次斩击期间把它压成 0、结算完原样写回（斩击是同步结算，中间不插帧，写回不会丢状态）。
-  const dodge=target.enemyUnblockedDodge;
-  const restore=Number(dodge)>0;
-  if(restore)target.enemyUnblockedDodge=0;
-  try{
-   for(let i=0;i<SLASH_COUNT;i++){
-    if(target.hp<=0)break;
-    const last=i===SLASH_COUNT-1;
-    battle.hit(unit,target,atk*(last?finalScale:scale),'arts',{skill:true});
-   }
-  }finally{
-   if(restore)target.enemyUnblockedDodge=dodge;
+  // 「无视闪避」（天赋文案）：走共享层的正式开关 `dealDamage({ignoreDodge:true})`——
+  // 2026-09-27 之前伤害管线没有这个开关，这里是靠在 6 次斩击期间把 `target.enemyUnblockedDodge`
+  // 压成 0 再写回来绕过的（同时说明斩击是法术伤害、天然不吃酒类物理闪避）。
+  for(let i=0;i<SLASH_COUNT;i++){
+   if(target.hp<=0)break;
+   const last=i===SLASH_COUNT-1;
+   battle.hit(unit,target,atk*(last?finalScale:scale),'arts',{skill:true,ignoreDodge:true});
   }
   // 最后一次斩击「并使目标恐惧」：resistible:false 与叙拉古／妮芙那两处干员施加恐惧的口径一致。
   if(Number.isFinite(fear)&&fear>0)applyStatus(target,'fear',fear,{source:unit.uid,resistible:false});

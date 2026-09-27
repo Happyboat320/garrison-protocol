@@ -41,25 +41,17 @@ export function dataForPrep(data, archive) {
   const items = (data.items || []).map(i => (i.sees ? { ...i, hidden: false } : i));
   return { ...data, season: { ...data.season, charShopChessDatas: shop }, items };
 }
-export function prepSeesIds(data) {
-  return {
-    chars: new Set((data.sees?.roster || []).map(r => r.charId)),
-    chessIds: new Set((data.sees?.roster || []).map(r => r.id)),
-    items: new Set((data.sees?.items || []).map(i => i.id))
-  };
-}
-
 // ──【塔尔塔罗斯】层数 ────────────────────────────────────────────────────────
 // 层数存 s.bondLayers.tartarusShip（与盟约「叠层」同一账本），面板与效果都读这里。
 export function tartarusLayers(sessionLike) {
   const s = sessionLike?.s ?? sessionLike;
   return Number(s?.bondLayers?.[TARTARUS_BOND_ID]) || 0;
 }
-export function addTartarusLayers(sessionLike, count) {
+export function addTartarusLayers(sessionLike, count, data = null) {
   const session = sessionLike?.s ? sessionLike : null;
   const s = session?.s ?? sessionLike;
   if (!s || !Number.isFinite(Number(count)) || Number(count) === 0) return tartarusLayers(s);
-  const cap = tartarusCap();
+  const cap = tartarusCap(data);
   s.bondLayers ??= {};
   const current = Number(s.bondLayers[TARTARUS_BOND_ID]) || 0;
   // 用户 2026-09-27 口径：层数上限 264，满了不再增长（多的部分直接丢掉，不记欠账）。
@@ -92,9 +84,6 @@ export function coreCooldown(data, layers) {
 export function bondPanelCount(data, sessionLike, bondId, fallback) {
   return bandIdOf(bondId) === TARTARUS_BOND_ID ? tartarusLayers(sessionLike) : fallback;
 }
-// 【塔尔塔罗斯】激活判定：0/0，本局选了 S.E.E.S. 策略就一直算激活。
-export function tartarusActive(sessionLike) { return seesRun(sessionLike); }
-
 // 每资金层数：基础 5；场上有岳羽由加莉时，按她的形态（初始 +2／精锐 +4）再叠一层加成。
 export function layersPerFund(data, sessionLike, units = null) {
   const numbers = seesNumbers(data), base = Number(numbers.tartarusPerFund) || 0;
@@ -103,9 +92,63 @@ export function layersPerFund(data, sessionLike, units = null) {
   for (const u of list) {
     if (!u || u.position == null) continue;
     if (u.charId !== 'char_4219_yukari') continue;
-    const golden = !!(data.profiles?.[u.chessId]?.isGolden || data.season.charChessDataDict?.[u.chessId]?.isGolden);
+    const golden = !!(u.isGolden || data.profiles?.[u.chessId]?.isGolden || data.season.charChessDataDict?.[u.chessId]?.isGolden);
     const row = numbers.uikariPerFund || {};
     bonus += Number(golden ? row.elite : row.initial) || 0;
   }
   return base + bonus;
+}
+
+// ── 四名干员的分层效果（数值全部来自 data.sees.numbers，代码不写死）───────────────
+// 身份按 charId 判（精锐与初始算同一名），与盟约禁用／名册同一套口径。
+// 名册优先用 data.sees.roster（构建期从注入后的数据反推），拿不到才退回内置 charId 常量。
+export const SEES_CHAR_IDS = Object.freeze({ kormr: 'char_4220_kormr', yukari: 'char_4219_yukari', aigis: 'char_4218_aigis', makoto: 'char_4217_makoto' });
+function charIdOf(unit) { return unit?.charId || unit?.id || unit?.source?.charId || null; }
+export function isSeesOperator(data, unit) {
+  const charId = charIdOf(unit);
+  if (!charId) return false;
+  const roster = data?.sees?.roster;
+  if (Array.isArray(roster) && roster.length) return roster.some(row => row.charId === charId);
+  return Object.values(SEES_CHAR_IDS).includes(charId);
+}
+// 虎狼丸：造成的伤害变为**弱点伤害**（命中类型按敌方防御／法抗取更有效的那一种，与「陈」策略同一口径）。
+// `unit.weaknessAttacker` 是给干员模块留的同一条通道（结城理 S3 的塔纳托斯·改＝弱点伤害）。
+export function weaknessSource(unit) { return charIdOf(unit) === SEES_CHAR_IDS.kormr || unit?.weaknessAttacker === true; }
+// 虎狼丸：不占用部署位——不参与 s.capacity 的「N/M 部署」上限判定与计数。
+export function freeDeploy(data, unit) { return weaknessSource(unit); }
+// 结城理：每次击倒（击倒敌人／自身被击倒）+初始／精锐两档层数。只对结城理本人返回非 0，
+// 所以调用方可以无脑遍历场上的 S.E.E.S. 干员求和。
+export function makotoKillLayers(data, unit) {
+  if (charIdOf(unit) !== SEES_CHAR_IDS.makoto) return 0;
+  const row = seesNumbers(data).makotoKillLayers || {};
+  const golden = !!(unit?.isGolden || data?.profiles?.[unit?.chessId]?.isGolden || data?.season?.charChessDataDict?.[unit?.chessId]?.isGolden);
+  return Number(golden ? row.elite : row.initial) || 0;
+}
+// 埃癸斯：攻击／生命随【塔尔塔罗斯】层数的增幅倍率（1 + 每层 0.2% × 层数）。
+export function aigisLayerScale(data, layers) {
+  const per = Number(seesNumbers(data).aigisPerLayer) || 0;
+  return 1 + per * Math.max(0, Number(layers) || 0);
+}
+// 每 N 层发一名 S.E.E.S. 干员（节奏取自数据，不在代码里写 25）。
+export function grantEveryLayers(data) { return Number(seesNumbers(data).grantEveryLayers) || 25; }
+export function grantCountForLayers(data, layers) { return Math.floor((Math.max(0, Number(layers) || 0)) / grantEveryLayers(data)); }
+// 回合结束结算：消耗**全部剩余资金**换【塔尔塔罗斯】层数（每资金 perFund 层，封顶 264），
+// 返回本次实际增加的层数（封顶后多出来的直接丢掉，不记欠账）。
+export function settleFundsToLayers(data, sessionLike, units = null) {
+  const s = sessionLike?.s ?? sessionLike;
+  if (!s) return 0;
+  const per = layersPerFund(data, sessionLike, units);
+  const funds = Math.max(0, Number(s.funds) || 0);
+  const before = tartarusLayers(s);
+  addTartarusLayers(s, per * funds, data);
+  return tartarusLayers(s) - before;
+}
+// 发放候选：阶级不高于当前商店等级；「尽可能不与场上已有的重复」＝先在不重复的那批里抽，
+// 一个都不剩（四名都在场）才退回全集。没有候选（等级不够）时返回空数组，调用方跳过发放。
+export function seesGrantCandidates(data, sessionLike, { exclude = [] } = {}) {
+  const s = sessionLike?.s ?? sessionLike;
+  const level = Number(s?.level) || 0;
+  const owned = new Set(exclude);
+  const pool = (data?.sees?.roster || []).filter(row => row?.id && Number(row.rank) <= level);
+  return { pool, fresh: pool.filter(row => !owned.has(row.charId)) };
 }

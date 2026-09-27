@@ -31,7 +31,7 @@ test('对局按种子定死本局禁用的盟约，并原样交给 NativeSession
 });
 
 test('调配池过滤只有一个入口，商店以外的渠道各自挡住',()=>{
- assert.match(session,/eligible\(\)\{return Object\.values\(this\.data\.season\.charShopChessDatas\)\.filter\(o=>o\.charId&&!o\.isHidden&&!this\.isOperatorBanned\(o\.chessId\)\);?\}/,'eligible() 是商店／具名池／later 池共用的唯一准入过滤点');
+ assert.match(session,/eligible\(\)\{return Object\.values\(this\.data\.season\.charShopChessDatas\)\.filter\(o=>operatorAllowed\(this\.data,o,this\)&&!this\.isOperatorBanned\(o\.chessId\)\);?\}/,'eligible() 是商店／具名池／later 池共用的唯一准入过滤点（S.E.E.S. 四人的放行也挂在这一处）');
  assert.match(economy,/bondBanned\(chessId\)\{const ban=this\.s\?\.bondBan;return !!ban&&isOperatorBanned\(/,'判定要在 economy 层，固定点名发放与奖励候选才能共用');
  assert.match(session,/gain\(chessId\)\{\s*if\(this\.bondBanned\(chessId\)\)/,'gain 是所有发放的总入口，被禁干员在这里挡下');
  const gain=session.slice(session.indexOf('gain(chessId){'),session.indexOf('gain(chessId){')+400);

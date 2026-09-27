@@ -86,6 +86,9 @@ test('技能生效时对空开关按表切换，未开启技能时回到分支�
    if(duration)assert.equal(b.skillActive(u),true,`${charId} 技能 ${index} 应当处于生效期`);
    // 瞬时技/被动技只在开启那一帧生效：走过一帧后回到分支默认值；持续技在生效期内保持覆盖值
    b.step();
+   // 例外：结城理 S3 走过这一帧会进入**替身形态**，而形态有自己的对空通道（`unit.dollAntiAir`：
+   // 塔纳托斯·改普攻可对空，PRTS 备注）——那不是技能窗口，交给 native-collab-makoto 的回归覆盖。
+   if(u.dollForm)continue;
    assert.equal(b.behavior(u).antiAir,b.skillActive(u)?flag:base,`${charId} 技能 ${index} 之后的开关`);
   }
  }

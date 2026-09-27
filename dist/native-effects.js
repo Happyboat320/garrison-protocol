@@ -10,6 +10,8 @@ import {gainSp,initSpOf} from './native-sp.js';
 import {statMods,onEvent,operatorSkillStart,periodicMods,skillConfig,targetFilter,damageReductionFor,attackPenetration,talentValues,grantCoins,coinCapFor,coinGainAtSkillStart,tokenCostFor} from './native-operator-effects.js';
 // 联动干员（S.E.E.S. 四人组）的钩子：部署／事件／逐帧三个入口在这里派发，实现在 native-collab-*.js。
 import {collabDeploy,collabTick,collabEvent} from './native-collab.js';
+// S.E.E.S. 策略：结城理「每次击倒敌人或自身被击倒 → 【塔尔塔罗斯】层数 +N」（数值取 data.sees.numbers）。
+import {addTartarusLayers,makotoKillLayers,isSeesOperator} from './native-sees.js';
 import {FLIGHT_PRESETS,FLIGHT_MODES,stepFlight,faceTarget,setFlightVelocity,distanceBetween,ensureFlight,orbitStep,fanHeadings,randomPointInSquare} from './native-flight.js';
 
 export const BATTLE_SCHEMA_VERSION=1;
@@ -192,6 +194,7 @@ export function commitExit(battle,{target,reason='knockdown',killer=null,event=n
   if(target.derived)battle.s.derivedKills=(battle.s.derivedKills||0)+1;
   const credit=killer?.kind==='summon'?getActor(battle.s,killer.ownerUid):killer;
   if(credit&&battle.s.units.includes(credit))battle.event?.(credit,'kill');
+  seesMakotoKillLayers(battle,target);
   log(battle,'death',{uid:target.uid,reason,killerUid:killer?.uid,x:target.x,y:target.y,eventId:event?.eventId});
   // 死亡类敌方能力（死亡爆炸／死亡区域／解压缩）统一在这里触发，覆盖全部死因
   // （干员击杀、持续伤害区域、额外伤害、生命流失），不再只在干员攻击路径里结算一次。
@@ -230,11 +233,27 @@ function triggerIndom(battle,u){
  if(battle.economy.random()>=prob)return false;
  u.indomFreeDeploy=true;log(battle,'bond-indom',{uid:u.uid});return true;
 }
+// 结城理「每次击倒敌人或自身被击倒，【塔尔塔罗斯】层数 +5／+10」：层数写进会话账本
+// （battle.economy.s.bondLayers）。**衍生敌人**（解压缩碎片／敌方召唤／分裂／幻影）不计入击倒，
+// 与顶栏击杀数同一口径；队伍里没有结城理时 makotoKillLayers 返回 0，等于不生效。
+function seesMakotoKillLayers(battle,target){
+ if(!battle?.economy||target?.derived)return 0;
+ let total=0;
+ for(const u of battle.s.units||[])if(u.deployed&&u.hp>0&&isSeesOperator(battle.data,u))total+=makotoKillLayers(battle.data,u);
+ if(total>0)addTartarusLayers(battle.economy,total,battle.data);
+ return total;
+}
+function seesMakotoKnockdownLayers(battle,u){
+ const amount=makotoKillLayers(battle.data,u);
+ if(amount>0)addTartarusLayers(battle.economy,amount,battle.data);
+ return amount;
+}
 function notifyKnockdown(battle,u,event,killer=null){
  if(!battle.s.units.includes(u))return;
  // 致死保护与真正退场共用一次击倒通知；复活也必须触发不屈/卫戍。
  if(event){event.knockdownUids??=[];if(event.knockdownUids.includes(u.uid))return;event.knockdownUids.push(u.uid);}
  u.knockdownCount=(u.knockdownCount||0)+1;battle.event?.(u,'selfdead');
+ seesMakotoKnockdownLayers(battle,u);
  if(battle.s.band==='band_clementia'&&battle.on?.('egirShip')&&battle.owns?.(u,'egirShip'))battle.economy.addLayers('egirShip',battle.profile(u).rank);
  triggerIndom(battle,u);bondExit(battle,u,'knockdown');
  log(battle,'knockdown',{uid:u.uid,killerUid:killer?.uid,eventId:event?.eventId});
@@ -257,7 +276,7 @@ function runFatal(battle,target,wouldDie,event,killer=null){
  if(target.indomFreeDeploy){target.egirPendingRevive=false;commitExit(battle,{target,reason:'knockdown',killer,event});return false;}
  if(target.egirPendingRevive){target.egirPendingRevive=false;reviveActor(battle,target,{reason:'egir-revive',deploymentEvents:true});teleportActor(battle,target,{x:target.x,y:target.y,source:target,mode:'egir-revive'});return true;}
  if(saved)return true;
- if(battle.profile(target).branch==='dollkeeper'&&!target.dollForm){enterDoll(battle,target);return true;}
+ if(battle.profile(target).branch==='dollkeeper'&&!target.dollForm){seesMakotoKnockdownLayers(battle,target);enterDoll(battle,target);return true;}
  return false;
 }
 function runFatalProtection(battle,target,wouldDie,event){
@@ -339,11 +358,16 @@ export function dealDamage(battle,opts){
  // 唯一入口就是这里（`NativeBattle.moduleElementBurstScale`），别在技能结算里再乘一次。
  if(source&&battle.s.enemies.includes(target)&&battle.moduleElementBurstScale)value*=battle.moduleElementBurstScale(source,target);
  if(!opts.sourceDamageHandled)value*=battle.enemyOutgoingDamageMultiplier?.(source)??1;
- const wineDodge=type==='physical'&&opts.cause!=='dot'&&battle.s.enemies.includes(target)?enemyWineBuffs(battle,target).physicalDodge:0;
- const unblockedDodge=['physical','arts'].includes(type)&&opts.cause!=='dot'&&battle.s.enemies.includes(target)&&target.block==null?Math.max(0,Math.min(1,Number(target.enemyUnblockedDodge)||0)):0;
+ // 「无视闪避」（opts.ignoreDodge）：整段闪避判定直接跳过——虎狼丸天赋「黑色猎犬」的 6 次斩击文案写「无视闪避」，
+// 以前靠在结算期间把 `enemyUnblockedDodge` 压 0 再写回来绕过，现在有正式开关（伤害管线里唯一的闪避入口就在这里）。
+ const ignoreDodge=opts.ignoreDodge===true;
+ const wineDodge=ignoreDodge?0:type==='physical'&&opts.cause!=='dot'&&battle.s.enemies.includes(target)?enemyWineBuffs(battle,target).physicalDodge:0;
+ const unblockedDodge=ignoreDodge?0:['physical','arts'].includes(type)&&opts.cause!=='dot'&&battle.s.enemies.includes(target)&&target.block==null?Math.max(0,Math.min(1,Number(target.enemyUnblockedDodge)||0)):0;
  const dodge=1-(1-wineDodge)*(1-unblockedDodge);
  if(dodge>0&&battle.economy.random()<dodge){
-  log(battle,'evade',{eventId:event.eventId,targetUid:target.uid,sourceUid:source?.uid,type});
+  // 注意：`log()` 是 `{t,type,...payload}`——payload 里再写一个 `type` 会把日志类型覆盖掉
+  // （以前这里写 `type`，于是「闪避」记录的类型变成了伤害类型，`logOf(b,'evade')` 永远查不到）。
+  log(battle,'evade',{eventId:event.eventId,targetUid:target.uid,sourceUid:source?.uid,damageType:type});
   battle.emit('hit',{uid:target.uid,x:target.x,y:target.y,type:'evade'});
   return {total:0,hp:0,shield:0,blocked:false,evaded:true,potentialHpDamage:0,event};
  }
@@ -904,7 +928,11 @@ function settlePeriodic(battle,fx){
    }
    return;
   }
-  const t=getActor(battle.s,fx.targetUid);if(t&&t.hp>0)dealDamage(battle,{source,target:t,amount:fx.snapshot?.damage??fx.values?.amount??0,type:fx.values?.type||'physical',cause:'delayed',effectId:fx.id,parentEventId:fx.parentEventId});
+  // `values.heal` 的延迟效果是「延迟治疗」（结城理「俄耳甫斯·改」的每秒延迟治疗）：延迟伤害仍然照旧走
+  // dealDamage，语义一个字都没动，只多了一条 heal 分支。
+  const t=getActor(battle.s,fx.targetUid);
+  if(t&&fx.values?.heal!=null){if(t.hp>0)applyHeal(battle,{source,target:t,amount:fx.snapshot?.heal??fx.values.heal,effectId:fx.id,persistAfterSourceGone:fx.persistAfterSourceGone});}
+  else if(t&&t.hp>0)dealDamage(battle,{source,target:t,amount:fx.snapshot?.damage??fx.values?.amount??0,type:fx.values?.type||'physical',cause:'delayed',effectId:fx.id,parentEventId:fx.parentEventId});
  }else if(fx.kind==='dot'){
   const t=getActor(battle.s,fx.targetUid);if(!t||t.hp<=0||(fx.targetDeployGen!=null&&t.deployGen!==fx.targetDeployGen))return;
   const amount=fx.snapshot?.damage??fx.values?.damage??0;
@@ -1548,7 +1576,7 @@ export function spawnSummon(battle,owner,spec){
  const rangeId=spec.rangeId??attrs.rangeId??null;
  const row={uid,id:tokenId,ownerUid:owner.uid,ownerDeployGen:owner.deployGen,type:spec.type||tokenId,name:spec.name||entity.name,kind:'summon',allied:true,x,y,dir:owner.dir,rangeId,hp:spec.maxHp??a.maxHp,maxHp:spec.maxHp??a.maxHp,atk:spec.atk??a.atk,def:a.def,res:a.magicResistance,damageResistance:spec.damageResistance||0,elementalImmune:!!spec.elementalImmune,isolated:!!spec.isolated,cost:tokenCostFor(battle.profile(owner),tokenId,a.cost),interval:spec.interval??a.baseAttackTime,attackSpeed:spec.attackSpeed??a.attackSpeed,attackCooldown:0,action:null,deployed:true,deployGen:1,statuses:[],immunities:{...(spec.immunities||{})},shield:0,barriers:[],shieldLayers:[],targetable:spec.targetable!==false,healable:spec.healable!==false,device:!!spec.device,canBlock,canAttack,canHeal:spec.canHeal??false,flying:!!spec.flying,blockCnt:spec.blockCnt??a.blockCnt,blockCost:1,persistAfterSourceGone:!!spec.persistAfterSourceGone,endsAt:spec.duration?battle.s.time+spec.duration:null,occupiesTile:spec.occupiesTile??canBlock,lives:spec.lives,nextLifeAt:spec.nextLifeAt,anchorUid:spec.anchorUid,nextHealAt:battle.s.time+a.baseAttackTime,nextAuraAt:spec.type==='ghost2-substitute'?battle.s.time+1:null,spawnSpec:{...spec}};
   battle.s.summons.push(row);if(ctrl&&!spec.preparedCard)ctrl.stock--;
- log(battle,'summon',{uid,ownerUid:owner.uid,type:spec.type,x,y});return row;
+ log(battle,'summon',{uid,ownerUid:owner.uid,summonType:spec.type,x,y});return row;
 }
 // 召唤物的「持续时长 / 自身再部署时间」（用户 2026-09-22 口径：布局放置 → 开战自动召唤 → 时长结束退场 →
 // 自己的再部署 CD 转好后按布局位置再次出现）：

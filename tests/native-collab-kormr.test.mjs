@@ -137,16 +137,23 @@ test('范围内有多名敌人时只打最近的那一名',()=>{
  assert.deepEqual(farther.statuses,[],'更远的敌人也不该被恐惧');
 });
 
-test('无视闪避：目标有 100% 未被阻挡闪避时 6 次斩击仍全额命中，且结束后闪避值原样写回',()=>{
+test('无视闪避：目标有 100% 未被阻挡闪避时 6 次斩击仍全额命中，且闪避值全程不动',()=>{
  const {b,u}=setup();
  const atk=b.stats(u).atk,{values}=blackboardOf(b,u);
  const e=enemy(b,{x:u.x+1,y:u.y,hp:100000,enemyUnblockedDodge:1,block:null}); // 幻影／虚影那类敌人
  b.economy.random=()=>0; // 只要闪避还参与判定，这一掷必定闪避
+ // 走的是共享层的正式开关（`dealDamage({ignoreDodge:true})`）：以前靠在 6 次斩击期间把目标闪避压 0
+ // 再写回来绕过，现在整段闪避判定直接跳过——所以「值原样」是**全程没被改过**，不是写回的功劳。
  deploy(b,u);
  assert.equal(logOf(b,'evade').length,0,'不该出现任何闪避记录');
  assert.equal(slashDamages(b,e).length,6,'6 次都要真的打出去（闪避不该吃掉任何一次）');
  near(100000-e.hp,atk*(5*values.atk_scale+values.final_atk_scale),'应当全额命中');
- assert.equal(e.enemyUnblockedDodge,1,'斩击结束后目标自己的闪避值要原样写回');
+ assert.equal(e.enemyUnblockedDodge,1,'目标自己的闪避值全程没被动过');
+ // 对照组：同一发伤害不走这个开关时会被 100% 闪避吃掉。
+ const plain=enemy(b,{x:u.x+2,y:u.y,hp:100000,enemyUnblockedDodge:1,block:null});
+ b.hit(u,plain,1000,'arts',{skill:true});
+ assert.equal(plain.hp,100000,'没有 ignoreDodge 的命中会被闪避');
+ assert.ok(logOf(b,'evade').length>=1);
 });
 
 test('数值只从 activeTalents 黑板读：改黑板后伤害与恐惧时长同步变化',()=>{

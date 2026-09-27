@@ -460,24 +460,35 @@
         "status": "complete",
         "statusLabel": "效果已完整接入",
         "mainBattleIntegrated": false
+      },
+      {
+        "id": "band_sees",
+        "serverHooks": [],
+        "pendingKeys": [
+          "sees_round_end_fund_to_layers"
+        ],
+        "gapNote": null,
+        "status": "partial",
+        "statusLabel": "部分接入",
+        "mainBattleIntegrated": false
       }
     ],
     "integration": "native controller connected to manual-review main client; advanced effects and pool distributions remain incomplete"
   },
   "sourceCommit": "86da4cfa3a4b958c3615fccf5afbc10b5c7f1bfb",
   "counts": {
-    "shopOperatorRecords": 133,
+    "shopOperatorRecords": 137,
     "visibleOperators": 112,
-    "chessStates": 266,
-    "items": 59,
-    "bonds": 23,
-    "strategies": 40,
+    "chessStates": 270,
+    "items": 60,
+    "bonds": 25,
+    "strategies": 41,
     "maps": 11,
     "selectableMaps": 8,
     "levelTemplates": 50,
     "modeVariants": 9,
     "requiredSkills": 269,
-    "effectTemplates": 70,
+    "effectTemplates": 72,
     "enemies": 215,
     "artAssets": 380
   },
@@ -879,7 +890,9 @@
       "enemy_attribute_mul",
       "enemy_attribute_add",
       "char_attribute_mul",
-      "acbattle_shop_char_cultivate_effect"
+      "acbattle_shop_char_cultivate_effect",
+      "sees_round_end_fund_to_layers",
+      "sees_armband_damage"
     ]
   }
 }

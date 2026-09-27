@@ -13,6 +13,10 @@ import {openBattle,deployNow,enemy,byId} from './effects-harness.mjs';
 // 数值不抄写：本文件把运行时烘出来的 profile 与权威数据 data/normalized/current.json（rel77.0）逐项对齐。
 const registry=JSON.parse(fs.readFileSync('data/modes/alliance-lower/collab-operators.json','utf8'));
 const current=JSON.parse(fs.readFileSync('data/normalized/current.json','utf8'));
+// 商店阶级由 S.E.E.S. 策略的分层口径决定（用户 2026-09-27：虎狼丸1／由加莉2／埃癸斯3／结城理6），
+// 覆盖「阶＝星级」的默认规则——登记表里的 chessLevel 仍按星级记原始阶，供实装记录对照。
+const seesContent=JSON.parse(fs.readFileSync('data/modes/alliance-lower/sees-content.json','utf8'));
+const seesTier=Object.fromEntries(seesContent.operators.map(o=>[o.charId,o.chessLevel]));
 const roster=registry.operators;
 const chessIds=roster.map(o=>o.charId&&NATIVE_DATA.profiles[o.chessId]?o.chessId:null).filter(Boolean);
 const profiles=chessIds.map(id=>NATIVE_DATA.profiles[id]);
@@ -29,8 +33,8 @@ test('联动的四个人都烘成了可用的 profile，且星级／职业／分
   const p=NATIVE_DATA.profiles[row.chessId];
   assert.equal(p.charId,row.charId);
   assert.equal(p.name,row.name);
-  assert.equal(p.rank,row.chessLevel,`${row.name} 的阶级`);
-  assert.equal(p.rank,entity.rarity,`${row.name} 阶级＝星级`);
+  assert.equal(p.rank,seesTier[row.charId],`${row.name} 的阶级＝S.E.E.S. 策略分层（覆盖按星级定的默认阶）`);
+  assert.equal(row.chessLevel,entity.rarity,`${row.name} 登记表仍按星级记原始阶`);
   assert.equal(p.profession,row.profession);
   assert.equal(p.branch,row.branch);
   assert.equal(p.position,row.position);
@@ -91,10 +95,10 @@ test('隐藏档不挂盟约与卫戍，商店抽取与战前准备名册都看�
   const shop=NATIVE_DATA.season.charShopChessDatas[row.chessId];
   assert.ok(shop,`${row.name} 要有商店记录（技能测试场加人需要它）`);
   assert.equal(shop.isHidden,true,`${row.name} 必须是隐藏档`);
-  assert.equal(shop.shopLevelSortId,999);
-  assert.deepEqual(NATIVE_DATA.season.charChessDataDict[row.chessId].bondIds,[],`${row.name} 不属于任何盟约`);
+  assert.equal(shop.shopLevelSortId,seesTier[row.charId],`${row.name} 的商店排序也按 S.E.E.S. 分层`);
+  assert.deepEqual(NATIVE_DATA.season.charChessDataDict[row.chessId].bondIds,['seesShip'],`${row.name} 只挂 S.E.E.S. 策略的专属盟约`);
   assert.deepEqual(NATIVE_DATA.season.charChessDataDict[row.chessId].garrisonIds,[],`${row.name} 没有卫戍`);
-  assert.deepEqual(NATIVE_DATA.profiles[row.chessId].bonds,[]);
+  assert.deepEqual(NATIVE_DATA.profiles[row.chessId].bonds,['seesShip']);
   assert.deepEqual(NATIVE_DATA.profiles[row.chessId].garrisons,[]);
   assert.ok(!eligible.some(o=>o.chessId===row.chessId),`${row.name} 不该进调配池`);
  }
@@ -156,7 +160,10 @@ test('游击手／裂空炮手的特性数据与分支策略一一对应',()=>{
  assert.equal(branchBehavior(a,false).airOnlyIdle,true);
  const active=branchBehavior(a,true);
  assert.equal(active.style,'splash','技能期攻击变成范围伤害');
- assert.equal(active.radius,1.1);
+ // 两层口径：分支默认 `splashDuringSkill:1.1`，而埃癸斯 **S1** 有技能级覆盖（`SKILL_SPLASH`，依据 PRTS 备注
+ // 「技能期间，攻击弹道的伤害半径变为2.0」），所以真实 profile（skillIndex=0）走覆盖值，S2 仍按分支值。
+ assert.equal(active.radius,2,'S1 的技能级半径覆盖优先于分支的 1.1');
+ assert.equal(branchBehavior({...a,skillIndex:1},true).radius,1.1,'S2 不在覆盖表里，仍按分支的 1.1');
  assert.equal(BRANCH_POLICIES.supportiveranger.triggerEffect,true,'触发型效果挂在这条分支上');
 });
 

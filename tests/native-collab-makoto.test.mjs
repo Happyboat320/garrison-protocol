@@ -13,6 +13,12 @@
 // battle.hit → attackModifier → collabAttackModifier；battle.step → tickLogic → collabTick。
 // 每个数值都用 `patchProfile` 换掉 profile 上的黑板后复测，证明不是写死的常量。
 //
+// S3「开辟明日的剑刃」的两段替身（用户 2026-09-27 口径，PRTS 技能备注 revision 425074）：
+//   替身窗口内先戴塔纳托斯·改（`unit.persona==='thanatos'`），**再次点按技能键**或**受到致命伤**时切换成
+//   俄耳甫斯·改（`'orpheus'`），替身结束清空。俄耳甫斯·改：不普攻、阻挡数回到 2（同一黑板 `attack@block_cnt`）、
+//   切换瞬间及之后每 1 秒给范围内未满血友方挂一批**延迟 0.5 秒**的治疗（剂量＝当前攻击力 × `attack@heal_scale`，
+//   走治疗管线、受禁疗制约）。视觉按 `actor.persona` 取配色（native-fx 的 DOLL_PERSONA_STYLE）。
+//
 // 把 dist/native-collab-makoto.js 改回空实现（五个钩子都空）时，除「接线门禁」外**每一条用例都会失败**。
 
 import test from 'node:test';
@@ -21,6 +27,7 @@ import {openBattle,byId,enemy,steps,logOf} from './effects-harness.mjs';
 import {COLLAB_HOOKS,collabFor} from '../dist/native-collab.js';
 import {attackModifier as operatorAttackModifier} from '../dist/native-operator-effects.js';
 import {skillAntiAir} from '../dist/native-branches.js';
+import {drawDollOverlay,DOLL_PERSONA_STYLE} from '../dist/native-fx.js';
 
 const CHESS='chess_collab_makoto',CHAR='char_4217_makoto';
 const ALLY_CHESS='chess_char_1_02_b',ALLY_CHAR='char_199_yak';
@@ -75,8 +82,7 @@ const talentValue=(b,u,key)=>(b.profile(u).activeTalents||[]).map(t=>(t.blackboa
 const skillValue=(b,u,key)=>(b.profile(u).skill?.blackboard||[]).find(r=>r.key===key)?.value;
 // 开技（主动＝立即切换为替身状态作战）。切换本身延后到下一帧，所以这里走一帧。
 function enterDoll(b,u){
- u.sp=Math.max(u.sp,b.spCost(u));
- b.activate(u);
+ pressSkillWhenReady(b,u);
  assert.equal(u.skillLeft,0,'三个技能的持续都是 0 秒，切换即结束');
  assert.equal(u.dollForm,null,'切换延后到下一帧，保住开技那一帧的技能级对空窗口');
  steps(b,1);
@@ -88,6 +94,18 @@ function endDoll(b,u){
  u.dollForm.until=b.s.time;
  steps(b,2);
  assert.equal(u.dollForm,null,'替身状态应当已经结束');
+}
+// 让替身窗口内的**再次点按技能键**能走到引擎的 activate：enterDoll 已经把技力扣空了，先补满。
+function pressSkillWhenReady(b,u){
+ u.sp=Math.max(u.sp,b.spCost(u));
+ b.activate(u);
+}
+// 按模拟时间推进到**刚好还没到** `at` 的那一帧（帧长 1/30 秒，与 combat.js 的 FPS 一致），
+// 这样「延迟 N 秒后生效」可以按阈值精确断言，不用数帧数。
+function stepsUntil(b,at){
+ let guard=0;
+ while(b.s.time<at-1e-9&&guard++<600)b.step();
+ return b.s.time;
 }
 // 只有结城理本人的「无来源/天赋」伤害才带 cause='talent'，用它把总攻击／斩杀从普攻里分出来。
 const talentDamage=(b,u)=>logOf(b,'damage').filter(row=>row.sourceUid===u.uid&&row.cause==='talent');
@@ -434,10 +452,289 @@ test('天赋二：伤害倍率跟着 atk_scale 走、非 S.E.E.S. 队员周围�
  assert.ok(outsider,'占位：非队员干员在场');
 });
 
-test('未闭环存证：替身形态“塔纳托斯·改普通攻击可对空”被引擎的 behavior() 固定为 false',()=>{
+test('塔纳托斯·改的对空与多目标已经打通（原「未闭环存证」用例，2026-09-27 转正）',()=>{
  const {b,u}=scene(2);
  assert.equal(skillAntiAir(CHAR,2),true,'SKILL_ANTIAIR 里登记了塔纳托斯·改可对空');
  enterDoll(b,u);
- assert.equal(b.behavior(u).antiAir,false,'替身形态的 behavior() 无条件 antiAir:false，技能级窗口只在开技那一帧');
- assert.equal(b.behavior(u).style,'single','替身形态仍是单体风格：attack@max_target 目前改不了索敌目标数');
+ assert.equal(b.behavior(u).antiAir,true,'替身形态现在按 unit.dollAntiAir 取值，塔纳托斯·改为真');
+ assert.equal(u.attackTargetCountOverride,4,'attack@max_target 现在覆写普攻目标数（原表 lv10＝4）');
+ assert.equal(b.behavior(u).style,'single','表现风格仍是单体（目标数走 chosen 切片，不是 style）');
+});
+
+// ── S3 两段替身（用户 2026-09-27 口径） ───────────────────────────────────────────────────────
+// 俄耳甫斯·改延迟治疗的 0.5 秒是文案里写的（黑板没有这个键），这里作为断言常量存档。
+const ORPHEUS_HEAL_DELAY=.5;
+// 待结算的延迟治疗（native-effects 的 kind:'delayed' 效果，0.5 秒后由 settlePeriodic 走 applyHeal）。
+const pendingHeals=(b,u)=>(b.s.logicEffects||[]).filter(fx=>fx.kind==='delayed'&&fx.talentOrSkillId==='makoto-orpheus-heal'&&fx.sourceUid===u.uid);
+// 假 canvas ctx：只记录绘制调用与画笔状态，够 drawDollOverlay 走完一遍。
+// 渐变也记下来（通用紫色走的是三档紫色渐变罩色，回归 native-summon-lifecycle 就是按那个判的）。
+function fakeCtx(){
+ const calls=[],fills=[],strokes=[],gradients=[];
+ const state={pattern:'',fillStyle:'',strokeStyle:'',lineWidth:0,alpha:1};
+ const record=kind=>()=>calls.push({kind,fillStyle:state.fillStyle,strokeStyle:state.strokeStyle});
+ return {
+  calls,fills,strokes,gradients,
+  save(){},restore(){},
+  fillRect(){calls.push({kind:'fillRect',fillStyle:state.fillStyle});fills.push(state.fillStyle);},
+  strokeRect:record('strokeRect'),
+  beginPath(){},closePath(){},
+  arc:record('arc'),ellipse:record('ellipse'),moveTo(){},lineTo(){},fill(){},
+  stroke(){calls.push({kind:'stroke',strokeStyle:state.strokeStyle});strokes.push(state.strokeStyle);},
+  createLinearGradient(){
+   const stops=[];
+   gradients.push(stops);
+   return {addColorStop(at,color){stops.push(color);}};
+  },
+  get fillStyle(){return state.fillStyle;},
+  set fillStyle(value){state.fillStyle=typeof value==='string'?value:state.pattern;},
+  get strokeStyle(){return state.strokeStyle;},
+  set strokeStyle(value){state.strokeStyle=value;},
+  set globalCompositeOperation(value){},set lineWidth(value){state.lineWidth=value;},
+ };
+}
+
+test('S3 两段替身：进入替身 persona=thanatos，替身结束清空，S1／S2 不设置 persona',()=>{
+ const {b,u}=scene(2);
+ assert.equal(u.persona,undefined,'进入替身前没有形态标记');
+ enterDoll(b,u);
+ assert.equal(u.persona,'thanatos','S3 的替身初始形态是塔纳托斯·改');
+ endDoll(b,u);
+ assert.equal(u.persona,undefined,'替身窗口结束要清空 persona');
+ for(const index of [0,1]){
+  const {b:b2,u:u2}=scene(index);
+  enterDoll(b2,u2);
+  assert.equal(u2.persona,undefined,`技能 ${index} 不属于两段替身，不该写 persona（表现层保持通用紫色罩色）`);
+ }
+});
+
+test('S3 两段替身①：再次点按技能键把塔纳托斯·改换成俄耳甫斯·改',()=>{
+ const {b,u}=scene(2);
+ enterDoll(b,u);
+ const until=u.dollForm.until,bb=()=>b.profile(u).skill.blackboard;
+ const block=Number(bb().find(r=>r.key==='attack@block_cnt').value);
+ assert.equal(block,2,'无潜能档的 attack@block_cnt 是 2');
+ // 「坦克」塔纳托斯·改：替身形态默认归 0 阻挡（傀儡师特性）。
+ near(b.stats(u).blockCnt,0,'塔纳托斯·改按替身形态归 0 阻挡');
+ pressSkillWhenReady(b,u);
+ assert.equal(u.persona,'orpheus','再次点按技能键应当切换成俄耳甫斯·改');
+ assert.equal(u.dollForm.until,until,'切换不改替身总时长（仍是特性黑板的 20 秒）');
+ assert.ok(u.skillLeft<=0,'切换不会开出技能生效期');
+ assert.equal(u.sp,b.spCost(u),'俄耳甫斯·改持【静默】：这次请求不扣技力、也不走开技结算');
+ steps(b,1);
+ near(b.stats(u).blockCnt,block,'俄耳甫斯·改恢复阻挡数（黑板 attack@block_cnt）');
+ near(u.makotoBlockCnt,block,'阻挡覆写走 statMods 的 blockCnt 通道');
+ // 真实阻挡结算：贴到同一格（resolveBlocks 的判定距离是 0.72 格）验证容量真的是 2。
+ // 塔纳托斯·改那一段的容量是 0，所以先把同一格的敌人放上去、切换后它才会被算成被阻挡。
+ const blocker=enemy(b,{x:u.x,y:u.y,hp:100000,speed:0});
+ steps(b,1);
+ assert.equal(blocker.block,u.uid,'俄耳甫斯·改要真的能阻挡（替身默认 0 阻挡，这里是覆写后的 2）');
+ // 切换后再点一次：静默，形态不变。
+ b.activate(u);
+ assert.equal(u.persona,'orpheus','同一个替身窗口内只切换一次');
+ assert.ok(u.dollForm,'（静默）不会把替身提前结束');
+});
+
+test('S3 两段替身②：塔纳托斯·改在场时受到致命伤改为俄耳甫斯·改并保住这一次',()=>{
+ const {b,u}=scene(2);
+ enterDoll(b,u);
+ assert.equal(u.persona,'thanatos');
+ const hp0=u.maxHp;
+ assert.ok(hp0>3);
+ // 用**法术**致命伤：物理命中会先被 S3 自己的物理闪避光环吃掉（`attack@prob` 那条会把闪避挂在结城理自己身上），
+ // 那样就走不到致死管线，测不到「受到致命伤改为召唤俄耳甫斯·改」。
+ b.hurt(u,{atk:hp0*10,damageType:'arts'},{sourceLess:true});
+ assert.equal(u.persona,'orpheus','受到致命伤应当切换成俄耳甫斯·改');
+ // 引擎「重新进替身」时按本体属性重设上限（那一下 statMods 被 hp<=0 的守卫挡住），本文件会按进伤前的
+ // 替身形态上限补回来，所以这里按「顶到替身形态的上限（含 +35%）」判，且远高于 1 血。
+ near(u.hp,b.stats(u).maxHp,'这一下致命伤被兜住：切换进替身形态并把生命顶回替身形态的上限');
+ assert.ok(u.hp>1,'不是「留 1 血」，是真的被替身吃掉了');
+ assert.ok(u.dollForm,'替身窗口不因此结束');
+ assert.equal(u.exitLife,null,'没有退场');
+ assert.ok(b.s.units.includes(u),'人还在场上');
+ assert.ok(!u.downed,'没有进入倒地保护');
+ near(b.stats(u).blockCnt,2,'切换后同样恢复阻挡 2');
+ // 已经兜到 1 血之后不再二次保护：下一次致命伤照常结算（不会赖场）。
+ b.hurt(u,{atk:u.maxHp*10,damageType:'arts'},{sourceLess:true});
+ assert.ok(!b.s.units.includes(u)||u.exitLife!=null,'站在 1 血上再挨一下就该真的倒下（替身分支已用掉）');
+});
+
+test('S3 两段替身③：俄耳甫斯·改不普攻、阻挡 2、攻击间隔不变（同一份面具档案）',()=>{
+ const {b,u}=scene(2);
+ enterDoll(b,u);
+ const interval=st=>st.baseAttackTime*100/st.attackSpeed;
+ const before=interval(b.stats(u));
+ assert.ok(operatorAttackModifier(b,u,null,1000)>0,'塔纳托斯·改照常按 attack@atk_scale 打伤害');
+ pressSkillWhenReady(b,u);
+ steps(b,1);
+ near(operatorAttackModifier(b,u,null,1000),0,'俄耳甫斯·改不进行普通攻击（命中前的攻击修正压到 0）');
+ near(interval(b.stats(u)),before,'切换不改攻击间隔');
+ // 真实命中入口也打不出伤害。
+ const [x,y]=front(u,1);
+ const target=enemy(b,{x,y,hp:100000,def:0,res:0});
+ const hp0=target.hp;
+ b.hit(u,target,b.stats(u).atk,'physical');
+ near(target.hp,hp0,'真实命中（battle.hit → attackModifier）也不掉血');
+});
+
+test('S3 两段替身④：俄耳甫斯·改每秒延迟治疗（0.5 秒后生效、剂量＝攻击力×attack@heal_scale、禁疗不给）',()=>{
+ const {b,u}=scene(2,[{chessId:ALLY_CHESS}]);
+ const ally=allyInFront(b,ALLY_CHAR,.1);
+ enterDoll(b,u);
+ pressSkillWhenReady(b,u);
+ assert.equal(u.persona,'orpheus');
+ // 「切换完毕的瞬间」那一批由紧随其后的 tick 挂出（activate 那一帧还没有 tick）。
+ assert.equal(pendingHeals(b,u).length,0,'切换当帧还没轮到 tick，不该凭空造治疗');
+ const atk=b.stats(u).atk,scale=Number(b.profile(u).skill.blackboard.find(r=>r.key==='attack@heal_scale').value);
+ assert.equal(scale,.35);
+ // 第一批：施加时刻 t0，0.5 秒后才结算（塔纳托斯·改那一段的每秒即时治疗不算在这一批里）。
+ let batch=null;
+ for(let i=0;i<3&&!batch;i++){
+  steps(b,1);
+  batch=pendingHeals(b,u)[0]||null;
+ }
+ assert.ok(batch,'切换后的第一次 tick 就挂上一批延迟治疗（每个未满血友方一条）');
+ near(batch.values.heal,atk*scale,'剂量＝结城理当前攻击力 × attack@heal_scale');
+ assert.deepEqual(batch.snapshot,{heal:atk*scale},'剂量在施加这一帧就按当前攻击力定格（快照）');
+ near(batch.nextAt-batch.startedAt,ORPHEUS_HEAL_DELAY,'0.5 秒后生效');
+ // 逐帧推到「这一批结算掉」的那一刻，按**日志时间戳**验证生效时刻与剂量：
+ // 治疗要落在 [nextAt, nextAt+帧长) 这个窗口里，施加与生效之间不许有任何治疗。
+ const before=healsTo(b,u,ally).length;
+ const dueAt=batch.nextAt;   // 引擎结算时会把 fx.nextAt 清成 null，先把排定时刻记下来
+ let settledAt=null;
+ while(settledAt==null&&b.s.time<dueAt+1){
+  steps(b,1);
+  if(!pendingHeals(b,u).some(fx=>fx.id===batch.id))settledAt=b.s.time;
+ }
+ assert.ok(settledAt!=null,'第一批应当在自己的结算点被消费');
+ const rows=healsTo(b,u,ally);
+ if(rows.length!==before+1)assert.fail(`第一批应当只结算一次（before=${before}，实际 ${JSON.stringify(rows)}）`);
+ const stamp=rows.at(-1).t;
+ if(!(stamp>0))assert.fail(`治疗日志缺少时间戳（rows=${JSON.stringify(rows)}，nextAt=${dueAt}）`);
+ assert.ok(stamp>=dueAt-1e-9,`治疗要等 0.5 秒后才生效（期望 ≥${dueAt.toFixed(4)}，实际 ${stamp.toFixed(4)}）`);
+ assert.ok(stamp<dueAt+1/30,`生效时刻就在第一批排定的那一帧（实际 ${stamp.toFixed(4)}）`);
+ assert.ok(stamp>batch.startedAt,'施加与生效不是同一帧');
+ near(rows.at(-1).amount,atk*scale,'结算量＝施加这一帧快照的 攻击力×attack@heal_scale');
+ // 下一批的施加/生效时刻各推后 1 秒（attack@interval）。
+ let second=null;
+ for(let i=0;i<40&&!second;i++){
+  steps(b,1);
+  second=pendingHeals(b,u).find(fx=>fx.id!==batch.id)||null;
+ }
+ assert.ok(second,'第一批结算后应当挂上第二批');
+ // 施加间隔＝attack@interval（1 秒）。批次是按模拟时间排的，帧推进取整会让相邻两批差一帧左右，
+ // 所以这里按「不超过两帧」判间隔，并另断言它确实落在 1 秒附近（不是每帧都在挂新批）。
+ const gap=second.startedAt-batch.startedAt;
+ assert.ok(gap>=1-2/30&&gap<=1+2/30,`两批施加间隔应当≈attack@interval（1 秒），实际 ${gap.toFixed(4)}`);
+ assert.ok(Math.abs(second.nextAt-dueAt-1)<=2/30,`两批生效间隔应当≈1 秒，实际 ${(second.nextAt-dueAt).toFixed(4)}`);
+ assert.equal(pendingHeals(b,u).length,1,'同一时刻只留一批待结算的延迟治疗');
+ assert.equal(healsTo(b,u,ally).length,before+1,'第二批生效前不该再治疗');
+ // 禁疗：延迟治疗走治疗管线，受 healingBlocked 制约。
+ const {b:b2,u:u2}=scene(2,[{chessId:ALLY_CHESS}]);
+ const blocked=allyInFront(b2,ALLY_CHAR,.3);
+ blocked.statuses.push({kind:'healingBlocked',remaining:600,source:'probe',value:1});
+ enterDoll(b2,u2);
+ pressSkillWhenReady(b2,u2);
+ assert.equal(u2.persona,'orpheus');
+ const hp1=blocked.hp;
+ steps(b2,90);
+ near(blocked.hp,hp1,'禁疗时延迟治疗不给（applyHeal → canHeal 的 healingBlocked 门禁）');
+ assert.equal(healsTo(b2,u2,blocked).length,0,'受禁疗的目标不该留下治疗记录');
+});
+
+test('S3 两段替身的视觉：按 actor.persona 取配色（两种形态不同、reduceFx 只画静止罩色）',()=>{
+ assert.deepEqual(DOLL_PERSONA_STYLE,{thanatos:{tint:'rgba(0,0,0,.45)',flow:'#1b3fd8'},orpheus:{tint:'rgba(255,255,255,.45)',flow:'#e8c46a'}});
+ const box={x:0,y:0,w:40,h:40},draw=actor=>{const c=fakeCtx();drawDollOverlay(c,actor,box,{time:.4});return c;};
+ const thanatos=draw({dollForm:{until:99,nextAt:1},persona:'thanatos'});
+ const orpheus=draw({dollForm:{until:99,nextAt:1},persona:'orpheus'});
+ const generic=draw({dollForm:{until:99,nextAt:1}});
+ assert.equal(thanatos.fills[0],DOLL_PERSONA_STYLE.thanatos.tint,'塔纳托斯＝半透明黑罩色');
+ assert.equal(orpheus.fills[0],DOLL_PERSONA_STYLE.orpheus.tint,'俄耳甫斯＝半透明白罩色');
+ assert.ok(thanatos.fills[0]!==orpheus.fills[0],'两种 persona 的罩色必须不同');
+ assert.ok(thanatos.strokes.some(color=>color.includes('27,63,216')),'塔纳托斯的流动特效是深蓝色');
+ assert.ok(orpheus.strokes.some(color=>color.includes('232,196,106')),'俄耳甫斯的流动特效是金色');
+ assert.ok(!thanatos.strokes.some(color=>orpheus.strokes.includes(color)),'两种 persona 的流动色必须不同');
+ // 未设置 persona（归溟幽灵鲨等其它傀儡师）必须保持原来的通用紫色罩色：走的是三档紫色渐变。
+ assert.deepEqual(generic.gradients.length>=1,true,'通用形态仍然用紫色渐变罩色');
+ assert.ok(generic.gradients[0].some(color=>/rgba\(158,\s*96,\s*226/.test(color)),'通用紫色罩色没变：'+generic.gradients[0].join(' '));
+ assert.ok(generic.strokes.some(color=>color.includes('200,156,255')),'通用紫色弧环没变');
+ assert.ok(generic.calls.some(call=>call.kind==='arc'),'通用形态照旧画弧环');
+ // 未知 persona 值也退回通用紫色（不做特殊配色）。
+ const unknown=draw({dollForm:{until:99,nextAt:1},persona:'unknown'});
+ assert.ok(unknown.gradients.length>=1,'未知 persona 退回通用紫色');
+ const reduced=fakeCtx();
+ assert.equal(drawDollOverlay(reduced,{dollForm:{until:99,nextAt:1},persona:'thanatos'},box,{reduceFx:true,time:.4}),true);
+ assert.equal(reduced.fills.length,1,'reduceFx 下只留一层静止罩色');
+ assert.equal(reduced.strokes.length,0,'reduceFx 下不画流动');
+ assert.equal(drawDollOverlay(fakeCtx(),{persona:'orpheus'},box,{}),false,'没有替身形态就不画');
+});
+
+// ── 替身形态的引擎通道（2026-09-27 补）────────────────────────────────────────
+// 这几条原本登记在「未闭环」里（§5.4 ①／②／⑤／⑦）：伤害类型改不了、`attack@max_target` 不生效、
+// 法术闪避没有通道、替身形态对空没落地。现在 native-battle 打开了三个按单位生效的通道
+// （`dollDamageType`／`dollAntiAir`／`attackTargetCountOverride`，`hurt()` 里补了与物理对称的
+// `artsEvade*`），native-sees 的 `weaknessSource` 也认 `unit.weaknessAttacker`，本文件按形态写这些字段。
+test('替身形态的通道：S1／S2 普攻转法术，S3 转弱点，退出替身清空',()=>{
+ for(const [skillIndex,persona,type] of [[0,'s1','arts'],[1,'s2','arts'],[2,'s3',undefined]]){
+  const {b,u}=scene(skillIndex);
+  enterDoll(b,u);
+  assert.equal(b.behavior(u).damageType,type??b.behavior(u).damageType,`技能${skillIndex} 的普攻类型`);
+  if(skillIndex<2)assert.equal(b.behavior(u).damageType,'arts',`技能${skillIndex} 的替身普攻是法术`);
+  else assert.equal(u.weaknessAttacker,true,'S3 的替身普攻是弱点伤害（交给命中类型路由）');
+  assert.equal(u.attackTargetCountOverride,Math.max(0,Math.trunc(skillValue(b,u,'attack@max_target')||0)),`技能${skillIndex} 按 attack@max_target 覆写目标数`);
+  endDoll(b,u);
+  assert.equal(u.dollDamageType,undefined,'退出替身清掉类型覆写');
+  assert.equal(u.weaknessAttacker,false,'退出替身清掉弱点标记');
+  assert.equal(u.attackTargetCountOverride,0,'退出替身清掉目标数覆写');
+ }
+});
+
+test('替身形态的对空：只有 S3 的塔纳托斯·改能选中空中单位，换俄耳甫斯·改后不能',()=>{
+ const {b,u}=scene(2);
+ enterDoll(b,u);
+ assert.equal(b.behavior(u).antiAir,true,'塔纳托斯·改普攻可对空（PRTS 备注）');
+ const air=enemy(b,{hp:50000,atk:0,x:u.x,y:u.y+1,flying:true,def:0,res:0});
+ assert.ok(b.targets(u).includes(air),'空中单位要能进索敌表');
+ pressSkillWhenReady(b,u);steps(b,1);
+ assert.equal(u.persona,'orpheus');
+ assert.equal(b.behavior(u).antiAir,false,'俄耳甫斯·改回归不可对空');
+ assert.ok(!b.targets(u).includes(air),'换形态后空中单位出表');
+ // 对照：S1 的替身同样不可对空（只有 S3 开这个通道）。
+ const other=scene(0);
+ enterDoll(other.b,other.u);
+ assert.equal(other.b.behavior(other.u).antiAir,false);
+});
+
+test('替身形态的多目标：S2 一次普攻打到范围内的多名敌人，S1 只打一名',()=>{
+ const hitsPerAttack=(skillIndex)=>{
+  const {b,u}=scene(skillIndex);
+  enterDoll(b,u);
+  const spots=[[1,0],[0,1],[0,-1]].map(([dx,dy])=>[u.x+(dx||0),u.y+(dy||0)]);
+  for(const [x,y] of spots)enemy(b,{hp:99999,atk:0,x,y,def:0,res:0});
+  b.s.enemies=b.s.enemies.filter(e=>e.trainingDummy||spots.some(([x,y])=>e.x===x&&e.y===y));
+  let best=0;
+  for(const e of b.s.enemies)e.lastAttackId=null;
+  for(let i=0;i<40;i++){
+   steps(b,1);
+   const byAttack=new Map();
+   for(const row of logOf(b,'damage')){if(row.attackId==null)continue;byAttack.set(row.attackId,(byAttack.get(row.attackId)||0)+1);}
+   for(const n of byAttack.values())best=Math.max(best,n);
+  }
+  return best;
+ };
+ assert.ok(hitsPerAttack(1)>=2,'S2 的 attack@max_target 要真的让一次普攻打到多名敌人');
+ assert.equal(hitsPerAttack(0),1,'S1 不覆写目标数，仍只打一名');
+});
+
+test('替身形态的法术闪避：与物理那套对称，闪避窗口内不吃法术伤害',()=>{
+ const {b,u}=scene(2);
+ assert.equal(u.artsEvadeUntil,0,'部署时清空');
+ enterDoll(b,u);
+ u.artsEvadeUntil=b.s.time+2;u.artsEvadeProb=1;
+ const before=u.hp,attacker=enemy(b,{hp:1000,atk:0,x:u.x+3,y:u.y,def:0,res:0});
+ attacker.damageType='arts';
+ b.hurt(u,attacker,{damageAmount:500,cause:'attack'});
+ assert.equal(u.hp,before,'必中窗口内不吃法术伤害');
+ u.artsEvadeUntil=0;
+ b.hurt(u,attacker,{damageAmount:500,cause:'attack'});
+ assert.ok(u.hp<before,'窗口过期后照常受伤');
 });

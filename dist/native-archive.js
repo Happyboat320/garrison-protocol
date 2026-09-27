@@ -102,7 +102,7 @@ export function runRecord(game,data,{at=Date.now()}={}){
  s.runRecordId??='run-'+at.toString(36)+'-'+Math.floor(Math.random()*0xffffff).toString(36);
  const roster=s.waveRoster||{};
  const types=(roster.types||[]).map(id=>{const t=trainingType(id);return {id,name:t?.name||id};});
- const bondRows=game.bonds?game.bonds():activeBonds(data,s.units,s.modeId);
+ const bondRows=game.bonds?game.bonds():activeBonds(data,s.units,s.modeId,s.bandId);
  const finalBonds=Object.entries(bondRows||{})
   .filter(([,row])=>Number(row?.count)>0||Number(row?.rawCount)>0)
   .map(([id,row])=>({id,name:data.season.bondInfoDict[id]?.name||id,count:Number(row.count)||0,rawCount:Number(row.rawCount??row.count)||0,active:!!row.active}))

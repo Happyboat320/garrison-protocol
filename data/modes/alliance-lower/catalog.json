@@ -86026,6 +86026,7 @@
       "rank": 1,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_1_01_e_a",
         "identifier": 267,
@@ -86085,6 +86086,7 @@
       "rank": 1,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_1_02_e_a",
         "identifier": 273,
@@ -86144,6 +86146,7 @@
       "rank": 1,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_1_03_e_a",
         "identifier": 292,
@@ -86203,6 +86206,7 @@
       "rank": 1,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_1_04_e_a",
         "identifier": 320,
@@ -86262,6 +86266,7 @@
       "rank": 1,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_1_05_e_a",
         "identifier": 321,
@@ -86321,6 +86326,7 @@
       "rank": 2,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_2_01_e_a",
         "identifier": 282,
@@ -86380,6 +86386,7 @@
       "rank": 2,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_2_02_e_a",
         "identifier": 312,
@@ -86439,6 +86446,7 @@
       "rank": 2,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_2_03_e_a",
         "identifier": 271,
@@ -86498,6 +86506,7 @@
       "rank": 2,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_2_04_e_a",
         "identifier": 276,
@@ -86557,6 +86566,7 @@
       "rank": 2,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_2_05_e_a",
         "identifier": 309,
@@ -86616,6 +86626,7 @@
       "rank": 2,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_2_06_e_a",
         "identifier": 311,
@@ -86675,6 +86686,7 @@
       "rank": 2,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_2_07_e_a",
         "identifier": 310,
@@ -86734,6 +86746,7 @@
       "rank": 3,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_3_01_e_a",
         "identifier": 317,
@@ -86793,6 +86806,7 @@
       "rank": 3,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_3_02_e_a",
         "identifier": 289,
@@ -86852,6 +86866,7 @@
       "rank": 3,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_3_03_e_a",
         "identifier": 279,
@@ -86911,6 +86926,7 @@
       "rank": 3,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_3_04_e_a",
         "identifier": 266,
@@ -86970,6 +86986,7 @@
       "rank": 3,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_3_05_e_a",
         "identifier": 277,
@@ -87029,6 +87046,7 @@
       "rank": 3,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_3_06_e_a",
         "identifier": 275,
@@ -87088,6 +87106,7 @@
       "rank": 3,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_3_07_e_a",
         "identifier": 272,
@@ -87147,6 +87166,7 @@
       "rank": 3,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_3_08_e_a",
         "identifier": 274,
@@ -87206,6 +87226,7 @@
       "rank": 3,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_3_09_e_a",
         "identifier": 269,
@@ -87265,6 +87286,7 @@
       "rank": 3,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_3_10_e_a",
         "identifier": 270,
@@ -87324,6 +87346,7 @@
       "rank": 3,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_3_11_e_a",
         "identifier": 290,
@@ -87383,6 +87406,7 @@
       "rank": 3,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_3_12_e_a",
         "identifier": 319,
@@ -87442,6 +87466,7 @@
       "rank": 4,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_4_01_e_a",
         "identifier": 301,
@@ -87501,6 +87526,7 @@
       "rank": 4,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_4_02_e_a",
         "identifier": 280,
@@ -87560,6 +87586,7 @@
       "rank": 4,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_4_03_e_a",
         "identifier": 278,
@@ -87619,6 +87646,7 @@
       "rank": 4,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_4_04_e_a",
         "identifier": 281,
@@ -87678,6 +87706,7 @@
       "rank": 4,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_4_05_e_a",
         "identifier": 286,
@@ -87737,6 +87766,7 @@
       "rank": 4,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_4_06_e_a",
         "identifier": 291,
@@ -87796,6 +87826,7 @@
       "rank": 4,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_4_07_e_a",
         "identifier": 315,
@@ -87855,6 +87886,7 @@
       "rank": 4,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_4_08_e_a",
         "identifier": 283,
@@ -87914,6 +87946,7 @@
       "rank": 4,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_4_09_e_a",
         "identifier": 268,
@@ -87973,6 +88006,7 @@
       "rank": 4,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_4_10_e_a",
         "identifier": 285,
@@ -88032,6 +88066,7 @@
       "rank": 4,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_4_11_e_a",
         "identifier": 287,
@@ -88091,6 +88126,7 @@
       "rank": 4,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_4_12_e_a",
         "identifier": 294,
@@ -88150,6 +88186,7 @@
       "rank": 5,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_5_01_e_a",
         "identifier": 284,
@@ -88209,6 +88246,7 @@
       "rank": 5,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_5_02_e_a",
         "identifier": 288,
@@ -88268,6 +88306,7 @@
       "rank": 5,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_5_03_e_a",
         "identifier": 293,
@@ -88327,6 +88366,7 @@
       "rank": 5,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_5_04_e_a",
         "identifier": 302,
@@ -88386,6 +88426,7 @@
       "rank": 5,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_5_05_e_a",
         "identifier": 295,
@@ -88445,6 +88486,7 @@
       "rank": 5,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_5_06_e_a",
         "identifier": 297,
@@ -88504,6 +88546,7 @@
       "rank": 5,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_5_07_e_a",
         "identifier": 300,
@@ -88563,6 +88606,7 @@
       "rank": 5,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_5_08_e_a",
         "identifier": 298,
@@ -88622,6 +88666,7 @@
       "rank": 5,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_5_09_e_a",
         "identifier": 314,
@@ -88681,6 +88726,7 @@
       "rank": 6,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_6_01_e_a",
         "identifier": 313,
@@ -88740,6 +88786,7 @@
       "rank": 6,
       "type": "MAGIC",
       "hidden": true,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_6_01_m",
         "identifier": 322,
@@ -88778,6 +88825,7 @@
       "rank": 6,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_6_02_e_a",
         "identifier": 303,
@@ -88837,6 +88885,7 @@
       "rank": 6,
       "type": "MAGIC",
       "hidden": true,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_6_02_m",
         "identifier": 323,
@@ -88875,6 +88924,7 @@
       "rank": 6,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_6_03_e_a",
         "identifier": 304,
@@ -88934,6 +88984,7 @@
       "rank": 6,
       "type": "MAGIC",
       "hidden": true,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_6_03_m",
         "identifier": 324,
@@ -88972,6 +89023,7 @@
       "rank": 6,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_6_04_e_a",
         "identifier": 305,
@@ -89031,6 +89083,7 @@
       "rank": 6,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_6_05_e_a",
         "identifier": 306,
@@ -89090,6 +89143,7 @@
       "rank": 6,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_6_06_e_a",
         "identifier": 307,
@@ -89149,6 +89203,7 @@
       "rank": 6,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_6_07_e_a",
         "identifier": 308,
@@ -89208,6 +89263,7 @@
       "rank": 6,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_6_08_e_a",
         "identifier": 296,
@@ -89267,6 +89323,7 @@
       "rank": 6,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_6_09_e_a",
         "identifier": 299,
@@ -89326,6 +89383,7 @@
       "rank": 6,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_6_10_e_a",
         "identifier": 316,
@@ -89385,6 +89443,7 @@
       "rank": 6,
       "type": "EQUIP",
       "hidden": false,
+      "sees": false,
       "normal": {
         "chessId": "chess_item_6_11_e_a",
         "identifier": 318,
@@ -89434,6 +89493,66 @@
         "continuedRound": -1,
         "effectName": "家族徽章",
         "effectDesc": "技力自然回复速度<@ba.vup>+0.2</>/秒；若携带者为【叙拉古】盟约干员，该干员处于隐匿状态时，攻击力逐渐提升至<@ba.vup>200%</>，持续至隐匿结束后首次造成伤害或干员离场\\n<@ba.acrem>若该【叙拉古】盟约干员同时装备“叙拉古正装”，该叙拉古干员失去隐匿后首次造成伤害时额外造成<@ba.vup>800%</>攻击力的真实伤害</>",
+        "effectDecoIconId": null,
+        "enemyPrice": 0
+      }
+    },
+    {
+      "id": "chess_item_9_01_e_a",
+      "name": "chess_item_9_01_e_a",
+      "rank": 3,
+      "type": "EQUIP",
+      "hidden": true,
+      "sees": true,
+      "normal": {
+        "chessId": "chess_item_9_01_e_a",
+        "identifier": 9101,
+        "charId": "trap_9101_sees_armband",
+        "isGolden": false,
+        "purchasePrice": 3,
+        "status": {
+          "evolvePhase": "PHASE_0",
+          "trapLevel": 1,
+          "skillIndex": 0,
+          "skillLevel": 1
+        },
+        "upgradeChessId": "chess_item_9_01_e_b",
+        "upgradeNum": 2,
+        "trapDuration": -1,
+        "effectId": "eff_sees_armband",
+        "giveBondId": "seesShip",
+        "givePowerId": null,
+        "canGiveBond": false,
+        "itemType": "EQUIP"
+      },
+      "elite": {
+        "chessId": "chess_item_9_01_e_b",
+        "identifier": 9102,
+        "charId": "trap_9101_sees_armband",
+        "isGolden": true,
+        "purchasePrice": 5,
+        "status": {
+          "evolvePhase": "PHASE_0",
+          "trapLevel": 1,
+          "skillIndex": 1,
+          "skillLevel": 1
+        },
+        "upgradeChessId": null,
+        "upgradeNum": 0,
+        "trapDuration": 0,
+        "effectId": "eff_sees_armband_2",
+        "giveBondId": "seesShip",
+        "givePowerId": null,
+        "canGiveBond": false,
+        "itemType": "EQUIP"
+      },
+      "effect": {
+        "effectId": "eff_sees_armband",
+        "effectType": "EQUIP",
+        "effectCounterType": "NONE",
+        "continuedRound": -1,
+        "effectName": "S.E.E.S.臂章",
+        "effectDesc": "造成的物理、魔法伤害时，额外造成相当于10/20%伤害量的弱点伤害\n装备者为【S.E.E.S.】盟约时，再额外造成10/20%伤害量的真实伤害",
         "effectDecoIconId": null,
         "enemyPrice": 0
       }
@@ -91543,6 +91662,42 @@
             }
           ],
           "countType": "NONE"
+        }
+      ]
+    },
+    {
+      "bandId": "band_sees",
+      "sortId": 99,
+      "modeTypeList": [
+        "LOCAL",
+        "SINGLE",
+        "MULTI"
+      ],
+      "bandDesc": "【S.E.E.S.】自动激活盟约【塔尔塔罗斯】。回合结束时，消耗剩余所有的资金，每消耗1资金【塔尔塔罗斯】层数+5；卡池中可能出现【S.E.E.S.】干员与装备",
+      "totalHp": 30,
+      "effectId": "aceffect_band_sees",
+      "victorCount": 3,
+      "bandRewardModulus": 1,
+      "updateTime": 1773475200,
+      "bandName": "S.E.E.S.",
+      "name": "S.E.E.S.",
+      "description": "【S.E.E.S.】自动激活盟约【塔尔塔罗斯】。回合结束时，消耗剩余所有的资金，每消耗1资金【塔尔塔罗斯】层数+5；卡池中可能出现【S.E.E.S.】干员与装备",
+      "effects": [
+        {
+          "key": "sees_round_end_fund_to_layers",
+          "blackboard": [
+            {
+              "key": "per_fund_layers",
+              "value": 5,
+              "valueStr": null
+            },
+            {
+              "key": "grant_every_layers",
+              "value": 25,
+              "valueStr": null
+            }
+          ],
+          "countType": "COUNTING"
         }
       ]
     }
@@ -138469,6 +138624,125 @@
       "descParamPerStackList": [],
       "noStack": true,
       "chessIdList": []
+    },
+    "tartarusShip": {
+      "bondId": "tartarusShip",
+      "name": "塔尔塔罗斯",
+      "desc": "每获得25层，随机获取一个不高于当前商店阶级的【S.E.E.S.】干员，尽可能不与场上已有的重复\n层数上限264层，满层后不再增长",
+      "iconId": "icon_tartarusShip",
+      "activeCount": 0,
+      "activeCondition": "BOARD",
+      "activeConditionTemplate": "count_threshold_upward",
+      "activeParamList": [
+        "0"
+      ],
+      "effectId": "bondeffect_tartarus",
+      "activeType": "BATTLE",
+      "identifier": 101,
+      "weight": 0,
+      "isActiveInDeck": false,
+      "maxInactiveBondCount": -1,
+      "descParamBaseList": [],
+      "descParamPerStackList": [],
+      "noStack": false,
+      "chessIdList": []
+    },
+    "seesShip": {
+      "bondId": "seesShip",
+      "name": "S.E.E.S.",
+      "desc": "每20秒可触发一次：当造成弱点伤害时，对全场所有敌人造成等同于场上全体【S.E.E.S.】干员攻击总和的n%的真实伤害（n 随【塔尔塔罗斯】层数线性成长：0层5%、264层40%）\n当【塔尔塔罗斯】层数达到264层时，以上效果的冷却时间变为1秒",
+      "iconId": "icon_seesShip",
+      "activeCount": 3,
+      "activeCondition": "BOARD",
+      "activeConditionTemplate": "count_threshold_upward",
+      "activeParamList": [
+        "3"
+      ],
+      "effectId": "bondeffect_sees",
+      "activeType": "BATTLE",
+      "identifier": 100,
+      "weight": 10,
+      "isActiveInDeck": false,
+      "maxInactiveBondCount": -1,
+      "descParamBaseList": [],
+      "descParamPerStackList": [],
+      "noStack": false,
+      "chessIdList": [
+        "chess_collab_kormr",
+        "chess_collab_yukari",
+        "chess_collab_aigis",
+        "chess_collab_makoto"
+      ]
+    }
+  },
+  "sees": {
+    "bandId": "band_sees",
+    "bondIds": [
+      "tartarusShip",
+      "seesShip"
+    ],
+    "roster": [
+      {
+        "id": "chess_collab_kormr",
+        "charId": "char_4220_kormr",
+        "name": "虎狼丸",
+        "rank": 1
+      },
+      {
+        "id": "chess_collab_yukari",
+        "charId": "char_4219_yukari",
+        "name": "岳羽由加莉",
+        "rank": 2
+      },
+      {
+        "id": "chess_collab_aigis",
+        "charId": "char_4218_aigis",
+        "name": "埃癸斯",
+        "rank": 3
+      },
+      {
+        "id": "chess_collab_makoto",
+        "charId": "char_4217_makoto",
+        "name": "结城理",
+        "rank": 6
+      }
+    ],
+    "items": [
+      {
+        "id": "chess_item_9_01_e_a",
+        "name": "S.E.E.S.臂章",
+        "rank": 3
+      }
+    ],
+    "numbers": {
+      "bondActiveCount": 3,
+      "tartarusPerFund": 5,
+      "tartarusLayerCap": 264,
+      "grantEveryLayers": 25,
+      "coreTrueDamagePercentBase": 0.05,
+      "coreTrueDamagePercentMax": 0.4,
+      "coreCooldownSeconds": 20,
+      "coreFastCooldownSeconds": 1,
+      "coreFastThreshold": 264,
+      "uikariPerFund": {
+        "initial": 2,
+        "elite": 4
+      },
+      "makotoKillLayers": {
+        "initial": 5,
+        "elite": 10
+      },
+      "aigisPerLayer": 0.002,
+      "armband": {
+        "weakness": {
+          "initial": 0.1,
+          "elite": 0.2
+        },
+        "true": {
+          "initial": 0.1,
+          "elite": 0.2
+        }
+      }
     }
   }
 }

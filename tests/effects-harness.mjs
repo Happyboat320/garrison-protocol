@@ -7,9 +7,10 @@ import {NO_BOND_BAN} from './no-bond-ban.mjs';
 
 export {reps,blackboard};
 
-export function openBattle(specs,{seed=reps.seed,data=NATIVE_DATA}={}){
- const g=new NativeSession(data,{bondBan:NO_BOND_BAN,seed});
- g.s.funds=9999;g.s.capacity=16;g.s.rewardPending=null;g.s.rewardQueue=[];
+export function openBattle(specs,{seed=reps.seed,data=NATIVE_DATA,bandId=null,funds=9999}={}){
+ const g=new NativeSession(data,{bondBan:NO_BOND_BAN,seed,...(bandId?{bandId}:{})});
+ // funds：S.E.E.S. 策略局会在 startBattle 时把资金换成【塔尔塔罗斯】层数，所以这些用例显式指定初始资金。
+ g.s.funds=funds;g.s.capacity=16;g.s.rewardPending=null;g.s.rewardQueue=[];
  const list=Array.isArray(specs)?specs:[specs];
  for(const spec of list){
   const id=typeof spec==='string'?spec:spec.chessId;
