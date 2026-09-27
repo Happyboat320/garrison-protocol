@@ -3288,16 +3288,22 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_10_7",
+    "group": "FLY",
+    "groups": [
+      "FLY"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_3_2",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": null
       },
       {
         "effectId": "enemyeffect_10_7",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "FLY"
       }
     ]
   },
@@ -3305,11 +3311,14 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_3_3",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_3_3",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3317,21 +3326,28 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_4",
+    "group": null,
+    "groups": [
+      "INVISIBLE"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_3_4",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": null
       },
       {
         "effectId": "enemyeffect_4",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": null
       },
       {
         "effectId": "enemyeffect_14_6",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": "INVISIBLE"
       }
     ]
   },
@@ -3339,11 +3355,14 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_3_2_e",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_3_2_e",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3351,11 +3370,14 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_3_3_e",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_3_3_e",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3363,11 +3385,14 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_3_4_e",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_3_4_e",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3375,16 +3400,22 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_14_7",
+    "group": "INVISIBLE",
+    "groups": [
+      "INVISIBLE"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_3_5_e",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": null
       },
       {
         "effectId": "enemyeffect_14_7",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "INVISIBLE"
       }
     ]
   },
@@ -3392,11 +3423,14 @@ const ENEMY_KILL_COINS = {
     "coin": 0,
     "count": 1,
     "effectId": "enemyeffect_5_1",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_5_1",
         "coin": 0,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3404,11 +3438,14 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_5",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_5",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3416,11 +3453,14 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_6",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_6",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3428,11 +3468,14 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_7",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_7",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3440,11 +3483,14 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_8",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_8",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3452,11 +3498,14 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_b_1",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_1",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3464,11 +3513,14 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_b_2",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_2",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3476,11 +3528,14 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_b_3",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_3",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3488,11 +3543,14 @@ const ENEMY_KILL_COINS = {
     "coin": 4,
     "count": 1,
     "effectId": "enemyeffect_b_4",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_4",
         "coin": 4,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3500,11 +3558,14 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_b_5",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_5",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3512,11 +3573,14 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_b_6",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_6",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3524,11 +3588,14 @@ const ENEMY_KILL_COINS = {
     "coin": 4,
     "count": 1,
     "effectId": "enemyeffect_b_7",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_7",
         "coin": 4,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3536,11 +3603,14 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_b_8",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_8",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3548,11 +3618,14 @@ const ENEMY_KILL_COINS = {
     "coin": 4,
     "count": 1,
     "effectId": "enemyeffect_b_9",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_9",
         "coin": 4,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3560,11 +3633,14 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_b_10",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_10",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3572,11 +3648,14 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_b_11",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_11",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3584,11 +3663,14 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_b_12",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_12",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3596,11 +3678,14 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_b_13",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_13",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3608,11 +3693,14 @@ const ENEMY_KILL_COINS = {
     "coin": 4,
     "count": 1,
     "effectId": "enemyeffect_b_14",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_14",
         "coin": 4,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3620,11 +3708,14 @@ const ENEMY_KILL_COINS = {
     "coin": 5,
     "count": 1,
     "effectId": "enemyeffect_b_15",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_15",
         "coin": 5,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3632,11 +3723,14 @@ const ENEMY_KILL_COINS = {
     "coin": 5,
     "count": 1,
     "effectId": "enemyeffect_b_16",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_16",
         "coin": 5,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3644,11 +3738,14 @@ const ENEMY_KILL_COINS = {
     "coin": 4,
     "count": 1,
     "effectId": "enemyeffect_b_17",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_17",
         "coin": 4,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3656,11 +3753,14 @@ const ENEMY_KILL_COINS = {
     "coin": 5,
     "count": 1,
     "effectId": "enemyeffect_b_18",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_18",
         "coin": 5,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3668,11 +3768,14 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_b_19",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_19",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3680,11 +3783,14 @@ const ENEMY_KILL_COINS = {
     "coin": 5,
     "count": 1,
     "effectId": "enemyeffect_b_20",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_20",
         "coin": 5,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3692,11 +3798,14 @@ const ENEMY_KILL_COINS = {
     "coin": 6,
     "count": 1,
     "effectId": "enemyeffect_b_21",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_21",
         "coin": 6,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3704,11 +3813,14 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_b_22",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_22",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3716,11 +3828,14 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_b_23",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_23",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3728,11 +3843,14 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_b_24",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyeffect_b_24",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3740,16 +3858,22 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyInitial_1",
+    "group": null,
+    "groups": [
+      "DOT"
+    ],
     "variants": [
       {
         "effectId": "enemyInitial_1",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": null
       },
       {
         "effectId": "enemyeffect_13_7",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "DOT"
       }
     ]
   },
@@ -3757,11 +3881,14 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyInitial_2",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyInitial_2",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3769,11 +3896,14 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyInitial_3",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyInitial_3",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3781,11 +3911,14 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyInitial_4",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyInitial_4",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3793,11 +3926,14 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyInitial_5",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyInitial_5",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3805,11 +3941,14 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyInitial_6",
+    "group": null,
+    "groups": [],
     "variants": [
       {
         "effectId": "enemyInitial_6",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": null
       }
     ]
   },
@@ -3817,11 +3956,16 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_10_4",
+    "group": "FLY",
+    "groups": [
+      "FLY"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_10_4",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "FLY"
       }
     ]
   },
@@ -3829,11 +3973,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_10_5",
+    "group": "FLY",
+    "groups": [
+      "FLY"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_10_5",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "FLY"
       }
     ]
   },
@@ -3841,11 +3990,16 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_10_6",
+    "group": "FLY",
+    "groups": [
+      "FLY"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_10_6",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": "FLY"
       }
     ]
   },
@@ -3853,11 +4007,16 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_11_4",
+    "group": "TIMES",
+    "groups": [
+      "TIMES"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_11_4",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "TIMES"
       }
     ]
   },
@@ -3865,11 +4024,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_11_5",
+    "group": "TIMES",
+    "groups": [
+      "TIMES"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_11_5",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "TIMES"
       }
     ]
   },
@@ -3877,11 +4041,16 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_11_6",
+    "group": "TIMES",
+    "groups": [
+      "TIMES"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_11_6",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": "TIMES"
       }
     ]
   },
@@ -3889,11 +4058,16 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_12_4",
+    "group": "ELEMENT",
+    "groups": [
+      "ELEMENT"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_12_4",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "ELEMENT"
       }
     ]
   },
@@ -3901,11 +4075,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_12_5",
+    "group": "ELEMENT",
+    "groups": [
+      "ELEMENT"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_12_5",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "ELEMENT"
       }
     ]
   },
@@ -3913,11 +4092,16 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_12_6",
+    "group": "ELEMENT",
+    "groups": [
+      "ELEMENT"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_12_6",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": "ELEMENT"
       }
     ]
   },
@@ -3925,11 +4109,16 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_13_4",
+    "group": "DOT",
+    "groups": [
+      "DOT"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_13_4",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "DOT"
       }
     ]
   },
@@ -3937,11 +4126,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_13_5",
+    "group": "DOT",
+    "groups": [
+      "DOT"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_13_5",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "DOT"
       }
     ]
   },
@@ -3949,11 +4143,16 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_13_6",
+    "group": "DOT",
+    "groups": [
+      "DOT"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_13_6",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": "DOT"
       }
     ]
   },
@@ -3961,11 +4160,16 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_14_4",
+    "group": "INVISIBLE",
+    "groups": [
+      "INVISIBLE"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_14_4",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "INVISIBLE"
       }
     ]
   },
@@ -3973,11 +4177,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_14_5",
+    "group": "INVISIBLE",
+    "groups": [
+      "INVISIBLE"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_14_5",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "INVISIBLE"
       }
     ]
   },
@@ -3985,11 +4194,16 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_15_4",
+    "group": "REFLECTION",
+    "groups": [
+      "REFLECTION"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_15_4",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "REFLECTION"
       }
     ]
   },
@@ -3997,11 +4211,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_15_5",
+    "group": "REFLECTION",
+    "groups": [
+      "REFLECTION"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_15_5",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "REFLECTION"
       }
     ]
   },
@@ -4009,11 +4228,16 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_15_6",
+    "group": "REFLECTION",
+    "groups": [
+      "REFLECTION"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_15_6",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": "REFLECTION"
       }
     ]
   },
@@ -4021,11 +4245,16 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_16_1",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_16_1",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4033,11 +4262,16 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_16_2",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_16_2",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4045,11 +4279,16 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_16_3",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_16_3",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4057,11 +4296,16 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_16_4",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_16_4",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4069,11 +4313,16 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_16_5",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_16_5",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4081,11 +4330,16 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_16_6",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_16_6",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4093,11 +4347,16 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_16_7",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_16_7",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4105,11 +4364,16 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_16_8",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_16_8",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4117,11 +4381,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_16_9",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_16_9",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4129,11 +4398,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_16_10",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_16_10",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4141,11 +4415,16 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_16_11",
+    "group": "ELEMENT",
+    "groups": [
+      "ELEMENT"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_16_11",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "ELEMENT"
       }
     ]
   },
@@ -4153,11 +4432,16 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_16_12",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_16_12",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4165,11 +4449,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_10_8",
+    "group": "FLY",
+    "groups": [
+      "FLY"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_10_8",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "FLY"
       }
     ]
   },
@@ -4177,11 +4466,16 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_11_7",
+    "group": "TIMES",
+    "groups": [
+      "TIMES"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_11_7",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "TIMES"
       }
     ]
   },
@@ -4189,11 +4483,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_11_8",
+    "group": "TIMES",
+    "groups": [
+      "TIMES"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_11_8",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "TIMES"
       }
     ]
   },
@@ -4201,11 +4500,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_12_7",
+    "group": "ELEMENT",
+    "groups": [
+      "ELEMENT"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_12_7",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "ELEMENT"
       }
     ]
   },
@@ -4213,11 +4517,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_12_8",
+    "group": "ELEMENT",
+    "groups": [
+      "ELEMENT"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_12_8",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "ELEMENT"
       }
     ]
   },
@@ -4225,11 +4534,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_13_8",
+    "group": "DOT",
+    "groups": [
+      "DOT"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_13_8",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "DOT"
       }
     ]
   },
@@ -4237,11 +4551,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_14_8",
+    "group": "INVISIBLE",
+    "groups": [
+      "INVISIBLE"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_14_8",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "INVISIBLE"
       }
     ]
   },
@@ -4249,11 +4568,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_15_7",
+    "group": "REFLECTION",
+    "groups": [
+      "REFLECTION"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_15_7",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "REFLECTION"
       }
     ]
   },
@@ -4261,11 +4585,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_15_8",
+    "group": "REFLECTION",
+    "groups": [
+      "REFLECTION"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_15_8",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "REFLECTION"
       }
     ]
   },
@@ -4273,11 +4602,16 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_17_1",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_17_1",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4285,11 +4619,16 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_17_2",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_17_2",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4297,11 +4636,16 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_17_3",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_17_3",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4309,11 +4653,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_17_4",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_17_4",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4321,11 +4670,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_17_5",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_17_5",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4333,11 +4687,16 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_17_6",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_17_6",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4345,11 +4704,16 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_18_1",
+    "group": "ELEMENT",
+    "groups": [
+      "ELEMENT"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_18_1",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "ELEMENT"
       }
     ]
   },
@@ -4357,11 +4721,16 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_18_2",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_18_2",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4369,11 +4738,16 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_18_3",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_18_3",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4381,11 +4755,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_18_4",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_18_4",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4393,11 +4772,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_18_5",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_18_5",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4405,11 +4789,16 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_18_6",
+    "group": "ELEMENT",
+    "groups": [
+      "ELEMENT"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_18_6",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": "ELEMENT"
       }
     ]
   },
@@ -4417,11 +4806,16 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_19_1",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_19_1",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4429,11 +4823,16 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_19_2",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_19_2",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4441,11 +4840,16 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_19_3",
+    "group": "REFLECTION",
+    "groups": [
+      "REFLECTION"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_19_3",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "REFLECTION"
       }
     ]
   },
@@ -4453,11 +4857,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_19_4",
+    "group": "FLY",
+    "groups": [
+      "FLY"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_19_4",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "FLY"
       }
     ]
   },
@@ -4465,11 +4874,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_19_5",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_19_5",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4477,11 +4891,16 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_19_6",
+    "group": "ELEMENT",
+    "groups": [
+      "ELEMENT"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_19_6",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": "ELEMENT"
       }
     ]
   },
@@ -4489,11 +4908,16 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_20_1",
+    "group": "DOT",
+    "groups": [
+      "DOT"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_20_1",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "DOT"
       }
     ]
   },
@@ -4501,11 +4925,16 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_20_2",
+    "group": "TIMES",
+    "groups": [
+      "TIMES"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_20_2",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "TIMES"
       }
     ]
   },
@@ -4513,11 +4942,16 @@ const ENEMY_KILL_COINS = {
     "coin": 1,
     "count": 1,
     "effectId": "enemyeffect_20_3",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_20_3",
         "coin": 1,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4525,11 +4959,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_20_4",
+    "group": "SPECIAL",
+    "groups": [
+      "SPECIAL"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_20_4",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "SPECIAL"
       }
     ]
   },
@@ -4537,11 +4976,16 @@ const ENEMY_KILL_COINS = {
     "coin": 2,
     "count": 1,
     "effectId": "enemyeffect_20_5",
+    "group": "ELEMENT",
+    "groups": [
+      "ELEMENT"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_20_5",
         "coin": 2,
-        "count": 1
+        "count": 1,
+        "group": "ELEMENT"
       }
     ]
   },
@@ -4549,11 +4993,16 @@ const ENEMY_KILL_COINS = {
     "coin": 3,
     "count": 1,
     "effectId": "enemyeffect_20_6",
+    "group": "ELEMENT",
+    "groups": [
+      "ELEMENT"
+    ],
     "variants": [
       {
         "effectId": "enemyeffect_20_6",
         "coin": 3,
-        "count": 1
+        "count": 1,
+        "group": "ELEMENT"
       }
     ]
   }
@@ -12856,8 +13305,10 @@ class NativeSession extends NativeEconomy {
   // 悬赏每两回合一次（第 2、4、6… 回合）：非悬赏回合不生成，也不改写上一轮的记录。
   if(!bountyRoundActive(this.s.round))return null;
   if(this.s.roundBounty?.round===this.s.round)return this.s.roundBounty;
-  const seed=this.s.waveRoster?.rounds?.[this.s.round]?.waveSeed??this.s.round;
-  this.s.roundBounty={round:this.s.round,offers:bountyOffers(this.data,seed),selected:null};return this.s.roundBounty;
+  const assignment=this.s.waveRoster?.rounds?.[this.s.round]||null;
+  const seed=assignment?.waveSeed??this.s.round;
+  // 悬赏候选按本回合的特训词条抽取（原表把悬赏登记在词条组里，领袖/具名悬赏单独一组）。
+  this.s.roundBounty={round:this.s.round,offers:bountyOffers(this.data,seed,{type:assignment?.type??null}),selected:null};return this.s.roundBounty;
  }
  chooseRoundBounty(id){
   const r=this.s.roundBounty;
@@ -16290,35 +16741,46 @@ const BOUNTY_SLUG='enemy_1007_slime';
 function bountyOption(data,id){
  const raw=data.enemies?.[id],table=ENEMY_KILL_COINS[id];
  if(raw&&raw.enemyBehavior?.randomPoolEligible===true&&table)
-  return {id,enemyId:id,name:raw.name,coin:table.coin,count:table.count,difficulty:table.coin,cost:Number(DEFAULT_WAVE_TABLE.costs[id])||0,effectId:table.effectId,source:'kill-coin'};
+  return {id,enemyId:id,name:raw.name,coin:table.coin,count:table.count,difficulty:table.coin,cost:Number(DEFAULT_WAVE_TABLE.costs[id])||0,effectId:table.effectId,groups:[...(table.groups||[])],source:'kill-coin'};
  // 兼容旧存档：旧悬赏是「有波次表成本就能被抽到」并按成本映射币值，这些 id 仍要能被读回来。
  const cost=DEFAULT_WAVE_TABLE.costs[id];
  if(raw&&raw.enemyBehavior?.randomPoolEligible===true&&(Number.isFinite(cost)||id===BOUNTY_SLUG)){
   const coin=id===BOUNTY_SLUG?0:cost<=3?1:cost<=6?2:cost<=10?3:4;
-  return {id,enemyId:id,name:raw.name,coin,count:1,difficulty:coin,cost:cost||0,source:'legacy-cost'};
+  return {id,enemyId:id,name:raw.name,coin,count:1,difficulty:coin,cost:cost||0,groups:[],source:'legacy-cost'};
  }
  // 兼容旧存档中的道具悬赏效果 ID。
  const effect=data.season.effectBuffInfoDataDict[id]?.find(e=>['add_enemy_selfbattle_win_gain_coin','next_battle_add_enemy_win_gain_coin'].includes(e.key));
  if(!effect)return null;
  const p=blackboard(effect.blackboard),enemyId=String(p.enemy_id||'');if(!data.enemies?.[enemyId])return null;
  const coin=enemyId===BOUNTY_SLUG?0:Number(p.coin)||1;
- return {id,enemyId,name:data.enemies[enemyId].name,coin,count:Number(p.count)||1,difficulty:coin,source:'item'};
+ return {id,enemyId,name:data.enemies[enemyId].name,coin,count:Number(p.count)||1,difficulty:coin,groups:[],source:'item'};
 }
 
-function bountyOffers(data,seed){
+// 候选按词条组抽（2026-09-23）：原表把悬赏登记在词条组里（`悬赏·飞行II` 之类），词条组的奖金只到 3 档；
+// 领袖与具名悬赏没有词条，单独一组、奖金 0–6。传入本回合的词条 `type` 时：
+//   1 档优先给同词条候选；4 档只能来自具名/领袖组；剩下两档先补同词条，再补具名组。
+// 项目口径仍是四选一且至少包含 1 与 4 奖金档（0 档是源石虫）；缺档跳过并继续从还有候选的档位补，
+// 不能像旧实现那样「任一档为空就整轮不出悬赏」。不传 `type`（道具悬赏路径）时退回整池抽取。
+function bountyOffers(data,seed,{type=null}={}){
  const pool=Object.keys(ENEMY_KILL_COINS).map(id=>bountyOption(data,id)).filter(Boolean);
  const rng=waveRng((seed^0x7b0a17)>>>0),pick=items=>items[Math.floor(rng()*items.length)];
- const bins=Array.from({length:7},(_,coin)=>pool.filter(o=>o.coin===coin));
- // 项目口径：四选一，且每次至少包含 1 奖金与 4 奖金档（0 档是源石虫）。
- // 原表 coin 上限是 6，高档位可能没有任何准入候选；缺档要跳过并从还有候选的档位补，
- // 不能像旧实现那样「任一档为空就整轮不出悬赏」—— 否则接上领袖赏金表后第 6 档为空会让整个悬赏消失。
- const anchor=[1,4].filter(coin=>bins[coin].length);
- if(anchor.length<2)return [];
- const offers=anchor.map(coin=>pick(bins[coin]).id);
- const spare=[0,2,3,5,6].filter(coin=>bins[coin].length);
+ const tagged=type?pool.filter(o=>o.groups.includes(type)):[];
+ const named=pool.filter(o=>!o.groups.length);
+ const layers=type?[tagged,named]:[pool];
+ const offers=[];
+ // 同一档位「词条组优先、具名组兜底」：先把候选按组分层，逐层找该档位，找到就用它。
+ const take=coin=>{
+  for(const list of layers){
+   const candidates=list.filter(o=>o.coin===coin);
+   if(candidates.length){offers.push(pick(candidates).id);return true;}
+  }
+  return false;
+ };
+ if(!take(1)||!take(4))return [];
+ const spare=[0,2,3,5,6];
  while(offers.length<4&&spare.length){
   const [coin]=spare.splice(Math.floor(rng()*spare.length),1);
-  offers.push(pick(bins[coin]).id);
+  take(coin);
  }
  const unique=[...new Set(offers)];
  if(unique.length<4)return [];

@@ -5,12 +5,13 @@ import {NATIVE_DATA as data} from '../dist/runtime-data.js';
 import {NativeSession} from '../dist/native-session.js';
 import {bountyOffers,bountyOption,BOUNTY_SLUG} from '../dist/native-bounty.js';
 import {ENEMY_KILL_COINS,DEFAULT_WAVE_TABLE} from '../dist/native-wave-defaults.js';
-import {enemyCost,defaultWaveTable} from '../dist/native-wave-fill.js';
+import {enemyCost,defaultWaveTable,TRAINING_TYPES} from '../dist/native-wave-fill.js';
 
 // 成本依据留在源文件里（normalizeWaveTable 不保留它，避免影响「敌人池是否改动」的判等）。
 const rawTable=()=>JSON.parse(fs.readFileSync(new URL('../data/modes/alliance-lower/default-wave-table.json',import.meta.url),'utf8'));
 
 const leaders=Object.entries(data.enemies).filter(([,e])=>e.levelType==='BOSS').map(([id])=>id);
+const TYPE_IDS=TRAINING_TYPES.map(t=>t.id);
 
 test('悬赏池来自原表 add_enemy_kill_gain_coin：23 名领袖逐条在册，币值取原表',()=>{
  assert.equal(Object.keys(ENEMY_KILL_COINS).length,104,'本期原表击杀奖金表覆盖数');
@@ -74,4 +75,58 @@ test('新悬赏记录能通过存档校验',()=>{
  assert.ok(row.offers.every(id=>bountyOption(data,id)));
  const restored=NativeSession.restore(data,JSON.parse(JSON.stringify(g.snapshot())));
  assert.ok(restored);assert.deepEqual(restored.s.roundBounty,row);
+});
+
+test('赏金条目按原表词条组登记：词条组奖金只到 3 档，4 档以上只能是具名/领袖',()=>{
+ let tagged=0,named=0;
+ for(const [id,entry] of Object.entries(ENEMY_KILL_COINS)){
+  for(const g of entry.groups)assert.ok(TYPE_IDS.includes(g),id+' 出现未知词条组 '+g);
+  assert.equal(entry.groups.length,new Set(entry.groups).size,id+' 词条组重复');
+  assert.ok(entry.variants.length>=1);
+  for(const v of entry.variants)assert.ok(v.group===null||TYPE_IDS.includes(v.group));
+  if(entry.groups.length){tagged++;for(const v of entry.variants)assert.ok(v.coin<=3,id+' 词条组奖金超过 3 档');}
+  else named++;
+ }
+ assert.ok(tagged>=60&&named>=30,'词条组 '+tagged+' / 具名组 '+named);
+ for(const [id,entry] of Object.entries(ENEMY_KILL_COINS))if(entry.coin>=4)assert.equal(entry.groups.length,0,id+' 的 4 档以上必须来自具名组');
+ // 7 个词条组都要有可抽候选，否则该词条回合只能退化成具名组
+ for(const type of TYPE_IDS){
+  const usable=Object.keys(ENEMY_KILL_COINS).filter(id=>ENEMY_KILL_COINS[id].groups.includes(type)&&data.enemies[id].enemyBehavior.randomPoolEligible===true);
+  assert.ok(usable.length>=4,type+' 词条组的准入候选过少: '+usable.length);
+ }
+});
+
+test('按回合词条抽候选：同词条优先，4 档锚点固定来自具名/领袖组',()=>{
+ for(const type of TYPE_IDS){
+  const seen=new Set();
+  for(let seed=0;seed<300;seed++){
+   const ids=bountyOffers(data,seed,{type}),offers=ids.map(id=>bountyOption(data,id));
+   assert.equal(ids.length,4);assert.equal(new Set(ids).size,4);
+   assert.deepEqual(bountyOffers(data,seed,{type}),ids,'同种子同词条可复现');
+   const coin4=offers.find(o=>o.coin===4);
+   assert.ok(offers.some(o=>o.coin===1)&&coin4,'四选一必须含 1 与 4 档');
+   assert.equal(coin4.groups.length,0,'4 档锚点来自具名/领袖组: '+coin4.name);
+   const matched=offers.filter(o=>o.groups.includes(type));
+   assert.ok(matched.length>=1,type+' 回合至少要有一个同词条候选: '+offers.map(o=>o.name).join('/'));
+   matched.forEach(o=>seen.add(o.id));
+  }
+  // 该词条组的每一个准入候选都应该有机会被抽到
+  const usable=Object.keys(ENEMY_KILL_COINS).filter(id=>ENEMY_KILL_COINS[id].groups.includes(type)&&data.enemies[id].enemyBehavior.randomPoolEligible===true);
+  const missing=usable.filter(id=>!seen.has(id));
+  assert.deepEqual(missing,[],type+' 词条组里有没被抽到过的候选: '+missing.join('、'));
+ }
+});
+
+test('回合悬赏交给会话时带上该回合的特训词条',()=>{
+ const g=new NativeSession(data,{seed:42});
+ for(const round of [2,4,6]){
+  g.s.round=round;g.s.lastPrepRound=null;g.s.rewardPending=null;g.s.roundBounty=null;
+  const roster=g.s.waveRoster?.rounds?.[round],row=g.ensureRoundBounty();
+  assert.ok(roster?.type,`第 ${round} 回合应有词条`);
+  assert.ok(row);
+  const offers=row.offers.map(id=>bountyOption(data,id));
+  // 会话按 roster 的词条抽：至少一个候选属于该词条（或用例种子下确实退化到具名组时也必须有 1/4 锚点）
+  assert.ok(offers.some(o=>o.coin===1)&&offers.some(o=>o.coin===4));
+  assert.ok(offers.some(o=>o.groups.includes(roster.type)),`第 ${round} 回合(${roster.type})应有同词条候选`);
+ }
 });

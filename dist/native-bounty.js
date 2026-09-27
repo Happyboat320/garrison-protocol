@@ -11,35 +11,46 @@ export const BOUNTY_SLUG='enemy_1007_slime';
 export function bountyOption(data,id){
  const raw=data.enemies?.[id],table=ENEMY_KILL_COINS[id];
  if(raw&&raw.enemyBehavior?.randomPoolEligible===true&&table)
-  return {id,enemyId:id,name:raw.name,coin:table.coin,count:table.count,difficulty:table.coin,cost:Number(DEFAULT_WAVE_TABLE.costs[id])||0,effectId:table.effectId,source:'kill-coin'};
+  return {id,enemyId:id,name:raw.name,coin:table.coin,count:table.count,difficulty:table.coin,cost:Number(DEFAULT_WAVE_TABLE.costs[id])||0,effectId:table.effectId,groups:[...(table.groups||[])],source:'kill-coin'};
  // 兼容旧存档：旧悬赏是「有波次表成本就能被抽到」并按成本映射币值，这些 id 仍要能被读回来。
  const cost=DEFAULT_WAVE_TABLE.costs[id];
  if(raw&&raw.enemyBehavior?.randomPoolEligible===true&&(Number.isFinite(cost)||id===BOUNTY_SLUG)){
   const coin=id===BOUNTY_SLUG?0:cost<=3?1:cost<=6?2:cost<=10?3:4;
-  return {id,enemyId:id,name:raw.name,coin,count:1,difficulty:coin,cost:cost||0,source:'legacy-cost'};
+  return {id,enemyId:id,name:raw.name,coin,count:1,difficulty:coin,cost:cost||0,groups:[],source:'legacy-cost'};
  }
  // 兼容旧存档中的道具悬赏效果 ID。
  const effect=data.season.effectBuffInfoDataDict[id]?.find(e=>['add_enemy_selfbattle_win_gain_coin','next_battle_add_enemy_win_gain_coin'].includes(e.key));
  if(!effect)return null;
  const p=blackboard(effect.blackboard),enemyId=String(p.enemy_id||'');if(!data.enemies?.[enemyId])return null;
  const coin=enemyId===BOUNTY_SLUG?0:Number(p.coin)||1;
- return {id,enemyId,name:data.enemies[enemyId].name,coin,count:Number(p.count)||1,difficulty:coin,source:'item'};
+ return {id,enemyId,name:data.enemies[enemyId].name,coin,count:Number(p.count)||1,difficulty:coin,groups:[],source:'item'};
 }
 
-export function bountyOffers(data,seed){
+// 候选按词条组抽（2026-09-23）：原表把悬赏登记在词条组里（`悬赏·飞行II` 之类），词条组的奖金只到 3 档；
+// 领袖与具名悬赏没有词条，单独一组、奖金 0–6。传入本回合的词条 `type` 时：
+//   1 档优先给同词条候选；4 档只能来自具名/领袖组；剩下两档先补同词条，再补具名组。
+// 项目口径仍是四选一且至少包含 1 与 4 奖金档（0 档是源石虫）；缺档跳过并继续从还有候选的档位补，
+// 不能像旧实现那样「任一档为空就整轮不出悬赏」。不传 `type`（道具悬赏路径）时退回整池抽取。
+export function bountyOffers(data,seed,{type=null}={}){
  const pool=Object.keys(ENEMY_KILL_COINS).map(id=>bountyOption(data,id)).filter(Boolean);
  const rng=waveRng((seed^0x7b0a17)>>>0),pick=items=>items[Math.floor(rng()*items.length)];
- const bins=Array.from({length:7},(_,coin)=>pool.filter(o=>o.coin===coin));
- // 项目口径：四选一，且每次至少包含 1 奖金与 4 奖金档（0 档是源石虫）。
- // 原表 coin 上限是 6，高档位可能没有任何准入候选；缺档要跳过并从还有候选的档位补，
- // 不能像旧实现那样「任一档为空就整轮不出悬赏」—— 否则接上领袖赏金表后第 6 档为空会让整个悬赏消失。
- const anchor=[1,4].filter(coin=>bins[coin].length);
- if(anchor.length<2)return [];
- const offers=anchor.map(coin=>pick(bins[coin]).id);
- const spare=[0,2,3,5,6].filter(coin=>bins[coin].length);
+ const tagged=type?pool.filter(o=>o.groups.includes(type)):[];
+ const named=pool.filter(o=>!o.groups.length);
+ const layers=type?[tagged,named]:[pool];
+ const offers=[];
+ // 同一档位「词条组优先、具名组兜底」：先把候选按组分层，逐层找该档位，找到就用它。
+ const take=coin=>{
+  for(const list of layers){
+   const candidates=list.filter(o=>o.coin===coin);
+   if(candidates.length){offers.push(pick(candidates).id);return true;}
+  }
+  return false;
+ };
+ if(!take(1)||!take(4))return [];
+ const spare=[0,2,3,5,6];
  while(offers.length<4&&spare.length){
   const [coin]=spare.splice(Math.floor(rng()*spare.length),1);
-  offers.push(pick(bins[coin]).id);
+  take(coin);
  }
  const unique=[...new Set(offers)];
  if(unique.length<4)return [];

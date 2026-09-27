@@ -78,8 +78,10 @@ export class NativeSession extends NativeEconomy {
   // 悬赏每两回合一次（第 2、4、6… 回合）：非悬赏回合不生成，也不改写上一轮的记录。
   if(!bountyRoundActive(this.s.round))return null;
   if(this.s.roundBounty?.round===this.s.round)return this.s.roundBounty;
-  const seed=this.s.waveRoster?.rounds?.[this.s.round]?.waveSeed??this.s.round;
-  this.s.roundBounty={round:this.s.round,offers:bountyOffers(this.data,seed),selected:null};return this.s.roundBounty;
+  const assignment=this.s.waveRoster?.rounds?.[this.s.round]||null;
+  const seed=assignment?.waveSeed??this.s.round;
+  // 悬赏候选按本回合的特训词条抽取（原表把悬赏登记在词条组里，领袖/具名悬赏单独一组）。
+  this.s.roundBounty={round:this.s.round,offers:bountyOffers(this.data,seed,{type:assignment?.type??null}),selected:null};return this.s.roundBounty;
  }
  chooseRoundBounty(id){
   const r=this.s.roundBounty;
