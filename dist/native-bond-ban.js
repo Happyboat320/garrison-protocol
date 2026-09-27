@@ -217,8 +217,8 @@ export function bondBanBriefingHtml(data,ban,ui={}){
  const core=ids.filter(id=>bondIsCore(data,id)),extra=ids.filter(id=>!bondIsCore(data,id));
  const rowOf=id=>summary.bonds.find(b=>b.id===id);
  const bannedExtra=extra.filter(id=>banned.has(id));
- const fixed=[...rules.fixed,...rules.never].length?`固定禁用 ${rules.fixed.length} 个盟约${rules.fixed.length?`（${esc(rules.fixed.map(id=>bondName(data,id)).join('／'))}）`:''}；${esc(rules.never.map(id=>bondName(data,id)).join('／'))} 固定不被随机禁用。`:'';
- return `<h2>盟约缺席情况</h2><p>每局从「参与随机」的盟约里随机禁用 ${BAN_CORE_COUNT} 个核心盟约与 ${BAN_EXTRA_COUNT} 个附加盟约（不占固定禁用的名额）。${fixed}一名干员只有在<b>所属盟约全部缺席</b>时才不可使用——只要还挂着一个未缺席的盟约就仍能出场；商店抽取、策略与道具发放都不提供被禁干员。</p><h3 class="native-ban-heading">核心盟约 <small>${core.filter(id=>banned.has(id)).length} / ${core.length} 缺席</small></h3><div class="native-ban-bonds">${core.map(id=>bondCellHtml(data,id,banned.has(id),rowOf(id),esc)).join('')}</div><h3 class="native-ban-heading">被禁用的附加盟约 <small>${bannedExtra.length} 个</small></h3><div class="native-ban-bonds">${bannedExtra.map(id=>bondCellHtml(data,id,true,rowOf(id),esc)).join('')||'<p class="native-ban-none">本局没有被禁用的附加盟约。</p>'}</div><button class="native-ban-open" data-act="ban-list">查看本局被禁用的 ${summary.operators.length} 名干员 →</button>`;
+ 
+ return `<h2>盟约缺席情况</h2><h3 class="native-ban-heading">核心盟约 <small>${core.filter(id=>banned.has(id)).length} / ${core.length} 缺席</small></h3><div class="native-ban-bonds">${core.map(id=>bondCellHtml(data,id,banned.has(id),rowOf(id),esc)).join('')}</div><h3 class="native-ban-heading">被禁用的附加盟约 <small>${bannedExtra.length} 个</small></h3><div class="native-ban-bonds">${bannedExtra.map(id=>bondCellHtml(data,id,true,rowOf(id),esc)).join('')||'<p class="native-ban-none">本局没有被禁用的附加盟约。</p>'}</div><button class="native-ban-open" data-act="ban-list">查看本局被禁用的 ${summary.operators.length} 名干员 →</button>`;
 }
 
 // 简报（按钮上的「N 名」）与弹窗必须用**同一份**禁用记录，否则会出现「按钮写 50 名、弹窗 0 名」。

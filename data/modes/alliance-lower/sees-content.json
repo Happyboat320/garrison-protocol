@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-27",
+  "scope": "用户 2026-09-27 设计的 S.E.E.S. 联动玩法：策略【S.E.E.S.】＋特殊盟约【塔尔塔罗斯】＋核心盟约【S.E.E.S.】＋四名干员分层＋装备「S.E.E.S.臂章」。只在本地存档特殊标记 flags.sees=true 时可选；只有选了该策略，四人与臂章才进卡池。",
+  "numbers": {
+    "bondActiveCount": 3,
+    "tartarusPerFund": 5,
+    "tartarusLayerCap": 264,
+    "grantEveryLayers": 25,
+    "coreTrueDamagePercentBase": 0.05,
+    "coreTrueDamagePercentMax": 0.4,
+    "coreCooldownSeconds": 20,
+    "coreFastCooldownSeconds": 1,
+    "coreFastThreshold": 264,
+    "uikariPerFund": { "initial": 2, "elite": 4 },
+    "makotoKillLayers": { "initial": 5, "elite": 10 },
+    "aigisPerLayer": 0.002,
+    "armband": {
+      "weakness": { "initial": 0.1, "elite": 0.2 },
+      "true": { "initial": 0.1, "elite": 0.2 }
+    }
+  },
+  "band": {
+    "bandId": "band_sees",
+    "sortId": 99,
+    "modeTypeList": ["LOCAL", "SINGLE", "MULTI"],
+    "bandDesc": "【S.E.E.S.】自动激活盟约【塔尔塔罗斯】。回合结束时，消耗剩余所有的资金，每消耗1资金【塔尔塔罗斯】层数+5；卡池中可能出现【S.E.E.S.】干员与装备",
+    "totalHp": 30,
+    "effectId": "aceffect_band_sees",
+    "victorCount": 3,
+    "bandRewardModulus": 1,
+    "bandName": "S.E.E.S.",
+    "bandIconId": "icon_sees"
+  },
+  "bonds": [
+    {
+      "bondId": "tartarusShip",
+      "name": "塔尔塔罗斯",
+      "desc": "每获得25层，随机获取一个不高于当前商店阶级的【S.E.E.S.】干员，尽可能不与场上已有的重复\n层数上限264层，满层后不再增长",
+      "activeCount": 0,
+      "activeParamList": ["0"],
+      "isPower": false,
+      "identifier": 101,
+      "effectId": "bondeffect_tartarus",
+      "weight": 0,
+      "noStack": false
+    },
+    {
+      "bondId": "seesShip",
+      "name": "S.E.E.S.",
+      "desc": "每20秒可触发一次：当造成弱点伤害时，对全场所有敌人造成等同于场上全体【S.E.E.S.】干员攻击总和的n%的真实伤害（n 随【塔尔塔罗斯】层数线性成长：0层5%、264层40%）\n当【塔尔塔罗斯】层数>=264时，以上效果的冷却时间变为1秒",
+      "activeCount": 3,
+      "activeParamList": ["3"],
+      "isPower": true,
+      "identifier": 100,
+      "effectId": "bondeffect_sees",
+      "weight": 10,
+      "noStack": false
+    }
+  ],
+  "operators": [
+    { "charId": "char_4220_kormr", "chessId": "chess_collab_kormr", "name": "虎狼丸", "chessLevel": 1 },
+    { "charId": "char_4219_yukari", "chessId": "chess_collab_yukari", "name": "岳羽由加莉", "chessLevel": 2 },
+    { "charId": "char_4218_aigis", "chessId": "chess_collab_aigis", "name": "埃癸斯", "chessLevel": 3 },
+    { "charId": "char_4217_makoto", "chessId": "chess_collab_makoto", "name": "结城理", "chessLevel": 6 }
+  ],
+  "equipment": [
+    {
+      "itemId": "chess_item_9_01_e_a",
+      "goldenItemId": "chess_item_9_01_e_b",
+      "itemLevel": 3,
+      "shopLevelSortId": 3,
+      "purchasePrice": 3,
+      "trapId": "trap_9101_sees_armband",
+      "name": "S.E.E.S.臂章",
+      "giveBondId": "seesShip",
+      "effectId": "eff_sees_armband",
+      "eliteEffectId": "eff_sees_armband_2",
+      "desc": "造成的物理、魔法伤害时，额外造成相当于10/20%伤害量的弱点伤害\n装备者为【S.E.E.S.】盟约时，再额外造成10/20%伤害量的真实伤害"
+    }
+  ]
+}
