@@ -218,10 +218,13 @@ ${body}
 }
 // 特殊标记 + 最近对局（用户 2026-09-27 口径）：开关只是存档标记（默认 false），战绩只读展示、字段全列。
 // 数据来自 native-archive（localStorage 里的本地档案），这一层不写档案本体，改开关交给 native-play 的动作处理。
+// 特殊标记是隐藏彩蛋（用户 2026-09-27 口径）：**没解锁时整块不出现**，只有密码解锁（flags.sees=true）后才显示；
+// 显示出来之后可以再关掉（关掉即回到「不存在」的状态，只能再用密码解锁）。最近对局列表不受影响。
 function archiveSection(archive,esc){
  const flags={...ARCHIVE_FLAG_DEFAULTS,...(archive?.flags||{})},runs=archive?.runs||[];
+ const flagsRow=flags.sees?'<div class="native-prep-flags"><span>特殊标记</span><button data-act="prep-flags-sees" class="chosen" aria-pressed="true">【S.E.E.S.】开</button><small>密码解锁的隐藏内容标记；关掉后这一块会重新隐藏。</small></div>':'';
  return `<section class="native-prep-archive">
-<div class="native-prep-flags"><span>特殊标记</span><button data-act="prep-flags-sees" class="${flags.sees?'chosen':''}" aria-pressed="${flags.sees}">【S.E.E.S.】${flags.sees?'开':'关'}</button><small>默认关；只是本地存档里的标记，暂时不影响抽取与战斗。</small></div>
+${flagsRow}
 <h2>最近对局 <small>${runs.length} / 10</small></h2>
 ${runs.length?runs.map((run,index)=>runCard(run,index+1,esc)).join(''):'<p class="native-prep-empty">还没有记录。打完一局（木桩结束或生命归零）会自动记入，导出存档时会一起带走。</p>'}
 </section>`;

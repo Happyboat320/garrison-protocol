@@ -154,22 +154,26 @@ test('导入时按 id 合并、保留置顶顺序，技能配置与开关一起�
  assert.equal(mergeArchives(big,emptyArchive()).runs.length,ARCHIVE_LIMIT);
 });
 
-test('战前准备页：特殊标记开关与最近对局列表（字段全列）',()=>{
+test('战前准备页：最近对局字段全列；未解锁时隐藏彩蛋整块不出现',()=>{
  const {g,at}=finishedRun();
  const archive=appendRun(emptyArchive(),runRecord(g,NATIVE_DATA,{at}));
  const html=renderPreparePage(NATIVE_DATA,{tab:'operator'},{esc:v=>String(v??''),avatar:()=>'',archive});
- for(const label of ['特殊标记','【S.E.E.S.】','最近对局','词条','地图','存活波数','是否通关','最终轮输出','最终轮盟约情况','最终轮场上阵容'])
+ for(const label of ['最近对局','词条','地图','存活波数','是否通关','最终轮输出','最终轮盟约情况','最终轮场上阵容'])
   assert.ok(html.includes(label),'页面要列出「'+label+'」');
- assert.match(html,/data-act="prep-flags-sees"/);
- assert.match(html,/data-act="prep-flags-sees" class="" aria-pressed="false"/,'默认关（false）时不带 chosen');
  assert.ok(html.includes('维娜·维多利亚'),'阵容里要有具体干员');
  assert.ok(html.includes('存活 13 波'));
  assert.ok(html.includes((987654).toLocaleString()),'最终轮输出');
  assert.ok(html.includes(NATIVE_DATA.season.bondInfoDict.kazimierzShip.name),'盟约情况');
+ // 特殊标记是隐藏彩蛋（用户 2026-09-27）：未解锁时连「特殊标记」四个字与开关都不该出现。
+ assert.ok(!html.includes('特殊标记'),'未解锁时不该看到「特殊标记」');
+ assert.ok(!html.includes('prep-flags-sees'),'未解锁时不该有开关按钮');
+ assert.ok(!html.includes('S.E.E.S.'),'未解锁时不该泄露彩蛋名字');
  const on=renderPreparePage(NATIVE_DATA,{tab:'operator'},{esc:v=>String(v??''),avatar:()=>'',archive:{...archive,flags:{sees:true}}});
- assert.match(on,/data-act="prep-flags-sees" class="chosen" aria-pressed="true"/,'打开时高亮');
+ assert.ok(on.includes('特殊标记'),'解锁后才显示这一块');
+ assert.match(on,/data-act="prep-flags-sees" class="chosen" aria-pressed="true"/,'解锁后显示为开且高亮');
  const empty=renderPreparePage(NATIVE_DATA,{tab:'operator'},{esc:v=>String(v??''),avatar:()=>''});
  assert.ok(empty.includes('还没有记录'),'没有档案时给提示，不报错');
+ assert.ok(!empty.includes('prep-flags-sees'),'空档案同样看不到彩蛋');
 });
 
 test('接线门禁：大厅导出按钮、导入分支、记账时机都在',()=>{
