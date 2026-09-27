@@ -16172,7 +16172,7 @@ function sandboxRemoveEnemy(uid){const sb=state.sandbox;if(!sb)return;sb.enemyDr
 function sandboxReset(){const previous=state.sandbox?.previousGame||null;state.sandbox=newSandbox();state.sandbox.previousGame=previous;state.sandbox.previousView='lobby';state.game=state.sandbox.economy;state.view='game';state.paused=true;render();}
 function sandboxDetail(){const sb=state.sandbox,b=sb?.battle,ops=sandboxOperators,ens=sandboxEnemies;return `<section class="sandbox-inline"><div class="sandbox-inline-head"><b>技能测试内容</b><small>${sb?.phase==='setup'?'按正式场景方式选择干员、拖拽/点击地块并确认朝向':'沿用正式战斗控制器，可暂停、单步和手动释放技能'}</small></div><details open><summary>添加干员</summary><input id="sandbox-op-search" type="search" value="${esc(sb?.opQuery||'')}" placeholder="搜索名称或 ID" aria-label="搜索测试干员"><div class="sandbox-inline-results">${ops.map(o=>`<button data-act="sandbox-add-op" data-id="${o.id}" data-sandbox-op="${esc((o.name+' '+o.id).toLowerCase())}" ${sb?.opQuery&&!((o.name+' '+o.id).toLowerCase().includes(sb.opQuery.toLowerCase()))?'hidden':''}>${avatar(o.charId)}<span><b>${esc(o.name)}</b><small>${o.rank} 阶${o.isGolden?' · 精锐':''}</small></span></button>`).join('')}</div></details><details open><summary>添加敌人</summary><input id="sandbox-enemy-search" type="search" value="${esc(sb?.enemyQuery||'')}" placeholder="搜索敌人名称或 ID" aria-label="搜索测试敌人"><button class="sandbox-dummy" data-act="sandbox-add-dummy">＋ 不行动木桩</button><div class="sandbox-inline-results">${ens.map(e=>`<button data-act="sandbox-add-enemy" data-id="${e.id}" data-sandbox-enemy="${esc((e.name+' '+e.id).toLowerCase())}" ${sb?.enemyQuery&&!((e.name+' '+e.id).toLowerCase().includes(sb.enemyQuery.toLowerCase()))?'hidden':''}><span class="sandbox-enemy-glyph">◆</span><span><b>${esc(e.name)}</b><small>${e.applyWay==='RANGED'?'远程':'近战'} · ${e.motion==='FLY'?'飞行':'地面'}</small></span></button>`).join('')}</div></details><div class="sandbox-inline-picked"><b>已选敌人</b>${(sb?.enemyDrafts||[]).map(d=>`<div><span>${d.dummy?'∞':'◆'} ${esc(d.dummy?'不行动木桩':data.enemies[d.id]?.name||d.id)}</span><button data-act="sandbox-remove-enemy" data-uid="${d.uid}">移除</button></div>`).join('')||'<small>暂无敌人</small>'}</div><div class="sandbox-inline-actions"><button data-act="sandbox-start" ${sb?.phase!=='setup'?'disabled':''}>开始测试</button><button data-act="sandbox-step" ${sb?.phase!=='battle'?'disabled':''}>单步</button><button data-act="sandbox-clear-enemies">清空敌人</button><button data-act="sandbox-reset">重置</button><button data-act="sandbox-exit">退出</button></div>${sb?.battle?`<div class="sandbox-inline-live"><b>测试干员</b>${sb.economy.s.units.map(u=>{const live=b.s.units.find(v=>v.uid===u.uid),p=data.profiles[u.chessId];return live?`<div><span>${esc(p.name)} · ${Math.round(live.hp)}/${Math.round(live.maxHp)}</span><button data-act="sandbox-fill-sp" data-uid="${u.uid}">充能</button><button data-act="sandbox-skill" data-uid="${u.uid}">${live.skillLeft>0||live.ammo>0?'结束技能':'释放技能'}</button></div>`:''}).join('')||'<small>暂无已部署干员</small>'}<b>测试敌人</b>${(sb.enemyDrafts||[]).map(d=>`<div><span>${d.dummy?'∞':'◆'} ${esc(d.dummy?'不行动木桩':data.enemies[d.id]?.name||d.id)}</span><button data-act="sandbox-remove-enemy" data-uid="${d.uid}">移除</button></div>`).join('')||'<small>暂无敌人</small>'}</div>`:''}</section>`;}
 function bondOperators(id){const seen=new Set();return Object.values(data.season.charShopChessDatas).filter(shop=>shop.charId&&!shop.isHidden&&data.profiles[shop.chessId]?.bonds?.includes(id)).map(shop=>{if(seen.has(shop.charId))return null;seen.add(shop.charId);const p=data.profiles[shop.chessId];return {chessId:shop.chessId,charId:shop.charId,name:p.name,rank:shop.chessLevel};}).filter(Boolean).sort((a,b)=>a.rank-b.rank||a.name.localeCompare(b.name,'zh-CN'));}
-function sortedBondRows(rows,layers={}){return Object.entries(rows).filter(([id,b])=>b.count>0||(layers[id]||0)>0).sort(([aId,a],[bId,b])=>Number(b.active)-Number(a.active)||(layers[bId]||0)-(layers[aId]||0)||b.count-a.count||aId.localeCompare(bId));}
+function sortedBondRows(rows,layers={}){return Object.entries(rows).filter(([id,b])=>b.active||b.count>0||(layers[id]||0)>0).sort(([aId,a],[bId,b])=>Number(b.active)-Number(a.active)||(layers[bId]||0)-(layers[aId]||0)||b.count-a.count||aId.localeCompare(bId));}
 // 盟约面板的「当前动态数值」：受层数影响的每一项都由 protocol.bondCurrentPreviewHtml 按原表的
 // descParamBaseList／descParamPerStackList 生成（含叙拉古的攻速与隐匿持续时间、谢拉格寒风时长），
 // 这里只做一层薄封装，别再往这里加手写数值——漏项就是这么来的。
@@ -16349,7 +16349,7 @@ function action(button){const a=button.dataset.act,g=state.game,uid=Number(butto
  if(a==='bounty-later'){state.bountyDeferred=g.s.round;state.modal=null;renderModal();root.querySelector('[data-act=start]')?.focus();return;}
  if(a==='round-bounty'){if(g.perform('roundBounty',button.dataset.id)){state.modal=null;save();saveCheckpoint();render();}else notice('当前悬赏已选择或不可接取');return;}
  if(a==='start'&&!state.sandbox&&g?.s.roundBounty?.round===g.s.round&&!g.s.roundBounty.selected&&g.s.roundBounty.offers.length){modal(renderBountyChoice(data,g.s.roundBounty.offers,g.s.round));return;}
- if(a==='band'){state.band=button.dataset.id;render();return;}if(a==='limits'){showLimitations();return;}if(a==='branches'){showBranches(button.dataset.id||null);return;}if(a==='close'){if(g?.s.rewardPending||g?.s.phase==='decision')return;state.modal=null;renderModal();return;}
+ if(a==='band'){state.band=button.dataset.id;render();return;}if(a==='limits'){showLimitations();return;}if(a==='branches'){showBranches(button.dataset.id||null);return;}if(a==='close'){if(g?.s.rewardPending||g?.s.phase==='decision')return;state.modal=null;state.modalMeta=null;renderModal();return;}
  if(a==='supply-toggle'){state.supplyCollapsed=!state.supplyCollapsed;render();return;}
  if(a==='sandbox'){enterPlayChrome();openSandbox();return;}if(a==='home'&&state.sandbox){const previous=state.sandbox.previousGame||null;state.sandbox=null;state.game=previous;state.view='lobby';state.paused=true;leavePlayChrome();render();return;}if(a==='sandbox-exit'){const previous=state.sandbox?.previousGame||null;state.sandbox=null;state.game=previous;state.view='lobby';state.paused=true;leavePlayChrome();render();return;}if(a==='sandbox-reset'){sandboxReset();return;}if(a==='sandbox-add-op'){sandboxAddOperator(button.dataset.id);return;}if(a==='sandbox-add-enemy'){sandboxSpawnEnemy(button.dataset.id,false);return;}if(a==='sandbox-add-dummy'){sandboxSpawnEnemy('enemy_1041_lazerd',true);return;}if(a==='sandbox-remove-enemy'){sandboxRemoveEnemy(uid);return;}if(a==='sandbox-remove-op'){const sb=state.sandbox;if(sb){sb.economy.s.units=sb.economy.s.units.filter(u=>u.uid!==uid);if(sb.battle)sb.battle.s.units=sb.battle.s.units.filter(u=>u.uid!==uid);render();}return;}if(a==='sandbox-start'){sandboxStart();return;}if(a==='sandbox-pause'){if(state.sandbox?.phase==='battle'){state.paused=!state.paused;render();}return;}if(a==='sandbox-step'){if(state.sandbox?.battle){state.sandbox.battle.step();render();}return;}if(a==='sandbox-clear-enemies'){if(state.sandbox){state.sandbox.enemyDrafts=[];if(state.sandbox.battle)state.sandbox.battle.s.enemies=[];render();}return;}if(a==='sandbox-fill-sp'){const sb=state.sandbox,u=sb?.battle?.s.units.find(v=>v.uid===uid);if(u){u.sp=sb.battle.spCost(u);render();}return;}if(a==='sandbox-skill'){const sb=state.sandbox,u=sb?.battle?.s.units.find(v=>v.uid===uid);if(u){if(u.skillLeft>0||u.ammo>0)sb.battle.deactivate(u);else{u.sp=sb.battle.spCost(u);sb.battle.activate(u);}render();}return;}
  if(a==='field-info'){const banCount=g?.bannedOperatorList?.().length||0,banBonds=g?.s?.bondBan?.bonds?.length||0;modal(`<h2>战况 / 设置</h2>${document.querySelector('.native-detail').innerHTML.replace(/ id="[^"]*"/g,'')}${document.querySelector('.native-terrain-legend').outerHTML}${banBonds?`<button class="native-ban-entry" data-act="ban-list">禁用名单（${banCount} 名 · 缺席 ${banBonds} 盟约）</button>`:''}<label>音量 <input data-native-volume aria-label="战斗音量" type="range" min="0" max="1" step="0.05" value="${state.volume}"></label><p><button data-act="limits">已知差异</button> <button data-act="branches">分支规则</button> <button data-act="export">导出存档</button></p>`);fitWaveFaces();return;}
@@ -16359,8 +16359,8 @@ function action(button){const a=button.dataset.act,g=state.game,uid=Number(butto
    if(!prepDirtyCount(p.skills,p.saved)){p.saved=loadPrepSkills(data);p.skills={...p.saved};}
    state.view='prepare';state.modal=null;p.scroll=0;if(typeof window.scrollTo==='function')window.scrollTo(0,0);render();return;}
   if(a==='prep-tab'){const p=prepState();p.tab=button.dataset.tab==='equipment'?'equipment':'operator';p.scroll=window.scrollY||0;render();return;}
-  // 特殊标记【S.E.E.S.】：只是本地存档里的布尔标记（默认 false），不影响抽取与战斗（用户 2026-09-27 口径）。
-  if(a==='prep-flags-sees'){const archive=archiveNow(),next=saveArchive(archiveStorage(),{...archive,flags:{...archive.flags,sees:!archive.flags.sees}});state.archive=next;/* 关掉标记后这一局就不能再选 S.E.E.S. 了：把草稿与已选策略一并回落到可见的那一个。 */if(isSeesBand(state.strategyDraft))state.strategyDraft=null;state.band=guardedBandId();notice(`特殊标记【S.E.E.S.】已${next.flags.sees?'打开':'关闭'}（只记录在本地存档里）。`);render();return;}
+  // 特殊标记【S.E.E.S.】：本地解锁状态控制策略与资料可见性；本局卡池资格仍由当前策略判定。
+  if(a==='prep-flags-sees'){const archive=archiveNow(),next=saveArchive(archiveStorage(),{...archive,flags:{...archive.flags,sees:!archive.flags.sees}});state.archive=next;/* 关掉标记后这一局就不能再选 S.E.E.S. 了：把草稿与已选策略一并回落到可见的那一个。 */if(isSeesBand(state.strategyDraft))state.strategyDraft=null;state.band=guardedBandId();notice(`特殊标记【S.E.E.S.】已${next.flags.sees?'打开':'关闭'}（策略和资料可见性已更新）。`);render();return;}
   // 阶级是「点一下筛、再点一下取消」：只有 1–6 六个数字按钮，不额外占一行「全部」。
   if(a==='prep-tier'){const p=prepState(),tier=Number(button.dataset.tier)||0;p.tier=p.tier===tier?0:tier;p.scroll=window.scrollY||0;render();return;}
   // 「全部改为档案默认」只清草稿（仍然要按保存），避免误点就把已保存的配置清空。
@@ -16398,7 +16398,10 @@ function action(button){const a=button.dataset.act,g=state.game,uid=Number(butto
  if(a==='export'){const archive=archiveWithPrepSkills(archiveNow()),record=exportRecord(g||null,archive,{expiresAt:g?state.expiresAt:null}),stamp=new Date().toISOString().slice(0,19).replace(/[:T]/g,'-'),url=URL.createObjectURL(new Blob([JSON.stringify(record,null,2)],{type:'application/json'})),link=document.createElement('a');link.href=url;link.download='garrison-save-'+stamp+'.json';link.click();URL.revokeObjectURL(url);notice(g?`已导出对局存档＋战绩档案（${archive.runs.length} 场）。`:`已导出战绩档案（${archive.runs.length} 场，当前没有进行中的对局）。`);return;}
  if(a==='import'){const input=document.createElement('input');input.type='file';input.accept='.json';input.onchange=async()=>{try{if(input.files[0].size>10e6)throw Error('存档文件过大');const record=JSON.parse(await input.files[0].text()),incoming=archiveFromRecord(record);let game=null;if(record&&record.s){game=NativeSession.restore(data,record);if(!game)throw Error('存档版本、数据或有效期不匹配');}if(!game&&!incoming)throw Error('这个 JSON 既不是对局存档，也没有战绩档案');
   // 档案与对局存档分开合并：同 id 的场次以导入的为准，其余按时间合并，最多留 10 场。
-  const merged=incoming?saveArchive(archiveStorage(),mergeArchives(archiveWithPrepSkills(archiveNow()),incoming)):null;state.archive=merged;
+  // 技能覆盖实际使用独立的 localStorage 键；导入档案时也写回那里，才能影响战前准备与新局。
+  const mergedRaw=incoming?mergeArchives(archiveWithPrepSkills(archiveNow()),record.archive):null;
+  if(mergedRaw)mergedRaw.prepSkills=savePrepSkills(mergedRaw.prepSkills,data);
+  const merged=mergedRaw?saveArchive(archiveStorage(),mergedRaw):null;state.archive=merged;
   if(game){state.game=game;state.view='game';state.paused=true;save();saveCheckpoint();enterPlayChrome();notice(merged?`已恢复对局，并导入战绩档案（${merged.runs.length} 场）。`:'已恢复对局。');}else{state.view='lobby';leavePlayChrome();notice(`已导入战绩档案 ${merged.runs.length} 场（文件里没有对局存档）。`);}
   render();}catch(e){notice(e.message);}};input.click();return;}
  if(!g)return;
@@ -18002,7 +18005,7 @@ ${body}
 </div>
 </article>`;
 }
-// 特殊标记 + 最近对局（用户 2026-09-27 口径）：开关只是存档标记（默认 false），战绩只读展示、字段全列。
+// 特殊标记 + 最近对局（用户 2026-09-27 口径）：S.E.E.S. 标记保存在档案中并控制策略／资料可见性；战绩只读展示、字段全列。
 // 数据来自 native-archive（localStorage 里的本地档案），这一层不写档案本体，改开关交给 native-play 的动作处理。
 // 特殊标记是隐藏彩蛋（用户 2026-09-27 口径）：**没解锁时整块不出现**，只有密码解锁（flags.sees=true）后才显示；
 // 显示出来之后可以再关掉（关掉即回到「不存在」的状态，只能再用密码解锁）。最近对局列表不受影响。
@@ -19090,11 +19093,15 @@ function appendRun(archive,run){
 function mergeArchives(local,incoming){
  const a=normalizeArchive(local),b=normalizeArchive(incoming);
  const byId=new Map();for(const run of [...a.runs,...b.runs])byId.set(run.id,run);
+ // Old exports predate newer flags. Only let an incoming value override local state when
+ // that key was explicitly present; normalizeArchive fills absent keys with false.
+ const flags={...a.flags},incomingFlags=isPlainObject(incoming?.flags)?incoming.flags:{};
+ for(const key of Object.keys(ARCHIVE_FLAG_DEFAULTS))if(typeof incomingFlags[key]==='boolean')flags[key]=incomingFlags[key];
  return normalizeArchive({
   version:ARCHIVE_VERSION,
   runs:[...byId.values()].sort((x,y)=>y.at-x.at).slice(0,ARCHIVE_LIMIT),
   prepSkills:{...a.prepSkills,...b.prepSkills},
-  flags:{...a.flags,...b.flags}
+  flags
  });
 }
 // 一局结束时的取数：词条/地图/存活波数/是否通关/最终轮输出/最终轮盟约情况/最终轮阵容。
@@ -19164,8 +19171,7 @@ return {ARCHIVE_KEY,ARCHIVE_LIMIT,ARCHIVE_VERSION,ARCHIVE_FORMAT,ARCHIVE_FLAG_DE
 "native-passcode.js": function(load) {
 // 大厅「输入密码」的密码表与效果（用户 2026-09-27 口径）。
 //
-// 目前只有一个密码：`20100305` → 弹窗「策略：S.E.E.S.已解锁」并把本地存档的特殊标记
-// 【S.E.E.S.】置为 true；其它数字**什么都不做**，界面只提示「什么都没有发生」。
+// 密码表负责解锁 S.E.E.S.、325 模式与海猫模式的本地标记；其它数字**什么都不做**，界面只提示「什么都没有发生」。
 // 纯函数放在这里（不碰 DOM），native-play 只负责取档案、写档案、弹提示，方便单测。
 const {normalizeArchive} = load("native-archive.js");
 const PASSCODE_MAX=12;

@@ -88,11 +88,15 @@ export function appendRun(archive,run){
 export function mergeArchives(local,incoming){
  const a=normalizeArchive(local),b=normalizeArchive(incoming);
  const byId=new Map();for(const run of [...a.runs,...b.runs])byId.set(run.id,run);
+ // Old exports predate newer flags. Only let an incoming value override local state when
+ // that key was explicitly present; normalizeArchive fills absent keys with false.
+ const flags={...a.flags},incomingFlags=isPlainObject(incoming?.flags)?incoming.flags:{};
+ for(const key of Object.keys(ARCHIVE_FLAG_DEFAULTS))if(typeof incomingFlags[key]==='boolean')flags[key]=incomingFlags[key];
  return normalizeArchive({
   version:ARCHIVE_VERSION,
   runs:[...byId.values()].sort((x,y)=>y.at-x.at).slice(0,ARCHIVE_LIMIT),
   prepSkills:{...a.prepSkills,...b.prepSkills},
-  flags:{...a.flags,...b.flags}
+  flags
  });
 }
 // 一局结束时的取数：词条/地图/存活波数/是否通关/最终轮输出/最终轮盟约情况/最终轮阵容。
