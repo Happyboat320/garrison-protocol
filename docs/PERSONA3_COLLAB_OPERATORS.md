@@ -285,7 +285,7 @@
 
 **引擎堵点与绕法（重要，别按「应该挂在钩子上」去改回去）**：替身形态下 `native-battle.activate()` 第一行 `if(u.dollForm)return`、`runFatal` 的傀儡师分支要求 `!target.dollForm`、`stats()` 收尾又 `if(u.dollForm)a.blockCnt=0`，三条路都从钩子外部堵死。所以 `dist/native-collab-makoto.js` 在**部署那一刻给这一场 battle 实例**打本地补丁（`patchBattle`，带 `battle.makotoDollPatch` 幂等标记，包装的是实例上的 `activate`／`hurt`／`stats`，原函数照旧调用，不碰原型、不碰上游文件）：`activate` 抢主动切换（用 `unit.makotoSwitchFrame` 记帧，区分玩家按键与引擎同一帧的自动开技复问），`hurt` 抢致命伤那一次（结算前摘 `dollForm` → 引擎按本体挨致命伤走替身分支 → 结算后装回原 `until`、补血、`swapDoll`；只有 >1 血才保护，避免赖场），`stats` 只改返回值给出俄耳甫斯·改的 2 阻挡。
 
-**仍受引擎限制、这次没有解决**（原 ①–⑤、⑦–⑩ 不变）：攻击伤害类型改不了（S3 的弱点伤害仍是物理）、`attack@max_target` 不生效、攻击间隔用攻速近似、法术闪避没有通道、替身形态对空没落地（`SKILL_ANTIAIR` 只保住开技那一帧）、进入替身仍走真实致死管线（护盾先吃一部分、战报留 `knockdown`）、天赋一 `atk` 的负项抵消仍在。
+**仍受引擎限制、尚未闭环**：攻击间隔 +0.4 秒仍以攻速通道近似；进入替身沿用真实致死管线，护盾／屏障会先结算且战报保留 `knockdown`；天赋一的 `atk` 与通用常驻加成耦合，基础形态仍用负项抵消；S1「改为治疗」仍会走一次 0 伤害的普攻动作。攻击类型、普攻目标数、法术闪避、塔纳托斯对空与 S3 两段切换已由 §5.4／§5.6 的共享通道实现，不再列为未接线项。
 
 **回归**：`tests/native-collab-makoto.test.mjs` 的 6 条新用例（进入/清空 persona、主动切换、致命伤切换、不普攻＋阻挡 2、延迟治疗、配色），fail-before 实测（还原 dist 后 6 条全挂）。另外 `dist/native-effects.js` 的 `settlePeriodic` 为此多了一条 `fx.values?.heal != null ⇒ applyHeal` 分支——**延迟伤害分支逐字未改**（这条不做就没法表达「延迟治疗」）。
 
@@ -338,4 +338,3 @@
 | 浮空兜底读错黑板键 | 通用分支读 `floating ?? duration ?? 2`，而原表键名是 `levitate`，会把 1.5 秒刷成 2 秒 | 改成 `levitate ?? floating ?? duration ?? 2`（岳羽由加莉模块里的同值 clamp 随之成为 no-op） |
 
 三处的 fail-before 都实测过：把对应源码行还原后，「普攻不挂恐惧」与「物理减伤不吃法术」两条回归立刻失败。
-

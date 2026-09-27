@@ -5,7 +5,7 @@
 
 - 口径与数值的权威来源仍是 `docs/SEES_CONTENT.md`（用户 2026-09-27 原样记录）。
 - 四人自身的引擎通道限制见 `docs/PERSONA3_COLLAB_OPERATORS.md` 的「未闭环」小节。
-- 回归：`tests/native-sees.test.mjs`（16 条）。
+- 回归：`tests/native-sees.test.mjs`（19 条）。
 
 ## 1. 完成清单（P0／P1 全绿）
 
@@ -46,6 +46,8 @@
 | 结城理 | `commitExit` 敌人分支（击倒）、`notifyKnockdown`、`runFatal` 的傀儡师分支（自身被击倒）；**另**：S3「开辟明日的剑刃」的两段替身（塔纳托斯·改 → 俄耳甫斯·改）与人格面具配色由 `native-collab-makoto`／`native-fx` 实现（battle 实例补丁绕过引擎的提前 return，细节见 `docs/PERSONA3_COLLAB_OPERATORS.md` §5.4.1） |
 | 面板 | `native-play.bondSidebarHtml` 里【塔尔塔罗斯】显示层数（`bondPanelCount`），不再印 0/0 |
 | 头像占位 | `.native-strategy-placeholder`（本期资源清单里没有 `band_sees`） |
+
+侧栏会保留激活盟约，即使它的计数与层数都是 0；S.E.E.S. 局的【塔尔塔洛斯】因此从开局就显示为激活。
 
 ## 2. 与初版设计不同的三处口径（都是实现时定的，不是漏做）
 

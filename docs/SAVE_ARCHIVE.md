@@ -7,9 +7,10 @@
 | 键 | 内容 | 写入时机 |
 | --- | --- | --- |
 | `garrison-native-manual-v1`（原有） | 当前这一局的对局存档（`NativeSession.snapshot()`） | 原来的 `save()`／`saveCheckpoint()`，未改 |
-| **`garrison-archive-v1`（新增）** | 战绩档案：`{version:1, runs:[…最多 10 条…], prepSkills:{charId:档位}, flags:{sees:false}}` | 一局结束、切换【S.E.E.S.】、导入存档时 |
+| **`garrison-archive-v1`（新增）** | 战绩档案：`{version:1, runs:[…最多 10 条…], prepSkills:{charId:档位}, flags:{sees:false,egg325:false,cat:false}}` | 一局结束、切换【S.E.E.S.】、导入存档时 |
+| `garrison-prep-default-skill-v1` | 战前准备页实际使用的默认技能覆盖表；导出时复制进 `archive.prepSkills`，导入时写回此键 | 保存战前技能、导入存档时 |
 
-档案**不放在对局存档里**：它是跨局的，换局／读档都不会丢；导出存档时把它一并写进 JSON，导入时并回本地。
+档案**不放在对局存档里**：它是跨局的，换局／读档都不会丢；导出存档时把它一并写进 JSON，导入时并回本地。默认技能配置仍以独立的 `garrison-prep-default-skill-v1` 为运行时来源，档案里的 `prepSkills` 是便于携带的副本；导入合并后会校验并写回独立键。
 
 实现：`dist/native-archive.js`（纯函数 + 注入 storage，无 DOM，便于单测）；样式 `dist/native-archive.css` 由 `native-play` 启动时挂一次 `<link>`。
 
@@ -45,7 +46,7 @@
   "archiveVersion": 1,
   "exportedAt": 1750000000000,
   // …下面是原来的对局存档字段（version/s/savedAt/expiresAt/battle），有对局时才写…
-  "archive": { "version": 1, "runs": [ /* 最多 10 条 */ ], "prepSkills": {…}, "flags": {"sees": false} }
+  "archive": { "version": 1, "runs": [ /* 最多 10 条 */ ], "prepSkills": {…}, "flags": {"sees": false, "egg325": false, "cat": false} }
 }
 ```
 
@@ -54,6 +55,7 @@
 **导入**（原有 `data-act="import"`，已扩展）：
 - 文件里有对局存档 → 照旧 `NativeSession.restore` 恢复对局；
 - 文件里有 `archive` → 与本地档案**按 id 合并**（同 id 用导入的版本，其余按时间合并，仍只留 10 场），`prepSkills`／`flags` 一并并入；
+- 合并后的 `prepSkills` 会校验并写回 `garrison-prep-default-skill-v1`，成为战前准备和新局实际读取的技能配置；
 - 只有档案（大厅里没有进行中的对局时导出的文件）→ 只导入档案并提示，不会伪造一个对局；
 - 两者都没有 → 报「这个 JSON 既不是对局存档，也没有战绩档案」。
 
@@ -61,7 +63,7 @@
 
 - **主界面（大厅）**：动作行末尾新增 `导出存档`（由 `native-play` 注入到 `.native-loadout-actions`，和已有的 `导入存档` 成对）。
 - **战前准备页**：顶部新增档案区
-  - `特殊标记`：`【S.E.E.S.】开／关` 按钮（`data-act="prep-flags-sees"`），**默认关**。按用户口径，它只是本地存档里的布尔标记，**不影响抽取、商店与战斗**（四人仍是隐藏档，只在技能测试场可选）。
+  - `特殊标记`：`【S.E.E.S.】` 由密码解锁，关闭后整块隐藏。标记控制策略、相关干员和装备在策略选择与战前资料页的可见性；选择 S.E.E.S. 策略后，四人和臂章才进入该局卡池并生效。
   - `最近对局`：最多 10 条，只读，每条折叠一个 `<details>`，字段全列：词条／地图／存活波数（含总共打了几场、停在第几回合、剩余生命）／是否通关／最终轮输出（含秒数、DPS、击倒、漏失）／最终轮盟约情况／本局缺席盟约／最终轮场上阵容（干员名＋棋子 id＋坐标＋朝向＋技能＋该员输出＋装备）。
 - **作战报告**：加一行「已记入本地战绩：最近 N 场…」，说明去哪看、导出会带走。
 
@@ -82,7 +84,9 @@
 
 特殊标记（档案区的【S.E.E.S.】开关那一块）按用户口径是**隐藏彩蛋**：`flags.sees=false` 时整块不渲染，连名字都不出现在页面 HTML 里。
 
-密码表 `PASSCODES` 是纯数据：以后新增密码加一条 `{code,flag,name,title}` 即可，`flag` 必须在 `native-archive` 的 `ARCHIVE_FLAG_DEFAULTS` 里有默认值（有门禁用例守着）。按用户口径，这三个标记目前都只是**存档/可见性标记**。
+密码表 `PASSCODES` 是纯数据：以后新增密码加一条 `{code,flag,name,title}` 即可，`flag` 必须在 `native-archive` 的 `ARCHIVE_FLAG_DEFAULTS` 里有默认值（有门禁用例守着）。`sees` 控制 S.E.E.S. 内容可见性；`egg325` 与 `cat` 控制两个隐藏模式在行动难度下拉框中的可见性。
+
+导入合并只用文件里**明确保存的布尔标记**覆盖本地同名标记。较早的档案没有 `egg325`／`cat` 字段，导入时保留本地后来解锁的状态；文件明确写入 `false` 时仍按导入值关闭。
 
 ## 5. 接线清单
 
