@@ -95,6 +95,43 @@ export function battleTally(s){
 }
 // 地块的抬升高度：只有**可部署的高台**才抬起（隔离平台是地面，永远不抬）。
 export function tileLiftAmount(tile,tileHeight){return tile?.heightType==='HIGHLAND'&&tile.buildableType!=='NONE'?Math.min(10,(tileHeight||0)*.22):0;}
+// ── 战前简报的地图缩略图 ──────────────────────────────────────────────────
+// 把本局战场压成一格一个方块的小图（只画**裁切区** viewport，也就是真正开打的那块）。
+// 这里只决定「这一格画什么」，颜色只有 CSS 一份（`.terrain-*`，与战场图例共用色板），
+// 分类顺序与 `native-play.drawTerrain` 一致：装置 → 入口/目标 → 特殊地块 → 可部署高台 →
+// 隔离平台 → 阻隔 → 高台 → 可通行通道 → 可部署地面。返回值就是 `terrain-<kind>` 的类名
+// （`high`／`isolated`／`blocked`／`entry`／`goal` 与 `terrainLegend` 的张目一一对应）。
+const THUMB_DEVICE={trap_040_canoe:'platform',trap_032_mound:'mound',trap_1107_acblock:'sealed',trap_1106_achplat:'achplat',trap_218_fttree:'bush'};
+const THUMB_TILE={tile_deepsea:'water',tile_mire:'mire',tile_infection:'originium',tile_smog:'vent'};
+export function mapThumbKind(tile){
+ if(!tile)return 'blocked';
+ const device=THUMB_DEVICE[tile.device];
+ if(device)return device;
+ const key=String(tile.tileKey||'');
+ if(key.startsWith('tile_start'))return 'entry';
+ if(key.startsWith('tile_end'))return 'goal';
+ if(THUMB_TILE[key])return THUMB_TILE[key];
+ if(tile.heightType==='HIGHLAND'&&tile.buildableType!=='NONE')return 'high';
+ if(key==='tile_fence_bound')return 'isolated';
+ if(tile.obstacle||tile.passableMask==='NONE')return 'blocked';
+ if(tile.heightType==='HIGHLAND')return 'high';
+ if(tile.buildableType==='NONE')return 'corridor';
+ return 'ground';
+}
+// 裁切区（viewport）里的每一格；没有裁切信息时退回整张图。
+export function mapThumbnail(map){
+ const grid=map?.grid||[];
+ const view=map?.viewport||{left:0,top:0,right:(map?.cols||0)-1,bottom:(map?.rows||0)-1};
+ const cols=Math.max(0,view.right-view.left+1),rows=Math.max(0,view.bottom-view.top+1),cells=[];
+ for(let y=view.top;y<=view.bottom;y++)for(let x=view.left;x<=view.right;x++)cells.push(mapThumbKind(grid[y]?.[x]));
+ return {cols,rows,cells};
+}
+export function mapThumbnailHtml(map,{label='',esc}={}){
+ const {cols,rows,cells}=mapThumbnail(map);
+ if(!cols||!rows)return '';
+ const safe=typeof esc==='function'?esc:String;
+ return `<span class="native-map-thumb" style="--cols:${cols};--rows:${rows}" role="img" aria-label="${safe(label||'本局战场缩略图')}">${cells.map(kind=>`<i class="terrain-${kind}"></i>`).join('')}</span>`;
+}
 // ── 盟约面板的「当前动态数值」 ─────────────────────────────────────────────
 // 原表用 descParamBaseList / descParamPerStackList 声明哪些数值受层数影响（描述里只写「受层数影响」）。
 // 这里逐项算出当前值，**原表声明了几项就渲染几项**，不再靠手写 switch（叙拉古的持续时间、

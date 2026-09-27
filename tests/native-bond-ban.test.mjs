@@ -404,7 +404,9 @@ test('简报渲染：全部核心盟约都列出（被禁的灰掉划掉），�
  for(const c of extraCards)assert.equal(c.kind,'附加');
  const cardNames=new Set(cards.map(c=>c.name));
  for(const id of BOND_BAN_DEFAULT_NEVER)assert.equal(cardNames.has(bondName(data,id)),false,`${bondName(data,id)} 固定不被随机禁，不该出现在缺席名单里`);
- assert.ok(brief.includes('所属盟约全部缺席'),'简报要说明 v3 口径：全部盟约被禁才禁用');
+ // 顶部那一整段口径说明已按用户 2026-09-23 要求删掉；口径改由每张卡的标签表达。
+ assert.ok(!brief.includes('所属盟约全部缺席')&&!brief.includes('不占固定禁用的名额'),'简报不再写那段口径说明');
+ assert.ok(!brief.includes('固定不被随机禁用'),'固定不禁用不再单独成句，只看卡片标签');
  assert.equal(brief.includes('不禁用名单'),false,'不再提不禁用名单');
  assert.equal(bondBanBriefingHtml(data,{bonds:[]},{esc}),'','没有被禁盟约时不渲染简报');
 });
@@ -438,7 +440,9 @@ test('被禁干员弹窗：按被禁盟约分组，重复的干员每组各列�
  if(emptyBond)assert.match(groups.find(g=>g.bond===emptyBond).html,/该盟约下没有被禁用的干员/,'空的被禁盟约也要成组并说明');
  assert.match(bannedOperatorsHtml(data,{bonds:[]},{esc,avatar}),/本局没有被禁用的盟约/);
  const fixedBan={bonds:['yanShip'],always:['yanShip'],never:['investShip']};
- assert.match(bondBanBriefingHtml(data,fixedBan,{esc}),/固定禁用 1 个盟约（炎）/, '简报要说明固定禁用了哪几个');
+ // 那句「固定禁用 N 个盟约；…固定不被随机禁用。」已随口径说明一起删掉，信息留给卡片标签。
+ assert.ok(!bondBanBriefingHtml(data,fixedBan,{esc}).includes('固定禁用 1 个盟约'),'简报不再单列固定禁用条数');
+ assert.match(bondBanBriefingHtml(data,fixedBan,{esc}),/<b>炎<\/b><small>核心 · 固定禁用<\/small>/,'固定禁用的盟约由卡片标签标明');
  assert.match(bannedOperatorsHtml(data,fixedBan,{esc,avatar}),/固定禁用 1 个（炎）/, '弹窗首行同样标出固定禁用');
 });
 

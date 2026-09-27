@@ -232,10 +232,12 @@ test('接线与视觉门禁：地块/装置有画法、图例按地图补项，�
  assert.match(play,/drawTerrainBadges\(c,p,u,size\)/,'干员绘制里要调用角标');
  assert.match(play,/function terrainLegend\(map\)/,'图例要按当前地图生成');
  assert.match(play,/\$\{terrainLegend\(g\.map\)\}/,'图例必须接线到棋盘视图');
- assert.match(css,/\.native-terrain-legend \.terrain-originium\{/,'图例要有活性源石色块');
- assert.match(css,/\.native-terrain-legend \.terrain-mire\{/,'图例要有沼泽色块');
- assert.match(css,/\.native-terrain-legend \.terrain-vent\{/,'图例要有排气格栅色块');
- assert.match(css,/\.native-terrain-legend \.terrain-water\{/,'图例要有深水色块');
+ // 地块色板只有一份、不带图例前缀：战场图例（`terrainLegend` 的类名）与战前简报的地图缩略图共用，
+ // 所以这里同时要求「类名写对」和「色块存在」，免得改配色时只顾一头。
+ for(const [key,kind,name] of [['tile_infection','originium','活性源石'],['tile_mire','mire','沼泽'],['tile_smog','vent','排气格栅'],['tile_deepsea','water','深水']]){
+  assert.ok(play.includes(`special.push(['terrain-${kind}','`),`图例要有${name}色块`);
+  assert.match(css,new RegExp(`\\.terrain-${kind}\\{`),`${name}要有共用色块`);
+ }
  // 环境 tick 必须在真实 step 里调用（不是只在测试里手动调）。
  assert.match(battle,/tickDeepWater\(this\);tickSandStorm\(this\);tickTerrainEffects\(this\);/,'step 里要一起跑地块效果');
  // 移动/攻速的数值消费者只读 env* 字段。

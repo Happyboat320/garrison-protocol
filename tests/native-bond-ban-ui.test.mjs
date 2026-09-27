@@ -85,6 +85,10 @@ test('战前预览：核心盟约全列＋被禁的灰掉划掉，附加盟约�
  assert.match(banModule,/native-ban-heading">核心盟约/,'核心盟约要单独一组标题');
  assert.match(banModule,/native-ban-heading">被禁用的附加盟约/,'被禁用的附加盟约要单独一组');
  assert.match(banModule,/data-act="ban-list"/,'简报上要有打开弹窗的按钮');
+ // 顶部那段口径说明（禁用条数／固定禁用／「所属盟约全部缺席才不可用」）已按用户 2026-09-23 要求整段删除，
+ // 信息由每张盟约卡的 `<small>` 标签承担，别再加回散文说明。
+ assert.ok(!banModule.includes('不占固定禁用的名额')&&!banModule.includes('所属盟约全部缺席'),'简报不再写那段口径说明');
+ assert.match(banModule,/const why=isBanned\?\(mode==='fixed'\?'固定禁用':'随机禁用'\)/,'固定禁用／随机禁用改由卡片标签标明');
  assert.match(play,/function bondBanBriefing\(d\)\{return bondBanBriefingHtml\(data,d\?\.bondBan,\{esc\}\);\}/,'native-play 只注入转义函数');
  assert.match(play,/function showBannedOperators\(\)\{modal\(bannedOperatorsHtml\(data,activeBondBan\(state\.draft\?\.bondBan,state\.game\?\.s\?\.bondBan\),\{esc,avatar\}\)\);\}/,'弹窗要用 activeBondBan 取「本局」的记录（draft 优先），不能优先读上一局留下的 state.game');
  assert.match(play,/if\(a==='ban-list'\)\{showBannedOperators\(\);return;\}/,'按钮要接到动作分发');

@@ -44,6 +44,7 @@ test('大厅阵地下拉：第一项是随机地图且默认选中，选具体�
  const selectedValues=html=>[...selectOf(html).matchAll(/<option value="([^"]+)"([^>]*)>/g)].filter(m=>/selected/.test(m[2])).map(m=>m[1]);
  const randomSelect=selectOf(lobbyWith(RANDOM_MAP_ID));
  assert.match(randomSelect,/^id="native-map"><option value="random"/,'随机地图要是下拉的第一项');
+ assert.match(randomSelect,/<option value="random"[^>]*>随机地图<\/option>/,'选项文案就写「随机地图」，不要带后缀说明');
  assert.deepEqual(selectedValues(lobbyWith(RANDOM_MAP_ID)),[RANDOM_MAP_ID],'默认只选中「随机地图」');
  for(const m of selectableMaps(data))assert.ok(randomSelect.includes(`value="${m.stageId}"`),`下拉里要保留具体阵地 ${m.stageId}`);
  const concrete=selectableMaps(data)[3].stageId;
