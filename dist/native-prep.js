@@ -10,7 +10,8 @@
 // 身份口径与盟约禁用一致：按 `charId` 归并（精锐与初始是同一名干员），所以一份设置对它全部形态生效；
 // 名册（有哪些干员、什么阶级、挂哪些盟约）直接用 `native-bond-ban.bondRoster`，不再另算一套。
 import {bondIsCore,bondName,bondRoster,bondIds} from './native-bond-ban.js';
-import {richText} from './protocol.js';
+import {richText,DIRECTION_NAMES} from './protocol.js';
+import {ARCHIVE_FLAG_DEFAULTS,loadArchive} from './native-archive.js';
 
 export const PREP_SKILL_KEY='garrison-prep-default-skill-v1';
 // 配置版本：只认当前版本，读到别的版本（或没有版本号）一律当作「没设置过」，回落到档案自带档位。
@@ -215,8 +216,38 @@ ${body}
 </div>
 </article>`;
 }
+// 特殊标记 + 最近对局（用户 2026-09-27 口径）：开关只是存档标记（默认 false），战绩只读展示、字段全列。
+// 数据来自 native-archive（localStorage 里的本地档案），这一层不写档案本体，改开关交给 native-play 的动作处理。
+function archiveSection(archive,esc){
+ const flags={...ARCHIVE_FLAG_DEFAULTS,...(archive?.flags||{})},runs=archive?.runs||[];
+ return `<section class="native-prep-archive">
+<div class="native-prep-flags"><span>特殊标记</span><button data-act="prep-flags-sees" class="${flags.sees?'chosen':''}" aria-pressed="${flags.sees}">【S.E.E.S.】${flags.sees?'开':'关'}</button><small>默认关；只是本地存档里的标记，暂时不影响抽取与战斗。</small></div>
+<h2>最近对局 <small>${runs.length} / 10</small></h2>
+${runs.length?runs.map((run,index)=>runCard(run,index+1,esc)).join(''):'<p class="native-prep-empty">还没有记录。打完一局（木桩结束或生命归零）会自动记入，导出存档时会一起带走。</p>'}
+</section>`;
+}
+function runCard(run,index,esc){
+ const types=(run.types||[]).map(t=>esc(t.name)).join(' · ')||'—';
+ const bonds=(run.finalBonds||[]).map(b=>`${esc(b.name)} ×${b.count}${b.active?'':'(未激活)'}`).join('、')||'无';
+ const banned=(run.bannedBonds||[]).map(b=>esc(b.name)).join('、')||'无';
+ const lineup=(run.finalLineup||[]).map(u=>`<li><b>${esc(u.name)}</b>${u.isGolden?' · 精锐':''} <small>${esc(u.chessId)}</small><span>（${u.x},${u.y}）朝向${esc(DIRECTION_NAMES?.[u.dir]??u.dir)}${u.skillName?' · '+esc(u.skillName):''}${u.damage?` · 输出 ${Math.round(u.damage).toLocaleString()}`:''}${(u.equipment||[]).length?' · 装备 '+u.equipment.map(e=>esc(e.name)).join('／'):''}</span></li>`).join('')||'<li>场上没有干员</li>';
+ return `<details class="native-prep-run">
+<summary><b>#${index}</b> <span>${esc(run.atText||'')}</span> <em>${esc(run.mapId)}</em> <i>存活 ${run.waves} 波</i> <i class="${run.cleared?'ok':'bad'}">${run.cleared?'通关':'未通关'}</i> <i>最终轮输出 ${Math.round(run.finalDamage).toLocaleString()}</i></summary>
+<div class="native-prep-run-body">
+<p><span>词条</span>${types}</p>
+<p><span>地图</span>${esc(run.mapId)}</p>
+<p><span>存活波数</span>${run.waves} 波（共打 ${run.battles??run.waves} 场 · 停在第 ${run.round} 回合 · 剩余生命 ${run.hp} / ${run.maxHp}）</p>
+<p><span>是否通关</span>${run.cleared?'通关':'未通关'}${run.finalRound?'（打到最终轮）':''}</p>
+<p><span>最终轮输出</span>${Math.round(run.finalDamage).toLocaleString()}${run.finalElapsed?` · ${run.finalElapsed.toFixed(2)} 秒`:''}${run.finalDps?` · DPS ${run.finalDps.toFixed(2)}`:''}${run.finalKills||run.finalLeaks?` · 击倒 ${run.finalKills} · 漏失 ${run.finalLeaks}`:''}</p>
+<p><span>最终轮盟约情况</span>${bonds}</p>
+<p><span>本局缺席盟约</span>${banned}</p>
+<p><span>最终轮场上阵容</span></p><ul class="native-prep-run-lineup">${lineup}</ul>
+</div></details>`;
+}
 export function renderPreparePage(data,prep={},ui={}){
  const esc=ui.esc||(value=>String(value??'')),avatar=ui.avatar||(()=>'');
+ // 档案由页面自己读（调用方也可以显式传 `ui.archive`，单测就是走这条），这样战前准备的调用签名不用变。
+ const archive=ui.archive||loadArchive(storage());
  const catalog=prepCatalog(data),tab=PREP_TABS.includes(prep.tab)?prep.tab:'operator';
  const skills=prep.skills||{},filters={tier:prep.tier,core:prep.core,extra:prep.extra};
  const operators=filterPrepOperators(catalog.operators,filters),equipment=filterPrepEquipment(catalog.equipment,filters);
@@ -226,6 +257,7 @@ export function renderPreparePage(data,prep={},ui={}){
  return `<main class="native-lobby native-prep">
 <header class="native-prep-top"><button data-act="home">‹ 大厅</button><div><span class="native-eyebrow">PREPARATION / REFERENCE</span><h1>战前准备</h1></div><span class="native-prep-count">${total} 条资料</span></header>
 <p class="native-prep-lead">查看全部干员与装备效果，并在这里设置干员的默认技能。保存后，<b>新一局购买该干员时会默认携带指定技能</b>；没有设置的干员继续跟随档案自带档位（也就是现在的默认配置）。</p>
+${archiveSection(archive,esc)}
 <div class="native-prep-tabs">
 <button data-act="prep-tab" data-tab="operator" class="${tab==='operator'?'chosen':''}">全干员 <small>${catalog.operators.length}</small></button>
 <button data-act="prep-tab" data-tab="equipment" class="${tab==='equipment'?'chosen':''}">全装备效果 <small>${catalog.equipment.length}</small></button>

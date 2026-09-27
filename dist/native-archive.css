@@ -1,0 +1,29 @@
+/* 本地战绩档案区的样式（战前准备页的「特殊标记」+「最近对局」）。
+   独立成文件的理由：这块 UI 与 native.css 里其它分节没有耦合，随功能走更好审阅；
+   由 native-play 在启动时挂一次 <link>（见 ensureArchiveStyles）。 */
+.native-prep-archive{margin:18px 0 8px;padding:14px 16px;border:1px solid #a2bdb0;background:#e6efe9;color:#243e36}
+.native-prep-archive h2{margin:14px 0 8px;font-size:16px;display:flex;align-items:baseline;gap:8px}
+.native-prep-archive h2 small{font-size:11px;color:#4d6b60;font-weight:400}
+.native-prep-flags{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:12px}
+.native-prep-flags>span{font-weight:700;letter-spacing:2px}
+.native-prep-flags button{padding:7px 12px;color:#27483e;background:#edf2eb;border:1px solid #a2bdb0;font-size:12px}
+.native-prep-flags button.chosen{color:#0c2920;background:#57cfaa;border-color:#3aa985;font-weight:700}
+.native-prep-flags small{color:#4d6b60}
+.native-prep-run{margin:6px 0;border:1px solid #b6cdc2;background:#f2f7f3}
+.native-prep-run>summary{cursor:pointer;padding:8px 10px;font-size:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:baseline}
+.native-prep-run>summary b{color:#183a30}
+.native-prep-run>summary em{font-style:normal;color:#2c5b4c}
+.native-prep-run>summary i{font-style:normal;color:#3d5a50}
+.native-prep-run>summary i.ok{color:#1d7d57;font-weight:700}
+.native-prep-run>summary i.bad{color:#a8482f;font-weight:700}
+.native-prep-run-body{padding:4px 12px 10px;border-top:1px solid #cddfd6;font-size:12px}
+.native-prep-run-body p{margin:6px 0;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.native-prep-run-body p>span{flex:0 0 96px;color:#4d6b60}
+.native-prep-run-lineup{margin:4px 0 0;padding-left:18px}
+.native-prep-run-lineup li{margin:2px 0}
+.native-prep-run-lineup span{color:#3d5a50}
+@media(max-width:600px){
+ .native-prep-archive{padding:10px}
+ .native-prep-run>summary{gap:6px;font-size:11px}
+ .native-prep-run-body p>span{flex:0 0 74px}
+}
