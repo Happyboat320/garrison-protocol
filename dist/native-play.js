@@ -5,7 +5,7 @@ import {TRAINING_TYPES,loadWaveTable,normalizeWaveTable,saveWaveTable,defaultWav
 import {createWaveRoster,trainingType,waveRng} from './native-wave-random.js';
 import {applyEditorAction,applyEditorField,editorState,renderWaveEditor} from './native-wave-editor.js';
 import {activeBondBan,banConfigIsDefault,bannedOperatorsHtml,bondBanBriefingHtml,bondBanIds,loadBondBan,resetBondBan,saveBondBan} from './native-bond-ban.js';
-import {loadPrepSkills,prepDirtyCount,prepOperatorRow,renderPreparePage,savePrepSkills} from './native-prep.js';
+import {loadPrepSkills,prepOperatorRow,renderArchiveWindow,renderPreparePage,savePrepSkills} from './native-prep.js';
 // 本地战绩档案（最近 10 场）＋特殊标记：导出/导入存档时一起带走，见 docs/SAVE_ARCHIVE.md。
 import {appendRun,archiveFromRecord,alreadyRecorded,exportRecord,loadArchive,mergeArchives,normalizeArchive,runRecord,saveArchive} from './native-archive.js';
 // 「输入密码」的密码表与效果（纯函数）：见 dist/native-passcode.js。
@@ -135,10 +135,10 @@ function paint325(target=root){
 function poolDirty(){return !waveTableIsDefault(state.waveTable||loadWaveTable())||!banConfigIsDefault(data);}
 function renderModal(){
  const old=document.getElementById('native-modal');if(old&&old._content===state.modal)return;old?.remove();if(!state.modal)return;
- const choice=state.modal.includes('native-choice-content'),el=document.createElement('div');el.id='native-modal';el._content=state.modal;
- el.className=choice?'native-modal native-round-end native-choice-overlay':'native-modal';
+ const choice=state.modal.includes('native-choice-content'),archiveWindow=state.modal.includes('native-archive-window'),el=document.createElement('div');el.id='native-modal';el._content=state.modal;
+ el.className=choice?'native-modal native-round-end native-choice-overlay':archiveWindow?'native-modal native-archive-modal':'native-modal';
  if(choice){if(state.reduceFx)el.dataset.reduce='';if(state.lastChoiceContent===state.modal)el.dataset.steady='';state.lastChoiceContent=state.modal;}
- el.innerHTML=choice?`<div class="native-round-end-dim"></div><section class="native-round-end-banner" role="dialog" aria-modal="true" aria-label="选择本轮方案">${state.modal}</section>`:`<section role="dialog" aria-modal="true"><button data-act="close" class="native-close" aria-label="关闭">×</button>${state.modal}</section>`;
+ el.innerHTML=choice?`<div class="native-round-end-dim"></div><section class="native-round-end-banner" role="dialog" aria-modal="true" aria-label="选择本轮方案">${state.modal}</section>`:`<section role="dialog" aria-modal="true"${archiveWindow?' aria-label="战绩与解锁"':''}><button data-act="close" class="native-close" aria-label="关闭">×</button>${state.modal}</section>`;
  root.append(el);if(choice){el.querySelector('h2')?.focus({preventScroll:true});el.addEventListener('keydown',e=>{if(e.key!=='Tab')return;const buttons=[...el.querySelectorAll('button:not(:disabled)')],first=buttons[0],last=buttons.at(-1);if(e.shiftKey&&(document.activeElement===first||document.activeElement===el.querySelector('h2'))){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}});}if(!painting)paint325(el);
 }
 
@@ -209,30 +209,22 @@ function bondBanBriefing(d){return bondBanBriefingHtml(data,d?.bondBan,{esc});}
 // 弹窗取的是「本局」的禁用记录（战前＝draft，局中＝会话），不能优先用 state.game：
 // 从大厅开新局时它可能还留着上一局／旧存档恢复出来的空记录，那样会显示成 0 名。
 function showBannedOperators(){modal(bannedOperatorsHtml(data,activeBondBan(state.draft?.bondBan,state.game?.s?.bondBan),{esc,avatar}));}
-// 「战前准备」页面（大厅新入口）的状态：页签／筛选／默认技能草稿。
-// 草稿是从已保存配置复制的一份，页面上改的是草稿，只有点「保存默认技能」才写进 localStorage
-// （`native-prep.savePrepSkills`），所以「初始状态＝当前的默认配置」；`saved` 只用来算未保存改动数。
+// 「战前准备」页面状态：页签／筛选和已保存的默认技能覆盖。
 function prepState(){
- if(!state.prep)state.prep={tab:'operator',tier:0,core:'',extra:'',skills:null,saved:null,scroll:0};
+ if(!state.prep)state.prep={tab:'operator',tier:0,core:'',extra:'',skills:null,scroll:0};
  const p=state.prep;
- if(!p.skills){p.saved=loadPrepSkills(data);p.skills={...p.saved};}
+ if(!p.skills)p.skills={...loadPrepSkills(data)};
  return p;
 }
-// 改某项默认技能后不整页重绘：只更新那张卡片上的提示和底部的「未保存」计数，避免长列表滚动位置跳动。
+// 技能按钮立即写入默认配置；只更新该卡片，保留横向资料带的滚动位置。
 function updatePrepCard(charId){
  const p=prepState(),row=prepOperatorRow(data,charId),card=root.querySelector(`.native-prep-card[data-char="${charId}"]`);
  if(!row||!card)return;
- const override=p.skills[charId],custom=override!=null;
+ const override=p.skills[charId],custom=override!=null,current=override??row.archive;
  card.classList.toggle('is-custom',custom);
  const note=card.querySelector('.native-prep-note');
- if(note)note.textContent=custom?`已设为 S${override+1} · ${row.choices.find(choice=>choice.index===override)?.name||''}`:`跟随档案默认 S${(row.archive??0)+1}`;
-}
-function syncPrepDirty(){
- const p=prepState(),node=document.getElementById('prep-dirty');
- if(!node)return;
- const dirty=prepDirtyCount(p.skills,p.saved);
- node.textContent=dirty?`未保存的改动 ${dirty} 项`:'与已保存配置一致';
- node.classList.toggle('is-dirty',!!dirty);
+ if(note)note.textContent=`${custom?'自定义默认':'跟随档案默认'} · ${row.choices.find(choice=>choice.index===current)?.name||'无主动技能'}`;
+ for(const button of card.querySelectorAll('[data-act="prep-skill"]')){const chosen=Number(button.dataset.index)===current;button.classList.toggle('chosen',chosen);button.setAttribute('aria-pressed',String(chosen));}
 }
 function renderBriefingScreen(){const d=state.draft,mode=data.season.modeDataDict[d.modeId],mapName=data.maps.filter(m=>m.weight>0).findIndex(m=>m.stageId===d.mapId),map=data.maps.find(m=>m.stageId===d.mapId),tags=(d.roster.types||[]).map(id=>trainingType(id)).filter(Boolean),strategy=strategyInfo(guardedBandId());return `<main class="native-lobby native-briefing"><header><button data-act="home">‹ 大厅</button><span>战前准备</span></header><h1>战前准备</h1><p>${esc(d.cat?'海猫模式':d.egg325?'325模式':mode?.name||'')} · 阵地 ${mapName+1}</p><h2>本局特训</h2><div class="native-tags with-map">${tags.map(t=>`<article><b>${esc(t.name)}</b><small>${esc(t.id)}</small><p>${esc(t.desc)}</p></article>`).join('')}<article class="native-briefing-map"><span class="native-eyebrow">BATTLEFIELD</span><b>本局战场</b>${mapThumbnailHtml(map,{esc,label:`本局战场：阵地 ${mapName+1}${map?' · '+d.mapId:''}`})}<small>阵地 ${mapName+1}${map?' · '+esc(d.mapId):' · 地图数据缺失'}</small></article></div><h2>初始策略</h2><section class="native-selected-strategy"><div class="native-selected-strategy-art">${avatar(strategy.id)||'<span class="native-strategy-placeholder" aria-hidden="true">◈</span>'}</div><div><span class="native-eyebrow">CURRENT STRATEGY</span><h3>${esc(strategy.name)}</h3><p>${esc(strategy.desc)}</p><small>初始生命 ${strategy.hp}</small></div><button data-act="strategy-select">选择策略 →</button></section>${bondBanBriefing(d)}<button class="native-primary native-begin" data-act="begin">进入对局 →</button></main>`;}
 // 已选策略可能因为「关掉 S.E.E.S. 标记」而变得不可见：这时回落到列表里的第一个，
@@ -352,6 +344,7 @@ function showResult(){const g=state.game,r=g.s.runResult||g.s.history.at(-1);if(
 function action(button){const a=button.dataset.act,g=state.game,uid=Number(button.dataset.uid);if(button.disabled)return;if(['home','new','begin','resume','sandbox','sandbox-exit'].includes(a))runtimeFault=null;if(['sandbox','home','sandbox-exit','new'].includes(a))rememberView('lobby');if(['begin','resume','import'].includes(a))rememberView('game');
  if(a==='fullscreen'){enterPlayChrome().then(()=>{if(!(document.fullscreenElement||document.webkitFullscreenElement))notice('未能进入全屏，请再次点击或检查浏览器全屏设置。');});return;}
  if(a==='ban-list'){showBannedOperators();return;}
+ if(a==='archive'&&state.view==='lobby'){modal(renderArchiveWindow(archiveNow(),esc));return;}
  if(a==='passcode'){state.passcode={digits:''};renderPasscodePad();return;}
  if(a==='passcode-key'){passcodeKey(button.dataset.key||'');return;}
  if(a==='bounty-later'){state.bountyDeferred=g.s.round;state.modal=null;renderModal();root.querySelector('[data-act=start]')?.focus();return;}
@@ -361,19 +354,15 @@ function action(button){const a=button.dataset.act,g=state.game,uid=Number(butto
  if(a==='supply-toggle'){state.supplyCollapsed=!state.supplyCollapsed;render();return;}
  if(a==='sandbox'){enterPlayChrome();openSandbox();return;}if(a==='home'&&state.sandbox){const previous=state.sandbox.previousGame||null;state.sandbox=null;state.game=previous;state.view='lobby';state.paused=true;leavePlayChrome();render();return;}if(a==='sandbox-exit'){const previous=state.sandbox?.previousGame||null;state.sandbox=null;state.game=previous;state.view='lobby';state.paused=true;leavePlayChrome();render();return;}if(a==='sandbox-reset'){sandboxReset();return;}if(a==='sandbox-add-op'){sandboxAddOperator(button.dataset.id);return;}if(a==='sandbox-add-enemy'){sandboxSpawnEnemy(button.dataset.id,false);return;}if(a==='sandbox-add-dummy'){sandboxSpawnEnemy('enemy_1041_lazerd',true);return;}if(a==='sandbox-remove-enemy'){sandboxRemoveEnemy(uid);return;}if(a==='sandbox-remove-op'){const sb=state.sandbox;if(sb){sb.economy.s.units=sb.economy.s.units.filter(u=>u.uid!==uid);if(sb.battle)sb.battle.s.units=sb.battle.s.units.filter(u=>u.uid!==uid);render();}return;}if(a==='sandbox-start'){sandboxStart();return;}if(a==='sandbox-pause'){if(state.sandbox?.phase==='battle'){state.paused=!state.paused;render();}return;}if(a==='sandbox-step'){if(state.sandbox?.battle){state.sandbox.battle.step();render();}return;}if(a==='sandbox-clear-enemies'){if(state.sandbox){state.sandbox.enemyDrafts=[];if(state.sandbox.battle)state.sandbox.battle.s.enemies=[];render();}return;}if(a==='sandbox-fill-sp'){const sb=state.sandbox,u=sb?.battle?.s.units.find(v=>v.uid===uid);if(u){u.sp=sb.battle.spCost(u);render();}return;}if(a==='sandbox-skill'){const sb=state.sandbox,u=sb?.battle?.s.units.find(v=>v.uid===uid);if(u){if(u.skillLeft>0||u.ammo>0)sb.battle.deactivate(u);else{u.sp=sb.battle.spCost(u);sb.battle.activate(u);}render();}return;}
  if(a==='field-info'){const banCount=g?.bannedOperatorList?.().length||0,banBonds=g?.s?.bondBan?.bonds?.length||0;modal(`<h2>战况 / 设置</h2>${document.querySelector('.native-detail').innerHTML.replace(/ id="[^"]*"/g,'')}${document.querySelector('.native-terrain-legend').outerHTML}${banBonds?`<button class="native-ban-entry" data-act="ban-list">禁用名单（${banCount} 名 · 缺席 ${banBonds} 盟约）</button>`:''}<label>音量 <input data-native-volume aria-label="战斗音量" type="range" min="0" max="1" step="0.05" value="${state.volume}"></label><p><button data-act="limits">已知差异</button> <button data-act="branches">分支规则</button> <button data-act="export">导出存档</button></p>`);fitWaveFaces();return;}
-  if(a==='prepare'){const p=prepState();
-   // 打开时初始状态＝当前的默认配置：草稿没有未保存改动就按落盘配置重刷一遍；
-   // 上次留着未保存改动时保留草稿（底部也会继续提示），避免悄悄丢掉玩家刚改的东西。
-   if(!prepDirtyCount(p.skills,p.saved)){p.saved=loadPrepSkills(data);p.skills={...p.saved};}
+  if(a==='prepare'){const p=prepState();p.skills={...loadPrepSkills(data)};
    state.view='prepare';state.modal=null;p.scroll=0;if(typeof window.scrollTo==='function')window.scrollTo(0,0);render();return;}
   if(a==='prep-tab'){const p=prepState();p.tab=button.dataset.tab==='equipment'?'equipment':'operator';p.scroll=window.scrollY||0;render();return;}
   // 特殊标记【S.E.E.S.】：本地解锁状态控制策略与资料可见性；本局卡池资格仍由当前策略判定。
-  if(a==='prep-flags-sees'){const archive=archiveNow(),next=saveArchive(archiveStorage(),{...archive,flags:{...archive.flags,sees:!archive.flags.sees}});state.archive=next;/* 关掉标记后这一局就不能再选 S.E.E.S. 了：把草稿与已选策略一并回落到可见的那一个。 */if(isSeesBand(state.strategyDraft))state.strategyDraft=null;state.band=guardedBandId();notice(`特殊标记【S.E.E.S.】已${next.flags.sees?'打开':'关闭'}（策略和资料可见性已更新）。`);render();return;}
+  if(a==='prep-flags-sees'){const archive=archiveNow(),next=saveArchive(archiveStorage(),{...archive,flags:{...archive.flags,sees:!archive.flags.sees}});state.archive=next;/* 关掉标记后这一局就不能再选 S.E.E.S. 了：把草稿与已选策略一并回落到可见的那一个。 */if(isSeesBand(state.strategyDraft))state.strategyDraft=null;state.band=guardedBandId();notice(`特殊标记【S.E.E.S.】已${next.flags.sees?'打开':'关闭'}（策略和资料可见性已更新）。`);if(state.view==='lobby'){modal(renderArchiveWindow(next,esc));return;}render();return;}
+  if(a==='prep-skill'){const p=prepState(),charId=button.dataset.char,index=Number(button.dataset.index),row=prepOperatorRow(data,charId);if(!row?.choices.some(choice=>choice.index===index))return;const skills={...p.skills};if(index===row.archive)delete skills[charId];else skills[charId]=index;p.skills=savePrepSkills(skills,data);p.scroll=window.scrollY||0;updatePrepCard(charId);return;}
   // 阶级是「点一下筛、再点一下取消」：只有 1–6 六个数字按钮，不额外占一行「全部」。
   if(a==='prep-tier'){const p=prepState(),tier=Number(button.dataset.tier)||0;p.tier=p.tier===tier?0:tier;p.scroll=window.scrollY||0;render();return;}
-  // 「全部改为档案默认」只清草稿（仍然要按保存），避免误点就把已保存的配置清空。
-  if(a==='prep-clear'){const p=prepState();p.skills={};p.scroll=window.scrollY||0;render();return;}
-  if(a==='prep-save'){const p=prepState();p.saved=savePrepSkills(p.skills,data);p.skills={...p.saved};p.scroll=window.scrollY||0;const count=Object.keys(p.saved).length;notice(count?`已保存默认技能：${count} 名干员指定了档位，其余跟随档案默认。`:'已保存默认技能：全部干员跟随档案默认。');render();return;}
+  if(a==='prep-reset-all'){const p=prepState();p.skills=savePrepSkills({},data);p.scroll=window.scrollY||0;notice('全部干员已恢复档案默认技能。');render();return;}
  if(a==='editor'){state.view='editor';state.editor.sample=null;state.waveTable=loadWaveTable();render();return;}
  // 大厅提示的「恢复默认配置」：敌人池与禁用方案一起回到默认（正在进行的对局不受影响，改动从下一局生效）。
  if(a==='pool-defaults'){
@@ -800,12 +789,11 @@ function draw(){
 }
 root.addEventListener('change',e=>{
  if(e.target.id==='native-mode')state.mode=e.target.value;if(e.target.id==='native-map')state.map=e.target.value;if(e.target.id==='native-skill'){state.game.perform('skill',Number(e.target.dataset.uid),Number(e.target.value));save();render();}
- // 战前准备页：两个盟约下拉要重筛列表（保留滚动位置），技能下拉只改草稿、就地更新提示。
+ // 战前准备页：盟约下拉重筛列表；技能选择通过卡片按钮即时保存。
  if(state.view==='prepare'){
   const p=prepState();
   if(e.target.id==='prep-core'){p.core=e.target.value;p.scroll=window.scrollY||0;render();return;}
   if(e.target.id==='prep-extra'){p.extra=e.target.value;p.scroll=window.scrollY||0;render();return;}
-  if(e.target.dataset.act==='prep-skill'){const charId=e.target.dataset.char,value=e.target.value;if(value==='')delete p.skills[charId];else p.skills[charId]=Number(value);updatePrepCard(charId);syncPrepDirty();return;}
  }
  if(state.view==='editor'&&e.target.dataset.act){const catalog=document.getElementById('ed-catalog');state.editor.scroll=catalog?.scrollTop||0;if(applyEditorField(e.target.dataset.act,e.target.dataset.id,e.target.value,state.waveTable,state.editor)){if(['ed-budget','ed-cost','ed-default','ed-temp-name'].includes(e.target.dataset.act)){const ui=state.editor,slot=state.waveTable.types[ui.type][ui.tier].templates[ui.template],name=slot.name||`模板 ${ui.template+1}`;root.querySelector('.wave-ed-current h2').textContent=name;root.querySelector('.wave-ed-temps .chosen b').textContent=name;root.querySelector('.wave-ed-temps .chosen small').textContent=`${slot.pool.length} 种敌人 · 预算 ${slot.budget}`;}else{const act=e.target.dataset.act;queueMicrotask(()=>{render();root.querySelector(`[data-act="${act}"]`)?.focus();});}}}
 });

@@ -61,10 +61,9 @@
 
 ## 4. 界面
 
-- **主界面（大厅）**：动作行末尾新增 `导出存档`（由 `native-play` 注入到 `.native-loadout-actions`，和已有的 `导入存档` 成对）。
-- **战前准备页**：顶部新增档案区
-  - `特殊标记`：`【S.E.E.S.】` 由密码解锁，关闭后整块隐藏。标记控制策略、相关干员和装备在策略选择与战前资料页的可见性；选择 S.E.E.S. 策略后，四人和臂章才进入该局卡池并生效。
-  - `最近对局`：最多 10 条，只读，每条折叠一个 `<details>`，字段全列：词条／地图／存活波数（含总共打了几场、停在第几回合、剩余生命）／是否通关／最终轮输出（含秒数、DPS、击倒、漏失）／最终轮盟约情况／本局缺席盟约／最终轮场上阵容（干员名＋棋子 id＋坐标＋朝向＋技能＋该员输出＋装备）。
+- **主界面（大厅）**：`战绩与解锁` 是独立入口，点击后在大厅上方打开浮窗，集中展示最近十场和已解锁内容；`导出存档` 与原有 `导入存档` 仍在动作行。
+- **战绩与解锁浮窗**：最多十场记录，每条折叠展示词条／地图／存活波数（含总场数、停留回合和剩余生命）／通关状态／最终轮输出／盟约情况／缺席盟约／最终阵容。解锁列表只显示已解锁的内容；未解锁的隐藏彩蛋不泄露名称。已解锁的 S.E.E.S. 可在浮窗内关闭。
+- **战前准备页**：只浏览干员和装备资料、设置新局默认技能。干员与装备按横向卡片带滚动；点击干员卡上的 S1／S2 等按钮立即保存该技能为默认，底部筛选栏固定在视口下方；「全体恢复档案默认」一次清除全部技能覆盖。
 - **作战报告**：加一行「已记入本地战绩：最近 N 场…」，说明去哪看、导出会带走。
 
 用户原话里的「最终轮盟约清空」经确认为笔误，实际是**最终轮盟约情况**（已按上表实现）。
@@ -82,7 +81,7 @@
 
 **325 模式与海猫模式默认不在选项里出现**（用户 2026-09-27 口径）：大厅渲染后由 `native-play.gateLockedModes()` 按 `flags.egg325`／`flags.cat` 把「行动难度」里对应的 `<option>` 摘掉；解锁后（密码）再渲染就带上了。门控只动 `<option>`，不动 `native-lobby` 的模板，旧存档里已经在跑的模式也不会被打断。
 
-特殊标记（档案区的【S.E.E.S.】开关那一块）按用户口径是**隐藏彩蛋**：`flags.sees=false` 时整块不渲染，连名字都不出现在页面 HTML 里。
+特殊标记（战绩与解锁浮窗里的【S.E.E.S.】开关）按用户口径是**隐藏彩蛋**：`flags.sees=false` 时不显示该项名称与开关。
 
 密码表 `PASSCODES` 是纯数据：以后新增密码加一条 `{code,flag,name,title}` 即可，`flag` 必须在 `native-archive` 的 `ARCHIVE_FLAG_DEFAULTS` 里有默认值（有门禁用例守着）。`sees` 控制 S.E.E.S. 内容可见性；`egg325` 与 `cat` 控制两个隐藏模式在行动难度下拉框中的可见性。
 
@@ -94,9 +93,9 @@
 | --- | --- |
 | `dist/native-archive.js` | 新增：档案结构、规范化、读写、`runRecord` 取数、`exportRecord`／`archiveFromRecord`、合并与去重 |
 | `dist/native-passcode.js` | 新增：密码表 `PASSCODES` 与纯函数 `matchPasscode`／`applyPasscode`（命中→置位标记） |
-| `dist/native-archive.css` | 新增：档案区样式 |
-| `dist/native-play.js` | 档案 helper 与 `recordRunIfOver`、档案区样式 `<link>`、导出／导入分支、大厅 `导出存档` 按钮注入、`prep-flags-sees` 动作、战前准备页传 `archive`、战报提示 |
-| `dist/native-prep.js` | `renderPreparePage(...,{archive})`：特殊标记开关 + 最近对局列表 |
+| `dist/native-archive.css` | 新增：主菜单档案浮窗样式 |
+| `dist/native-play.js` | 档案 helper 与 `recordRunIfOver`、导出／导入分支、大厅「战绩与解锁」浮窗入口、浮窗开关动作、战报提示 |
+| `dist/native-prep.js` | `renderArchiveWindow()` 战绩与解锁浮窗；`renderPreparePage(...,{archive})` 横向资料卡与即时默认技能按钮 |
 | `scripts/build-browser.mjs` | 打包清单登记 `native-archive.js` |
 | `tests/native-archive.test.mjs` | 9 条回归（字段取数、只留 10 场、坏数据丢弃、storage 读写、导出→导入往返、合并、页面字段、接线门禁） |
 

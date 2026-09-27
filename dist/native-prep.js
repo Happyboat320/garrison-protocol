@@ -3,8 +3,8 @@
 // 用户 2026-09-22 口径：
 //  * 大厅「资料与工具」里新增入口「战前准备」，点开是独立页面（`state.view='prepare'`）。
 //  * 页面可以在「全干员」和「全装备效果」两个页签之间切换。
-//  * 页面下方是筛选条：阶级 1–6 六个数字选项（再点一次取消筛选）＋「核心盟约」「附加盟约」两个下拉框。
-//  * 页面上能直接改干员的**默认技能**；保存后**局内购买**该干员时默认携带指定技能。
+//  * 页面下方固定筛选栏：阶级 1–6 与「全部」按钮＋「核心盟约」「附加盟约」两个下拉框。
+//  * 点选干员卡上的技能档位会立即保存为默认；**局内购买**时携带该技能。
 //  * 打开时初始状态就是当前的默认配置（没有设置过覆盖的干员继续跟随档案自带档位）。
 //
 // 身份口径与盟约禁用一致：按 `charId` 归并（精锐与初始是同一名干员），所以一份设置对它全部形态生效；
@@ -192,16 +192,15 @@ function bondChip(data,id,esc,cls=''){
 function operatorCard(data,row,skills,esc,avatar){
  const override=skills[row.charId],current=override??row.archive;
  const custom=override!=null;
- const archiveName=row.choices.find(choice=>choice.index===row.archive)?.name||'无主动技能';
- const options=[`<option value="" ${custom?'':'selected'}>跟随档案默认（${esc(archiveName)}）</option>`]
-  .concat(row.choices.map(choice=>`<option value="${choice.index}" ${custom&&override===choice.index?'selected':''}>S${choice.index+1} · ${esc(choice.name)}</option>`));
+ const currentName=row.choices.find(choice=>choice.index===current)?.name||'无主动技能';
  return `<article class="native-prep-card${custom?' is-custom':''}" data-char="${esc(row.charId)}">
 <div class="native-prep-art">${avatar(row.charId)}</div>
 <div class="native-prep-body">
 <div class="native-prep-title"><b>${esc(row.name)}</b><small>${row.tier} 阶</small></div>
 <div class="native-prep-bonds">${row.bonds.map(id=>bondChip(data,id,esc,bondIsCore(data,id)?' core':'')).join('')||'<span class="native-prep-bond none">无盟约</span>'}</div>
-<label class="native-prep-skill">默认技能<select data-act="prep-skill" data-char="${esc(row.charId)}">${options.join('')}</select></label>
-<small class="native-prep-note">${custom?`已设为 S${override+1} · ${esc(row.choices.find(choice=>choice.index===override)?.name||'')}`:`跟随档案默认 S${(row.archive??0)+1}`}</small>
+<div class="native-prep-skill"><div class="native-prep-skill-head"><span>新局默认技能</span><small>点击即保存</small></div>
+${row.choices.length?`<div class="native-prep-skill-options" role="group" aria-label="${esc(row.name)} 默认技能">${row.choices.map(choice=>`<button data-act="prep-skill" data-char="${esc(row.charId)}" data-index="${choice.index}" class="${current===choice.index?'chosen':''}" aria-pressed="${current===choice.index}" title="S${choice.index+1} · ${esc(choice.name)}">S${choice.index+1}</button>`).join('')}</div>`:'<span class="native-prep-no-skill">无主动技能档位</span>'}
+<small class="native-prep-note">${custom?'自定义默认':'跟随档案默认'} · ${esc(currentName)}</small></div>
 </div>
 </article>`;
 }
@@ -217,18 +216,20 @@ ${body}
 </div>
 </article>`;
 }
-// 特殊标记 + 最近对局（用户 2026-09-27 口径）：S.E.E.S. 标记保存在档案中并控制策略／资料可见性；战绩只读展示、字段全列。
-// 数据来自 native-archive（localStorage 里的本地档案），这一层不写档案本体，改开关交给 native-play 的动作处理。
-// 特殊标记是隐藏彩蛋（用户 2026-09-27 口径）：**没解锁时整块不出现**，只有密码解锁（flags.sees=true）后才显示；
-// 显示出来之后可以再关掉（关掉即回到「不存在」的状态，只能再用密码解锁）。最近对局列表不受影响。
-function archiveSection(archive,esc){
+// 主菜单的「战绩与解锁」浮窗；未解锁的彩蛋不显示名称。
+export function renderArchiveWindow(archive,esc=value=>String(value??'')){
  const flags={...ARCHIVE_FLAG_DEFAULTS,...(archive?.flags||{})},runs=archive?.runs||[];
- const flagsRow=flags.sees?'<div class="native-prep-flags"><span>特殊标记</span><button data-act="prep-flags-sees" class="chosen" aria-pressed="true">【S.E.E.S.】开</button><small>密码解锁的隐藏内容标记；关掉后这一块会重新隐藏。</small></div>':'';
- return `<section class="native-prep-archive">
-${flagsRow}
-<h2>最近对局 <small>${runs.length} / 10</small></h2>
-${runs.length?runs.map((run,index)=>runCard(run,index+1,esc)).join(''):'<p class="native-prep-empty">还没有记录。打完一局（木桩结束或生命归零）会自动记入，导出存档时会一起带走。</p>'}
-</section>`;
+ const unlocks=[flags.sees?'策略：S.E.E.S.':null,flags.egg325?'325 模式':null,flags.cat?'海猫模式':null].filter(Boolean);
+ return `<div class="native-archive-window">
+<header class="native-archive-head"><div><span class="native-eyebrow">LOCAL RECORD / TERMINAL</span><h2>战绩与解锁</h2><p>本地保存最近十场对局与已解锁内容；导出存档可迁移到其他浏览器。</p></div><div class="native-archive-counter"><b>${runs.length}</b><span>/ 10</span><small>RECENT RUNS</small></div></header>
+<section class="native-archive-unlocks"><div class="native-archive-section-head"><h3><i>01</i> 已解锁内容</h3><small>${unlocks.length} 项</small></div>
+${unlocks.length?`<div class="native-archive-unlock-grid">${unlocks.map(name=>`<div class="native-archive-unlock"><span class="native-archive-unlock-dot"></span><b>${esc(name)}</b><small>已解锁</small></div>`).join('')}</div>`:'<p class="native-archive-empty-unlocks">暂无可查看的解锁内容</p>'}
+${flags.sees?'<button data-act="prep-flags-sees" class="native-archive-toggle" aria-pressed="true">隐藏 S.E.E.S. 内容</button>':''}
+</section>
+<section class="native-archive-runs"><div class="native-archive-section-head"><h3><i>02</i> 最近对局</h3><small>${runs.length} / 10</small></div>
+${runs.length?`<div class="native-archive-run-list">${runs.map((run,index)=>runCard(run,index+1,esc)).join('')}</div>`:'<p class="native-prep-empty">尚无对局记录。完成一局后会自动归档。</p>'}
+</section>
+</div>`;
 }
 function runCard(run,index,esc){
  const types=(run.types||[]).map(t=>esc(t.name)).join(' · ')||'—';
@@ -258,22 +259,20 @@ export function renderPreparePage(data,prep={},ui={}){
  const catalog=prepCatalog(page),tab=PREP_TABS.includes(prep.tab)?prep.tab:'operator';
  const skills=prep.skills||{},filters={tier:prep.tier,core:prep.core,extra:prep.extra};
  const operators=filterPrepOperators(catalog.operators,filters),equipment=filterPrepEquipment(catalog.equipment,filters);
- const dirty=prepDirtyCount(skills,prep.saved||{});
  const list=tab==='operator'?operators:equipment,total=tab==='operator'?catalog.operators.length:catalog.equipment.length;
  const bondSelect=(id,label,options,value)=>`<label class="native-prep-field">${label}<select id="${id}"><option value="">全部${label}</option>${options.map(option=>`<option value="${esc(option.id)}" ${option.id===value?'selected':''}>${esc(option.name)}</option>`).join('')}</select></label>`;
  return `<main class="native-lobby native-prep">
 <header class="native-prep-top"><button data-act="home">‹ 大厅</button><div><span class="native-eyebrow">PREPARATION / REFERENCE</span><h1>战前准备</h1></div><span class="native-prep-count">${total} 条资料</span></header>
-<p class="native-prep-lead">查看全部干员与装备效果，并在这里设置干员的默认技能。保存后，<b>新一局购买该干员时会默认携带指定技能</b>；没有设置的干员继续跟随档案自带档位（也就是现在的默认配置）。</p>
-${archiveSection(archive,esc)}
+<section class="native-prep-heading"><div><span class="native-eyebrow">TACTICAL CONFIGURATION / 01</span><h2>${tab==='operator'?'干员名册':'装备资料'}</h2><p>${tab==='operator'?'点击技能档位立即设为新局默认；未自定义的干员沿用档案默认技能。':'横向浏览基础与精锐形态效果，使用下方筛选栏定位装备。'}</p></div><div class="native-prep-live-count"><b>${list.length}</b><span>/ ${total} 条目</span></div></section>
 <div class="native-prep-tabs">
-<button data-act="prep-tab" data-tab="operator" class="${tab==='operator'?'chosen':''}">全干员 <small>${catalog.operators.length}</small></button>
-<button data-act="prep-tab" data-tab="equipment" class="${tab==='equipment'?'chosen':''}">全装备效果 <small>${catalog.equipment.length}</small></button>
+<button data-act="prep-tab" data-tab="operator" class="${tab==='operator'?'chosen':''}" aria-pressed="${tab==='operator'}"><span>01</span> 干员 <small>${catalog.operators.length}</small></button>
+<button data-act="prep-tab" data-tab="equipment" class="${tab==='equipment'?'chosen':''}" aria-pressed="${tab==='equipment'}"><span>02</span> 装备 <small>${catalog.equipment.length}</small></button>
 </div>
-<div class="native-prep-list" id="prep-list">${list.length?(tab==='operator'?list.map(row=>operatorCard(page,row,skills,esc,avatar)).join(''):list.map(item=>equipmentCard(page,item,esc)).join('')):'<p class="native-prep-empty">没有符合当前筛选条件的条目。</p>'}</div>
-<section class="native-prep-filters">
-<div class="native-prep-tier-row"><span>阶级</span>${PREP_TIERS.map(tier=>`<button data-act="prep-tier" data-tier="${tier}" class="${Number(prep.tier)===tier?'chosen':''}" aria-pressed="${Number(prep.tier)===tier}">${tier}</button>`).join('')}<small>再点一次取消阶级筛选</small></div>
-<div class="native-prep-bond-row">${bondSelect('prep-core','核心盟约',catalog.bonds.core,prep.core||'')}${bondSelect('prep-extra','附加盟约',catalog.bonds.extra,prep.extra||'')}</div>
-<div class="native-prep-actions"><span id="prep-visible">显示 ${list.length} / ${total}</span><span id="prep-dirty" class="${dirty?'is-dirty':''}">${dirty?`未保存的改动 ${dirty} 项`:'与已保存配置一致'}</span><button data-act="prep-clear">全部改为档案默认</button><button class="native-primary" data-act="prep-save">保存默认技能</button></div>
+<div class="native-prep-list" id="prep-list" role="region" tabindex="0" aria-label="${tab==='operator'?'干员名册，横向滚动浏览':'装备资料，横向滚动浏览'}">${list.length?(tab==='operator'?list.map(row=>operatorCard(page,row,skills,esc,avatar)).join(''):list.map(item=>equipmentCard(page,item,esc)).join('')):'<p class="native-prep-empty">没有符合当前筛选条件的条目。</p>'}</div>
+<section class="native-prep-filters" aria-label="战前资料筛选">
+<div class="native-prep-filter-main"><div class="native-prep-tier-row"><span>阶级</span>${PREP_TIERS.map(tier=>`<button data-act="prep-tier" data-tier="${tier}" class="${Number(prep.tier)===tier?'chosen':''}" aria-pressed="${Number(prep.tier)===tier}">${tier}</button>`).join('')}<button data-act="prep-tier" data-tier="0" class="native-prep-tier-all ${Number(prep.tier)===0?'chosen':''}" aria-pressed="${Number(prep.tier)===0}">全部</button></div>
+<div class="native-prep-bond-row">${bondSelect('prep-core','核心盟约',catalog.bonds.core,prep.core||'')}${bondSelect('prep-extra','附加盟约',catalog.bonds.extra,prep.extra||'')}</div></div>
+<div class="native-prep-actions"><span id="prep-visible">显示 ${list.length} / ${total}</span>${tab==='operator'?'<button data-act="prep-reset-all" title="所有干员恢复各自档案中的默认技能">全体恢复档案默认</button>':''}</div>
 </section>
 </main>`;
 }
