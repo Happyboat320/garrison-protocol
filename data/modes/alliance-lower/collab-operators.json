@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "recordedAt": "2026-09-23",
-  "scope": "PRTS 联动（S.E.E.S. 四人组）干员在本客户端的实装登记。项目口径：只作为隐藏档进入技能测试场，暂时不设卫戍效果、不属于任何盟约、不进商店池、不参与商店抽取与晋升奖励。",
-  "accessPath": "dist/native-play.js 的 sandboxOperators 取 data.profiles 全部条目（含 isHidden），因此隐藏档只能在「技能测试场 → 添加干员」里选到；商店/名册/战前准备都按 catalog.roster 走，看不到这四人。",
+  "scope": "PRTS 联动（S.E.E.S. 四人组）干员在本客户端的基础实装登记。基础记录先保持隐藏、无盟约和卫戍；S.E.E.S. 内容注入后再挂 seesShip 并登记四条专属卫戍说明。",
+  "accessPath": "基础记录是隐藏档；S.E.E.S. 内容注入后，由本地 flags.sees 控制策略/资料可见性，由本局 band_sees 控制卡池资格。技能测试场仍可从 data.profiles 选择全部角色。",
   "sources": [
     {
       "title": "PRTS 干员一览/data（本地快照，2026-09-12 抓取）",
@@ -144,11 +144,11 @@
   ],
   "buildWiring": {
     "script": "scripts/build-native.mjs",
-    "behavior": "构建时把四人的实体/技能/范围并入 base，并在 season.charChessDataDict／charShopChessDatas 里补 4 条 isHidden+无盟约+无卫戍的隐藏档；不打补丁到 data/modes/alliance-lower/source.json（历史快照保持原样，与 chess_virtual_* 同一做法）。",
+    "behavior": "构建时把四人的实体/技能/范围并入 base，并补 4 条基础 isHidden 隐藏档；随后 applySeesContent 在 S.E.E.S. 内容层挂 seesShip 和四条 garrison 描述。不打补丁到 data/modes/alliance-lower/source.json（历史快照保持原样，与 chess_virtual_* 同一做法）。",
     "invariants": [
       "catalog.roster（112 名可见名册）不含这四人：build-protocol 只收 charId && !isHidden。",
       "商店抽取不会命中：NativeSession.eligible 过滤 isHidden。",
-      "卫戍与盟约不受影响：bondIds、garrisonIds 都为空数组。",
+      "collab-operators 基础记录中的 bondIds、garrisonIds 为空；applySeesContent 后写入 seesShip 与 garrison_sees_* 描述记录。",
       "技能测试场能看到：native-play 的 sandboxOperators 取 data.profiles 全部条目。"
     ]
   }

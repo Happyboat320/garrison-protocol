@@ -1,5 +1,5 @@
 // S.E.E.S. 联动内容的数据注入（构建期共用）：把 data/modes/alliance-lower/sees-content.json 里的
-// 策略／盟约／干员分层／装备并进 `source`，好让 build-protocol（名册、装备、盟约）与 build-native（运行时）
+// 策略／盟约／干员分层与卫戍说明／装备并进 `source`，好让 build-protocol（名册、装备、盟约）与 build-native（运行时）
 // 看到同一份数据。**不改历史快照文件**：注入只发生在内存里，与 build-native 里的 chess_virtual_*／
 // collab-operators 是同一套做法。
 //
@@ -33,6 +33,25 @@ function armbandRows(content) {
     countType: 'COUNTING'
   });
   return { normal: row(weakness.initial, trueScale.initial), elite: row(weakness.elite, trueScale.elite) };
+}
+
+function operatorGarrisonDesc(op, numbers) {
+  const percent = value => Number(Number(value).toFixed(1)).toString();
+  const values = {
+    uikariPerFundInitial: numbers.uikariPerFund.initial,
+    uikariPerFundElite: numbers.uikariPerFund.elite,
+    aigisPerLayerPercent: percent(numbers.aigisPerLayer * 100),
+    aigisAtCapPercent: percent(numbers.aigisPerLayer * numbers.tartarusLayerCap * 100),
+    tartarusLayerCap: numbers.tartarusLayerCap,
+    makotoKillLayersInitial: numbers.makotoKillLayers.initial,
+    makotoKillLayersElite: numbers.makotoKillLayers.elite
+  };
+  const desc = String(op.garrisonDesc || '').replace(/\{([A-Za-z0-9]+)\}/g, (token, key) => {
+    if (!Object.hasOwn(values, key)) throw Error('Unknown S.E.E.S. garrison text value: ' + key);
+    return values[key];
+  });
+  if (/\{[^}]+\}/.test(desc)) throw Error('Unresolved S.E.E.S. garrison text value for ' + op.charId);
+  return desc;
 }
 
 export function applySeesContent(source, content = loadSeesContent()) {
@@ -122,6 +141,25 @@ export function applySeesContent(source, content = loadSeesContent()) {
       status: { evolvePhase: 'PHASE_2', charLevel: 1, skillLevel: 1, favorPoint: 0, equipLevel: 0 }
     };
     chess.bondIds = [SEES_BOND_ID];
+    // The dossier stores the previously specified per-operator SEES effect as a garrison
+    // descriptor. Runtime behavior stays in native-sees/native-collab; this custom event
+    // type keeps the generic garrison interpreter from applying the same effect twice.
+    if (!op.garrisonId || !op.garrisonDesc) throw Error('S.E.E.S. operator is missing its garrison descriptor: ' + op.charId);
+    const garrisonDesc = operatorGarrisonDesc(op, numbers);
+    season.garrisonDataDict ??= {};
+    season.garrisonDataDict[op.garrisonId] = {
+      garrisonDesc,
+      eventType: 'SEES_NATIVE',
+      eventTypeDesc: 'S.E.E.S. 专属',
+      eventTypeIcon: 'icon_battle',
+      eventTypeSmallIcon: 's_icon_battle',
+      effectType: 'NATIVE_SEES',
+      charLevel: 0,
+      battleRuneKey: null,
+      blackboard: [],
+      description: garrisonDesc
+    };
+    chess.garrisonIds = [...new Set([...(chess.garrisonIds || []), op.garrisonId])];
   }
 
   // ④ 装备「S.E.E.S.臂章」：普通/精锐两条记录 ＋ 效果表 ＋ 商店记录。
@@ -131,6 +169,7 @@ export function applySeesContent(source, content = loadSeesContent()) {
     season.trapShopChessDatas[item.itemId] = {
       itemId: item.itemId,
       goldenItemId: item.goldenItemId,
+      name: item.name,
       // hideInShop 是「不在默认可见集合里」：`catalog.items[].hidden` 就是它，战前准备按它过滤。
       // 臂章只在解锁（flags.sees）且本局选了 band_sees 时才该出现，所以默认隐藏在数据层，
       // 由 native-sees.dataForPrep 在解锁时摘掉、由 native-sees.itemAllowed 在本局放行进装备池。

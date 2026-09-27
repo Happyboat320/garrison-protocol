@@ -8,7 +8,7 @@
 | --- | --- |
 | 入池方式 | 只作**隐藏档**：`charShopChessDatas[chessId].isHidden = true` |
 | 盟约 | **默认不给**：`charChessDataDict[chessId].bondIds = []`；**例外**：选了 S.E.E.S. 策略的局里挂 `seesShip`（见下） |
-| 卫戍 | **不给**：`garrisonIds = []`（干员档案显示「无卫戍效果」） |
+| 卫戍 | 基础隐藏档不设；S.E.E.S. 内容注入时按既定的四人专属效果登记 `garrison_sees_*` 档案说明。效果仍由 `native-sees`／`native-collab-*` 接线执行，不进入通用 garrison 事件结算，避免重复生效。 |
 | 商店 | **默认不进池**：`NativeSession.eligible()` 过滤 `isHidden`，商店／具名池／`later` 池／晋升奖励都抽不到；**例外**：`band_sees` 局（`native-sees.operatorAllowed`）会进池并铺库存 |
 | 名册 | **默认不列**：`catalog.roster` 只收 `charId && !isHidden`，战前准备仍是 112 名可见预设；**例外**：本地存档 `flags.sees` 打开后，`dataForPrep` 会把四人并入名册（116 名） |
 | 阶级 | 商店阶级按 S.E.E.S. 策略的分层口径 **1／2／3／6**（用户 2026-09-27），**覆盖「阶＝星级」的默认规则**；登记表 `collab-operators.json` 的 `chessLevel` 仍按星级记原始阶，运行时以 `sees-content.json` 为准 |
@@ -206,7 +206,7 @@
 | 文件 | 改动 |
 | --- | --- |
 | `data/modes/alliance-lower/collab-operators.json` | 新增：四人登记表（charId／chessId／阶级／档位／口径／来源） |
-| `scripts/build-native.mjs` | 构建时把四人的实体／技能／范围并进 `base`，并补 4 条 `isHidden` + 无盟约 + 无卫戍的隐藏档；`groupId`／`teamId` 回落到 rel77 的 `character_table.json` |
+| `scripts/build-native.mjs` | 构建时把四人的实体／技能／范围并进 `base`，并补 4 条基础 `isHidden` 隐藏档；随后 S.E.E.S. 注入挂入盟约与四条卫戍档案说明；`groupId`／`teamId` 回落到 rel77 的 `character_table.json` |
 | `scripts/sync-collab-assets.mjs` | 新增：从 PRTS 取四张头像（sha1 校验）并登记进 `dist/assets/prts/manifest.json`（376 → 380） |
 | `data/prts/branch-rules.json` | 新增游击手记录（`supportiveranger`）；裂空炮手 `baseTrait` 按 revision 427899 更正，补 `runtime.splashDuringSkill = 1.1` |
 | `dist/native-branches.js` | `BRANCH_POLICIES` 新增 `supportiveranger`；`skybreaker` 补 `splashDuringSkill`；`branchBehavior` 支持「技能期间改溅射」；`SKILL_ANTIAIR` 新增结城理 S3（PRTS 备注「塔纳托斯·改普通攻击可对空」） |

@@ -25,8 +25,8 @@
 
 | 文件 | 内容 |
 | --- | --- |
-| `data/modes/alliance-lower/sees-content.json` | 内容登记表：策略、两条盟约、四名干员的阶级、臂章、**全部数值**（含 `tartarusLayerCap: 264`、`coreTrueDamagePercentBase/Max: 0.05/0.40`、`coreFastThreshold: 264`、`aigisPerLayer: 0.002` 等）与文案 |
-| `scripts/lib/sees-content.mjs` | 构建期注入器：把登记表并进 `source`（策略／盟约／干员阶级与盟约归属／臂章的两档记录＋效果表），`build-protocol` 与 `build-native` 各调一次（后者**必须在联动干员建档之后**，否则 `bondIds` 会被覆盖回空），并把 sees 清单写进 catalog／运行时 |
+| `data/modes/alliance-lower/sees-content.json` | 内容登记表：策略、两条盟约、四名干员的阶级与专属卫戍说明、臂章、**全部数值**（含 `tartarusLayerCap: 264`、`coreTrueDamagePercentBase/Max: 0.05/0.40`、`coreFastThreshold: 264`、`aigisPerLayer: 0.002` 等）与文案 |
+| `scripts/lib/sees-content.mjs` | 构建期注入器：把登记表并进 `source`（策略／盟约／干员阶级、盟约归属与 garrison 描述／臂章的两档记录＋效果表），`build-protocol` 与 `build-native` 各调一次（后者**必须在联动干员建档之后**，否则 `bondIds` 与 `garrisonIds` 会被覆盖回空），并把 sees 清单写进 catalog／运行时 |
 | `dist/native-sees.js` | 运行时公式与谓词（**纯函数模块，不 import session／battle／play**）：`seesUnlocked`／`isSeesBand`／`seesRun`／`operatorAllowed`／`itemAllowed`／`dataForPrep`／`visibleBands`；层数账本 `tartarusLayers`／`addTartarusLayers`（**封顶读数据**）；`coreTrueDamagePercent`（5%→40% 线性）；`coreCooldown`（≥264 → 1 秒，否则 20 秒）；`layersPerFund`（5 ＋ 由加莉 2/4）；`settleFundsToLayers`／`grantCountForLayers`／`seesGrantCandidates`；`isSeesOperator`／`weaknessSource`／`freeDeploy`／`makotoKillLayers`／`aigisLayerScale`／`bondPanelCount` |
 | `dist/native-session.js` | 卡池门控（`eligible`／装备池走 `operatorAllowed`／`itemAllowed`、`ensureStock` 为四人铺库存）、`settleTartarusRound()`（开战前结算）、虎狼丸不占部署位的上限判定 |
 | `dist/native-battle.js` | `seesCoreStrike`（核心盟约的弱点伤害触发与冷却）、`seesArmbandStrike`（臂章追加伤害）、命中类型路由加 `weaknessSource` |
