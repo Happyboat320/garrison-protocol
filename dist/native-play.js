@@ -6,7 +6,7 @@ import {createWaveRoster,trainingType,waveRng} from './native-wave-random.js';
 import {finalBossConfig,rollFinalBoss} from './native-final-boss.js';
 import {applyEditorAction,applyEditorField,editorState,renderWaveEditor} from './native-wave-editor.js';
 import {activeBondBan,banConfigIsDefault,bannedOperatorsHtml,bondBanBriefingHtml,bondBanIds,loadBondBan,resetBondBan,saveBondBan} from './native-bond-ban.js';
-import {loadPrepSkills,prepOperatorRow,renderArchiveWindow,renderPreparePage,renderPrepSkillPreview,savePrepSkills} from './native-prep.js';
+import {loadPrepSkills,prepOperatorRow,renderArchiveWindow,renderPreparePage,renderPrepSkillInfo,savePrepSkills} from './native-prep.js';
 // 本地战绩档案（最近 10 场）＋特殊标记：导出/导入存档时一起带走，见 docs/SAVE_ARCHIVE.md。
 import {appendRun,archiveFromRecord,alreadyRecorded,exportRecord,loadArchive,mergeArchives,normalizeArchive,runRecord,saveArchive} from './native-archive.js';
 // 「输入密码」的密码表与效果（纯函数）：见 dist/native-passcode.js。
@@ -223,8 +223,8 @@ function updatePrepCard(charId){
  if(!row||!card)return;
  const override=p.skills[charId],custom=override!=null,current=override??row.archive;
  card.classList.toggle('is-custom',custom);
- const note=card.querySelector('.native-prep-note');
- if(note)note.textContent=`${custom?'自定义默认':'跟随档案默认'} · ${row.choices.find(choice=>choice.index===current)?.name||'无主动技能'}`;
+ const skillInfo=card.querySelector('.native-prep-current-skill');
+ if(skillInfo)skillInfo.outerHTML=renderPrepSkillInfo(data,charId,current,custom,esc);
  for(const button of card.querySelectorAll('[data-act="prep-skill"]')){const chosen=Number(button.dataset.index)===current;button.classList.toggle('chosen',chosen);button.setAttribute('aria-pressed',String(chosen));}
 }
 function renderBriefingScreen(){const d=state.draft,mode=data.season.modeDataDict[d.modeId],mapName=data.maps.filter(m=>m.weight>0).findIndex(m=>m.stageId===d.mapId),map=data.maps.find(m=>m.stageId===d.mapId),tags=(d.roster.types||[]).map(id=>trainingType(id)).filter(Boolean),boss=finalBossConfig(data,d.finalBossId,d.modeId),strategy=strategyInfo(guardedBandId());return `<main class="native-lobby native-briefing"><header><button data-act="home">‹ 大厅</button><span>战前准备</span></header><h1>战前准备</h1><p>${esc(d.cat?'海猫模式':d.egg325?'325模式':mode?.name||'')} · 阵地 ${mapName+1}</p><h2 class="native-briefing-tagline"><span>本局特训</span><span class="native-briefing-boss"><small>最终 BOSS</small>${avatar(boss.handbookEnemyId)}<b>${esc(boss.enemyProfile.name||boss.bossId)}</b></span></h2><div class="native-tags with-map">${tags.map(t=>`<article><b>${esc(t.name)}</b><small>${esc(t.id)}</small><p>${esc(t.desc)}</p></article>`).join('')}<article class="native-briefing-map"><span class="native-eyebrow">BATTLEFIELD</span><b>本局战场</b>${mapThumbnailHtml(map,{esc,label:`本局战场：阵地 ${mapName+1}${map?' · '+d.mapId:''}`})}<small>阵地 ${mapName+1}${map?' · '+esc(d.mapId):' · 地图数据缺失'}</small></article></div><h2>初始策略</h2><section class="native-selected-strategy"><div class="native-selected-strategy-art">${avatar(strategy.id)||'<span class="native-strategy-placeholder" aria-hidden="true">◈</span>'}</div><div><span class="native-eyebrow">CURRENT STRATEGY</span><h3>${esc(strategy.name)}</h3><p>${esc(strategy.desc)}</p><small>初始生命 ${strategy.hp}</small></div><button data-act="strategy-select">选择策略 →</button></section>${bondBanBriefing(d)}<button class="native-primary native-begin" data-act="begin">进入对局 →</button></main>`;}
@@ -363,7 +363,6 @@ function action(button){const a=button.dataset.act,g=state.game,uid=Number(butto
   if(a==='prep-tab'){const p=prepState();p.tab=button.dataset.tab==='equipment'?'equipment':'operator';p.scroll=window.scrollY||0;render();return;}
   // 特殊标记【S.E.E.S.】：本地解锁状态控制策略与资料可见性；本局卡池资格仍由当前策略判定。
   if(a==='prep-flags-sees'){const archive=archiveNow(),next=saveArchive(archiveStorage(),{...archive,flags:{...archive.flags,sees:!archive.flags.sees}});state.archive=next;/* 关掉标记后这一局就不能再选 S.E.E.S. 了：把草稿与已选策略一并回落到可见的那一个。 */if(isSeesBand(state.strategyDraft))state.strategyDraft=null;state.band=guardedBandId();notice(`特殊标记【S.E.E.S.】已${next.flags.sees?'打开':'关闭'}（策略和资料可见性已更新）。`);if(state.view==='lobby'){modal(renderArchiveWindow(next,esc));return;}render();return;}
-  if(a==='prep-skill-preview'){modal(renderPrepSkillPreview(data,button.dataset.char,Number(button.dataset.index),esc));return;}
   if(a==='prep-skill'){const p=prepState(),charId=button.dataset.char,index=Number(button.dataset.index),row=prepOperatorRow(data,charId);if(!row?.choices.some(choice=>choice.index===index))return;const skills={...p.skills};if(index===row.archive)delete skills[charId];else skills[charId]=index;p.skills=savePrepSkills(skills,data);p.scroll=window.scrollY||0;updatePrepCard(charId);return;}
   // 阶级是「点一下筛、再点一下取消」：只有 1–6 六个数字按钮，不额外占一行「全部」。
   if(a==='prep-tier'){const p=prepState(),tier=Number(button.dataset.tier)||0;p.tier=p.tier===tier?0:tier;p.scroll=window.scrollY||0;render();return;}

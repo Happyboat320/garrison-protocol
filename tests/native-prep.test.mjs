@@ -11,7 +11,7 @@ import {NO_BOND_BAN} from './no-bond-ban.mjs';
 import {
  PREP_SKILL_KEY,PREP_SKILL_VERSION,PREP_TIERS,applyPrepSkills,clearPrepSkills,filterPrepEquipment,
  filterPrepOperators,loadPrepSkills,normalizePrepSkills,prepBondOptions,prepCatalog,prepDirtyCount,
- prepEquipmentRows,prepOperatorRow,prepOperatorRows,renderPreparePage,savePrepSkills,
+ prepEquipmentRows,prepOperatorRow,prepOperatorRows,renderPreparePage,renderPrepSkillInfo,savePrepSkills,
 } from '../dist/native-prep.js';
 
 // 战前准备（用户 2026-09-22 口径）：大厅新入口 → 独立页面，两个页签（全干员／全装备效果），
@@ -193,7 +193,9 @@ test('页面：两个页签、六个阶级选项、两个盟约下拉、保存�
   assert.match(html,/id="prep-extra"/,'附加上盟约下拉');
   // 2026-09-28 重设计：点 S 档立即保存（不再有保存按钮与未保存计数），「全体恢复档案默认」负责一键清除。
   assert.match(html,/data-act="prep-reset-all"/,'全体恢复档案默认按钮');
-  assert.match(html,/data-act="prep-skill-preview"/,'◈ 预览技能效果按钮');
+  assert.match(html,/class="native-prep-current-skill"/,'卡片中段展示当前默认技能信息');
+  assert.ok(html.includes(renderPrepSkillInfo(data,row.charId,index,true,esc)),'技能档位包含当前效果摘要，直接写在卡片中');
+  assert.doesNotMatch(html,/data-act="prep-skill-preview"/,'技能信息不再从独立预览弹窗打开');
   assert.match(html,/class="native-prep-list" id="prep-list"/,'列表容器');
   assert.match(html,new RegExp(`data-act="prep-skill" data-char="${row.charId}"`),'每名干员一排默认技能档位按钮');
   assert.equal((html.match(/data-act="prep-skill" data-char=/g)||[]).length,filterPrepOperators(prepOperatorRows(data),{tier:row.tier}).reduce((n,row2)=>n+row2.choices.length,0),'每个档位一个按钮');
@@ -223,7 +225,9 @@ test('接线：大厅入口、独立页面、动作与筛选下拉都接上，�
  const [lobby,play,session,css,build]=await Promise.all([read('dist/native-lobby.js'),read('dist/native-play.js'),read('dist/native-session.js'),read('dist/native.css'),read('scripts/build-browser.mjs')]);
  assert.match(lobby,/native-loadout-actions"><button class="native-prep-entry" data-act="prepare">/,'「战前准备」入口要挪进任务配置（带图标的主入口）');
  assert.match(play,/if\(state\.view==='prepare'\)\{const p=prepState\(\)/,'独立页面走 renderPreparePage');
- for(const [act,label] of [['prepare','打开页面'],['prep-tab','切页签'],['prep-tier','阶级筛选'],['prep-skill','点档位即保存'],['prep-skill-preview','预览技能效果'],['prep-reset-all','全体恢复档案默认']])assert.match(play,new RegExp(`a==='${act}'`),`动作 ${act}（${label}）要接上`);
+ for(const [act,label] of [['prepare','打开页面'],['prep-tab','切页签'],['prep-tier','阶级筛选'],['prep-skill','点档位即保存'],['prep-reset-all','全体恢复档案默认']])assert.match(play,new RegExp(`a==='${act}'`),`动作 ${act}（${label}）要接上`);
+ assert.match(play,/renderPrepSkillInfo\(data,charId,current,custom,esc\)/,'切换技能后卡片内说明同步更新');
+ assert.doesNotMatch(play,/renderPrepSkillPreview|prep-skill-preview/,'战前技能查看不再打开独立弹窗');
  assert.match(play,/if\(e\.target\.id==='prep-core'\)\{p\.core=e\.target\.value/,'核心盟约下拉要重筛');
  assert.match(play,/if\(e\.target\.id==='prep-extra'\)\{p\.extra=e\.target\.value/,'附加盟约下拉要重筛');
  assert.match(play,/a==='prep-skill'\)\{const p=prepState\(\),charId=button\.dataset\.char/,'技能档位改的就是默认配置');

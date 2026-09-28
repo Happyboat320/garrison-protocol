@@ -14752,7 +14752,6 @@ function drawSeesCore(c,point,z,battle,{reduceFx=false,formatText=null}={}){
  }
  return true;
 }
-const SEES_CORE_SCREEN_SECONDS=1;
 function seesPixelRandom(seed,index){
  let value=(Number(seed)||0)+Math.imul(index+1,0x9e3779b1);value|=0;
  value=Math.imul(value^(value>>>16),0x7feb352d);value=Math.imul(value^(value>>>15),0x846ca68b);value^=value>>>16;
@@ -14804,16 +14803,22 @@ function drawSeesCoreScreenFx(c,battle,width,height,{reduceFx=false}={}){
    continue;
   }
   const impact=Math.max(0,1-age/.17);
+  c.globalCompositeOperation='lighter';
+  c.strokeStyle=`rgba(255,236,174,${(fade*(.42+impact*.38)).toFixed(3)})`;
+  c.lineWidth=2+impact*2;
+  c.shadowColor='rgba(255,230,154,.9)';c.shadowBlur=8*fade;
+  c.strokeRect(inset,inset,Math.max(1,width-2*inset),Math.max(1,height-2*inset));
+  c.shadowBlur=0;
   if(impact>0){
    const corners=[{x:inset,y:inset,a:Math.PI/4},{x:width-inset,y:inset,a:3*Math.PI/4},{x:width-inset,y:height-inset,a:-Math.PI/4},{x:inset,y:height-inset,a:-3*Math.PI/4}];
-   for(const corner of corners)drawSeesCoreCornerHit(c,corner.x,corner.y,corner.a,impact*.78);
+   for(const corner of corners)drawSeesCoreCornerHit(c,corner.x,corner.y,corner.a,impact);
   }
   const perimeter=2*(Math.max(1,width-2*inset)+Math.max(1,height-2*inset));
   for(let blade=0;blade<4;blade++){
    const start=blade*.055,span=.74,progress=(age-start)/span;
    if(progress<0||progress>1)continue;
    const orbit=(progress*.9+blade*.25)%1,p=seesFramePoint(orbit,width,height,inset),bladeFade=Math.min(1,progress/.08,(1-progress)/.16)*fade;
-   drawSeesPixelBlade(c,p.x+p.nx*3,p.y+p.ny*3,p.tx===0?Math.atan2(p.ty,p.tx)+(blade%2?-.58:.58):Math.atan2(p.ty,p.tx)+(blade%2?.58:-.58),bladeFade*.9);
+   drawSeesPixelBlade(c,p.x+p.nx*3,p.y+p.ny*3,p.tx===0?Math.atan2(p.ty,p.tx)+(blade%2?-.58:.58):Math.atan2(p.ty,p.tx)+(blade%2?.58:-.58),bladeFade);
    for(let trail=1;trail<=7;trail++){
     const q=seesFramePoint(orbit-trail*5/perimeter,width,height,inset),a=bladeFade*(1-trail/8)*.6;
     c.fillStyle=`rgba(150,214,255,${a.toFixed(3)})`;c.fillRect(Math.round(q.x),Math.round(q.y),3,3);
@@ -16360,7 +16365,7 @@ const {createWaveRoster,trainingType,waveRng} = load("native-wave-random.js");
 const {finalBossConfig,rollFinalBoss} = load("native-final-boss.js");
 const {applyEditorAction,applyEditorField,editorState,renderWaveEditor} = load("native-wave-editor.js");
 const {activeBondBan,banConfigIsDefault,bannedOperatorsHtml,bondBanBriefingHtml,bondBanIds,loadBondBan,resetBondBan,saveBondBan} = load("native-bond-ban.js");
-const {loadPrepSkills,prepOperatorRow,renderArchiveWindow,renderPreparePage,renderPrepSkillPreview,savePrepSkills} = load("native-prep.js");
+const {loadPrepSkills,prepOperatorRow,renderArchiveWindow,renderPreparePage,renderPrepSkillInfo,savePrepSkills} = load("native-prep.js");
 // 本地战绩档案（最近 10 场）＋特殊标记：导出/导入存档时一起带走，见 docs/SAVE_ARCHIVE.md。
 const {appendRun,archiveFromRecord,alreadyRecorded,exportRecord,loadArchive,mergeArchives,normalizeArchive,runRecord,saveArchive} = load("native-archive.js");
 // 「输入密码」的密码表与效果（纯函数）：见 dist/native-passcode.js。
@@ -16576,8 +16581,8 @@ function updatePrepCard(charId){
  if(!row||!card)return;
  const override=p.skills[charId],custom=override!=null,current=override??row.archive;
  card.classList.toggle('is-custom',custom);
- const note=card.querySelector('.native-prep-note');
- if(note)note.textContent=`${custom?'自定义默认':'跟随档案默认'} · ${row.choices.find(choice=>choice.index===current)?.name||'无主动技能'}`;
+ const skillInfo=card.querySelector('.native-prep-current-skill');
+ if(skillInfo)skillInfo.outerHTML=renderPrepSkillInfo(data,charId,current,custom,esc);
  for(const button of card.querySelectorAll('[data-act="prep-skill"]')){const chosen=Number(button.dataset.index)===current;button.classList.toggle('chosen',chosen);button.setAttribute('aria-pressed',String(chosen));}
 }
 function renderBriefingScreen(){const d=state.draft,mode=data.season.modeDataDict[d.modeId],mapName=data.maps.filter(m=>m.weight>0).findIndex(m=>m.stageId===d.mapId),map=data.maps.find(m=>m.stageId===d.mapId),tags=(d.roster.types||[]).map(id=>trainingType(id)).filter(Boolean),boss=finalBossConfig(data,d.finalBossId,d.modeId),strategy=strategyInfo(guardedBandId());return `<main class="native-lobby native-briefing"><header><button data-act="home">‹ 大厅</button><span>战前准备</span></header><h1>战前准备</h1><p>${esc(d.cat?'海猫模式':d.egg325?'325模式':mode?.name||'')} · 阵地 ${mapName+1}</p><h2 class="native-briefing-tagline"><span>本局特训</span><span class="native-briefing-boss"><small>最终 BOSS</small>${avatar(boss.handbookEnemyId)}<b>${esc(boss.enemyProfile.name||boss.bossId)}</b></span></h2><div class="native-tags with-map">${tags.map(t=>`<article><b>${esc(t.name)}</b><small>${esc(t.id)}</small><p>${esc(t.desc)}</p></article>`).join('')}<article class="native-briefing-map"><span class="native-eyebrow">BATTLEFIELD</span><b>本局战场</b>${mapThumbnailHtml(map,{esc,label:`本局战场：阵地 ${mapName+1}${map?' · '+d.mapId:''}`})}<small>阵地 ${mapName+1}${map?' · '+esc(d.mapId):' · 地图数据缺失'}</small></article></div><h2>初始策略</h2><section class="native-selected-strategy"><div class="native-selected-strategy-art">${avatar(strategy.id)||'<span class="native-strategy-placeholder" aria-hidden="true">◈</span>'}</div><div><span class="native-eyebrow">CURRENT STRATEGY</span><h3>${esc(strategy.name)}</h3><p>${esc(strategy.desc)}</p><small>初始生命 ${strategy.hp}</small></div><button data-act="strategy-select">选择策略 →</button></section>${bondBanBriefing(d)}<button class="native-primary native-begin" data-act="begin">进入对局 →</button></main>`;}
@@ -16716,7 +16721,6 @@ function action(button){const a=button.dataset.act,g=state.game,uid=Number(butto
   if(a==='prep-tab'){const p=prepState();p.tab=button.dataset.tab==='equipment'?'equipment':'operator';p.scroll=window.scrollY||0;render();return;}
   // 特殊标记【S.E.E.S.】：本地解锁状态控制策略与资料可见性；本局卡池资格仍由当前策略判定。
   if(a==='prep-flags-sees'){const archive=archiveNow(),next=saveArchive(archiveStorage(),{...archive,flags:{...archive.flags,sees:!archive.flags.sees}});state.archive=next;/* 关掉标记后这一局就不能再选 S.E.E.S. 了：把草稿与已选策略一并回落到可见的那一个。 */if(isSeesBand(state.strategyDraft))state.strategyDraft=null;state.band=guardedBandId();notice(`特殊标记【S.E.E.S.】已${next.flags.sees?'打开':'关闭'}（策略和资料可见性已更新）。`);if(state.view==='lobby'){modal(renderArchiveWindow(next,esc));return;}render();return;}
-  if(a==='prep-skill-preview'){modal(renderPrepSkillPreview(data,button.dataset.char,Number(button.dataset.index),esc));return;}
   if(a==='prep-skill'){const p=prepState(),charId=button.dataset.char,index=Number(button.dataset.index),row=prepOperatorRow(data,charId);if(!row?.choices.some(choice=>choice.index===index))return;const skills={...p.skills};if(index===row.archive)delete skills[charId];else skills[charId]=index;p.skills=savePrepSkills(skills,data);p.scroll=window.scrollY||0;updatePrepCard(charId);return;}
   // 阶级是「点一下筛、再点一下取消」：只有 1–6 六个数字按钮，不额外占一行「全部」。
   if(a==='prep-tier'){const p=prepState(),tier=Number(button.dataset.tier)||0;p.tier=p.tier===tier?0:tier;p.scroll=window.scrollY||0;render();return;}
@@ -18347,48 +18351,25 @@ function applyPrepSkills(data,units){
 function bondChip(data,id,esc,cls=''){
  return `<span class="native-prep-bond${cls}">${esc(bondName(data,id))}</span>`;
 }
+function renderPrepSkillInfo(data,charId,index,custom=false,esc=value=>String(value??'')){
+ const row=prepOperatorRow(data,charId),choice=row?.choices.find(entry=>entry.index===Number(index));
+ if(!row||!choice)return '<section class="native-prep-current-skill"><b>无主动技能档位</b><p>当前干员没有可选的默认技能。</p></section>';
+ const skill=choice.skill||{},description=renderSkillDescription(skill)||'暂无技能效果说明。',sp=skill.spData||{},rangeId=skill.rangeId||row.rangeId;
+ const meta=[rangeId?`范围 ${rangeId}`:null,sp.initSp!=null||sp.spCost!=null?`技力 ${sp.initSp??'—'} / ${sp.spCost??'—'}`:null,skill.duration!=null?`持续 ${skill.duration} 秒`:null].filter(Boolean);
+ return `<section class="native-prep-current-skill" aria-live="polite"><div class="native-prep-current-skill-head"><b>S${choice.index+1} · ${esc(choice.name)}</b><small>${custom?'自定义默认':'跟随档案默认'}</small></div><p title="${esc(description)}">${esc(description)}</p>${meta.length?`<small class="native-prep-current-skill-meta">${meta.map(esc).join(' · ')}</small>`:''}</section>`;
+}
 function operatorCard(data,row,skills,esc,avatar){
  const override=skills[row.charId],current=override??row.archive;
  const custom=override!=null;
- const currentName=row.choices.find(choice=>choice.index===current)?.name||'无主动技能';
  return `<article class="native-prep-card${custom?' is-custom':''}" data-char="${esc(row.charId)}">
 <div class="native-prep-art">${avatar(row.charId)}</div>
 <div class="native-prep-body">
 <div class="native-prep-title"><b>${esc(row.name)}</b><small>${row.tier} 阶</small></div>
 <div class="native-prep-bonds">${row.bonds.map(id=>bondChip(data,id,esc,bondIsCore(data,id)?' core':'')).join('')||'<span class="native-prep-bond none">无盟约</span>'}</div>
-<div class="native-prep-skill"><div class="native-prep-skill-head"><span>新局默认技能</span><small>设定 / ◈ 预览效果</small></div>
-${row.choices.length?`<div class="native-prep-skill-options" role="group" aria-label="${esc(row.name)} 默认技能">${row.choices.map(choice=>`<span class="native-prep-skill-choice"><button data-act="prep-skill" data-char="${esc(row.charId)}" data-index="${choice.index}" class="${current===choice.index?'chosen':''}" aria-pressed="${current===choice.index}" aria-label="${esc(row.name)} 默认设为 S${choice.index+1} ${esc(choice.name)}" title="设为默认：S${choice.index+1} · ${esc(choice.name)}">S${choice.index+1}</button><button data-act="prep-skill-preview" data-char="${esc(row.charId)}" data-index="${choice.index}" class="native-prep-skill-preview-button" aria-label="预览 ${esc(row.name)} S${choice.index+1} ${esc(choice.name)} 效果" title="预览技能效果">◈</button></span>`).join('')}</div>`:'<span class="native-prep-no-skill">无主动技能档位</span>'}
-<small class="native-prep-note">${custom?'自定义默认':'跟随档案默认'} · ${esc(currentName)}</small></div>
+${renderPrepSkillInfo(data,row.charId,current,custom,esc)}
+<div class="native-prep-skill">${row.choices.length?`<div class="native-prep-skill-options" role="group" aria-label="${esc(row.name)} 默认技能">${row.choices.map(choice=>`<button data-act="prep-skill" data-char="${esc(row.charId)}" data-index="${choice.index}" class="${current===choice.index?'chosen':''}" aria-pressed="${current===choice.index}" aria-label="${esc(row.name)} 默认设为 S${choice.index+1} ${esc(choice.name)}" title="设为默认：S${choice.index+1} · ${esc(choice.name)}">S${choice.index+1}</button>`).join('')}</div>`:'<span class="native-prep-no-skill">无主动技能档位</span>'}</div>
 </div>
 </article>`;
-}
-function skillRangePreview(data,row,skill,esc){
- const rangeId=skill?.rangeId||row.rangeId,grids=rangeId?(data.ranges?.[rangeId]?.grids||[]):[];
- const cells=(grids||[]).map(cell=>({col:Number(cell.col),row:Number(cell.row)})).filter(cell=>Number.isFinite(cell.col)&&Number.isFinite(cell.row));
- if(!cells.length)return `<div class="native-prep-range-empty"><span>◈</span><b>干员位置</b><small>${rangeId?`范围 ${esc(rangeId)}`:'按技能描述结算范围'}</small></div>`;
- const coords=cells.map(cell=>({col:cell.col,row:-cell.row}));
- const minCol=Math.min(0,...coords.map(cell=>cell.col)),maxCol=Math.max(0,...coords.map(cell=>cell.col));
- const minRow=Math.min(0,...coords.map(cell=>cell.row)),maxRow=Math.max(0,...coords.map(cell=>cell.row));
- const cols=maxCol-minCol+1,rows=maxRow-minRow+1,cellSize=Math.max(9,Math.min(22,220/cols,130/rows)),active=new Set(coords.map(cell=>`${cell.col},${cell.row}`));
- const tiles=[];
- for(let rowIndex=maxRow;rowIndex>=minRow;rowIndex--)for(let col=minCol;col<=maxCol;col++){
-  const unit=col===0&&rowIndex===0,inside=active.has(`${col},${rowIndex}`);
-  tiles.push(`<span class="native-prep-range-cell${unit?' is-unit':inside?' is-active':''}"${unit?' aria-label="干员位置"':inside?' aria-label="技能范围"':''}>${unit?'◈':''}</span>`);
- }
- return `<div class="native-prep-range-grid" style="--range-cols:${cols};--range-cell:${cellSize}px" role="img" aria-label="技能范围 ${esc(rangeId)}，箭头方向为前方">${tiles.join('')}</div><small class="native-prep-range-id">范围 ${esc(rangeId)} · 前方 →</small>`;
-}
-function renderPrepSkillPreview(data,charId,index,esc=value=>String(value??'')){
- const row=prepOperatorRow(data,charId),choice=row?.choices.find(entry=>entry.index===Number(index));
- if(!row||!choice)return '<h2>技能预览不可用</h2><p>该技能当前不在战前名册中。</p>';
- const skill=choice.skill||{},description=renderSkillDescription(skill)||'暂无技能效果说明。',sp=skill.spData||{};
- const skillKind=String(skill.skillType||'').toUpperCase()==='PASSIVE'?'被动技能':'技能';
- const details=[];
- if(sp.initSp!=null||sp.spCost!=null)details.push(`<span>技力</span><b>${esc(sp.initSp??'—')} / ${esc(sp.spCost??'—')}</b>`);
- if(sp.spType)details.push(`<span>回复方式</span><b>${esc(sp.spType)}</b>`);
- if(skill.durationType)details.push(`<span>持续类型</span><b>${esc(skill.durationType)}</b>`);
- if(skill.duration!=null)details.push(`<span>持续时间</span><b>${esc(skill.duration)} 秒</b>`);
- const range=skillRangePreview(data,row,skill,esc);
- return `<div class="native-prep-skill-preview-content"><header><span class="native-eyebrow">SKILL EFFECT PREVIEW / S${choice.index+1}</span><h2>${esc(row.name)} · ${esc(choice.name)}</h2><small>${skillKind} · ${row.tier} 阶</small></header><div class="native-prep-skill-preview-layout"><section class="native-prep-skill-range"><h3>作用范围</h3>${range}</section><section class="native-prep-skill-effect"><h3>技能效果</h3><p>${esc(description)}</p>${details.length?`<dl>${details.map(entry=>`<div>${entry}</div>`).join('')}</dl>`:''}</section></div></div>`;
 }
 function equipmentCard(data,item,esc){
  // 基础与精锐两种形态的效果文案都要列（精锐是基础装备三合一后的形态，数值通常不一样）。
@@ -18449,7 +18430,7 @@ function renderPreparePage(data,prep={},ui={}){
  const bondSelect=(id,label,options,value)=>`<label class="native-prep-field">${label}<select id="${id}"><option value="">全部${label}</option>${options.map(option=>`<option value="${esc(option.id)}" ${option.id===value?'selected':''}>${esc(option.name)}</option>`).join('')}</select></label>`;
  return `<main class="native-lobby native-prep">
 <header class="native-prep-top"><button data-act="home">‹ 大厅</button><div><span class="native-eyebrow">PREPARATION / REFERENCE</span><h1>战前准备</h1></div><span class="native-prep-count">${total} 条资料</span></header>
-<section class="native-prep-heading"><div><span class="native-eyebrow">TACTICAL CONFIGURATION / 01</span><h2>${tab==='operator'?'干员名册':'装备资料'}</h2><p>${tab==='operator'?'点击 S 档设为新局默认；点击 ◈ 查看技能效果与作用范围。':'横向浏览基础与精锐形态效果，使用下方筛选栏定位装备。'}</p></div><div class="native-prep-live-count"><b>${list.length}</b><span>/ ${total} 条目</span></div></section>
+<section class="native-prep-heading"><div><span class="native-eyebrow">TACTICAL CONFIGURATION / 01</span><h2>${tab==='operator'?'干员名册':'装备资料'}</h2><p>${tab==='operator'?'切换 S 档可查看当前默认技能说明，也可设为新局默认。':'横向浏览基础与精锐形态效果，使用下方筛选栏定位装备。'}</p></div><div class="native-prep-live-count"><b>${list.length}</b><span>/ ${total} 条目</span></div></section>
 <div class="native-prep-tabs">
 <button data-act="prep-tab" data-tab="operator" class="${tab==='operator'?'chosen':''}" aria-pressed="${tab==='operator'}"><span>01</span> 干员 <small>${catalog.operators.length}</small></button>
 <button data-act="prep-tab" data-tab="equipment" class="${tab==='equipment'?'chosen':''}" aria-pressed="${tab==='equipment'}"><span>02</span> 装备 <small>${catalog.equipment.length}</small></button>
@@ -18463,7 +18444,7 @@ function renderPreparePage(data,prep={},ui={}){
 </main>`;
 }
 
-return {PREP_SKILL_KEY,PREP_SKILL_VERSION,PREP_TIERS,PREP_TABS,normalizePrepSkills,loadPrepSkills,savePrepSkills,clearPrepSkills,prepDirtyCount,prepOperatorRows,prepOperatorIndex,prepOperatorRow,prepEquipmentRows,prepBondOptions,prepCatalog,filterPrepOperators,filterPrepEquipment,applyPrepSkills,renderPrepSkillPreview,renderArchiveWindow,renderPreparePage};
+return {PREP_SKILL_KEY,PREP_SKILL_VERSION,PREP_TIERS,PREP_TABS,normalizePrepSkills,loadPrepSkills,savePrepSkills,clearPrepSkills,prepDirtyCount,prepOperatorRows,prepOperatorIndex,prepOperatorRow,prepEquipmentRows,prepBondOptions,prepCatalog,filterPrepOperators,filterPrepEquipment,applyPrepSkills,renderPrepSkillInfo,renderArchiveWindow,renderPreparePage};
 },
 "native-collab.js": function(load) {
 // 联动干员（S.E.E.S. 四人组）的专属实现入口。
