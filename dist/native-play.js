@@ -5,7 +5,7 @@ import {TRAINING_TYPES,loadWaveTable,normalizeWaveTable,saveWaveTable,defaultWav
 import {createWaveRoster,trainingType,waveRng} from './native-wave-random.js';
 import {applyEditorAction,applyEditorField,editorState,renderWaveEditor} from './native-wave-editor.js';
 import {activeBondBan,banConfigIsDefault,bannedOperatorsHtml,bondBanBriefingHtml,bondBanIds,loadBondBan,resetBondBan,saveBondBan} from './native-bond-ban.js';
-import {loadPrepSkills,prepOperatorRow,renderArchiveWindow,renderPreparePage,savePrepSkills} from './native-prep.js';
+import {loadPrepSkills,prepOperatorRow,renderArchiveWindow,renderPreparePage,renderPrepSkillPreview,savePrepSkills} from './native-prep.js';
 // 本地战绩档案（最近 10 场）＋特殊标记：导出/导入存档时一起带走，见 docs/SAVE_ARCHIVE.md。
 import {appendRun,archiveFromRecord,alreadyRecorded,exportRecord,loadArchive,mergeArchives,normalizeArchive,runRecord,saveArchive} from './native-archive.js';
 // 「输入密码」的密码表与效果（纯函数）：见 dist/native-passcode.js。
@@ -247,7 +247,7 @@ function render(){
  if(state.view==='lobby'){root.innerHTML=renderLobby({data,state,avatar});root.querySelector('.native-tool-grid')?.insertAdjacentHTML('afterbegin',poolDirty()?'<div class="native-pool-update"><div><span>CONFIGURATION UPDATE</span><b>敌人池／禁用配置已改动</b><small>与默认配置不一致，点击右侧按钮把两者一起恢复默认</small></div><button class="native-pool-update-action" data-act="pool-defaults">恢复默认配置</button></div>':'');/* 主界面的「导出存档」（用户 2026-09-27 需求）：插在动作行末尾，和「导入存档」成对。 */root.querySelector('.native-loadout-actions')?.insertAdjacentHTML('beforeend','<button data-act="export">导出存档</button>');gateLockedModes();renderModal();return;}
   if(state.view==='strategy-select'){root.innerHTML=renderStrategySelectScreen();decorateStrategyCatalog();renderModal();return;}
  if(state.view==='briefing'){root.innerHTML=renderBriefingScreen();renderModal();return;}
-  if(state.view==='prepare'){const p=prepState();root.innerHTML=renderPreparePage(data,p,{esc,avatar});if(p.scroll)window.scrollTo(0,p.scroll);renderModal();return;}
+  if(state.view==='prepare'){const p=prepState(),listScroll=root.querySelector('#prep-list')?.scrollLeft??p.listScrollLeft??0;root.innerHTML=renderPreparePage(data,p,{esc,avatar});const list=root.querySelector('#prep-list');if(list)list.scrollLeft=listScroll;if(p.scroll)window.scrollTo(0,p.scroll);renderModal();return;}
  if(state.view==='editor'){const oldNav=root.querySelector('.wave-ed-temps'),navTop=oldNav?.scrollTop||0,navLeft=oldNav?.scrollLeft||0;root.innerHTML=renderWaveEditor(data,state.waveTable,state.editor);const nav=root.querySelector('.wave-ed-temps');if(nav){nav.scrollTop=navTop;nav.scrollLeft=navLeft;}const search=document.getElementById('ed-search'),catalog=document.getElementById('ed-catalog');if(search&&state.editor.keepSearch){search.focus();try{search.setSelectionRange(state.editor.caret,state.editor.caret);}catch{}}state.editor.keepSearch=false;if(catalog)catalog.scrollTop=state.editor.scroll||0;const dialog=root.querySelector('#wave-ed-test');if(dialog){dialog.showModal();const close=()=>{state.editor.sample=null;render();root.querySelector('.wave-ed-current [data-act=ed-roll]')?.focus();};dialog.addEventListener('cancel',e=>{e.preventDefault();close();});dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)close();}});}renderModal();return;}
  const g=state.game,s=g.s,turn=currentTurn(),rows=g.bonds();root.innerHTML=`<main class="native-game${s.phase==='battle'?' is-battle':''}${state.supplyCollapsed?' is-supply-collapsed':''}${state.sandbox?' is-sandbox':''}">${dossier()}<header class="native-top"><button data-act="home">‹ 大厅</button><strong>卫戍协议 / 盟约下半</strong><button class="native-mobile-info" data-act="field-info">战况 / 设置</button><button data-act="limits">已知差异</button><button data-act="branches">分支规则</button><button class="native-ban-entry" data-act="ban-list">禁用名单</button><button data-act="export">导出存档</button></header><div class="native-workspace"><aside class="native-bonds">${bondSidebarHtml(g,rows)}</aside><section class="native-field"><div class="native-field-caption"><b>${state.sandbox?(s.phase==='battle'?'技能测试':'测试配置'):s.phase==='battle'?(turn.isBossTurn?'木桩测试':'自动作战'):s.phase==='prep'?'阵地休整':s.phase==='finished'?'模拟结束':'回合结算'}</b><span id="native-wave-progress">${deployCount(s)} / ${s.capacity} 部署</span>${s.phase==='battle'&&!state.sandbox?battleBar():''}</div><div class="native-terrain-legend" aria-label="地块图例">${terrainLegend(g.map)}</div><div class="native-board"><canvas id="native-canvas" tabindex="0" aria-label="战场棋盘，先选位置再拖动朝向确认"></canvas><span class="native-cost" title="战斗费用余额，与商店资金独立"><small>Cost 费用</small><output id="native-cost-balance" aria-label="战斗费用余额">—</output></span></div><div class="native-facing" ${state.preview?'':'hidden'}><span class="native-facing-tip">拖动选择朝向，松手确认；中心松手取消。</span>${[0,1,2,3].map((d)=>`<button data-act="aim" data-dir="${d}">${['→','↓','←','↑'][d]}</button>`).join('')}<button data-act="place-confirm">确认放置</button><button data-act="cancel">取消</button></div><div class="native-controls"><button data-act="fullscreen" hidden>打开全屏</button><button data-act="pause" ${s.phase!=='battle'?'disabled':''}>${state.paused?'继续':'暂停'}</button>${[1,2,4].map(n=>`<button data-act="speed" data-speed="${n}" class="${state.speed===n?'chosen':''}">${n}×</button>`).join('')}<button data-act="mute">${state.muted?'声音关':'声音开'}</button><label>音量 <input id="native-volume" aria-label="战斗音量" type="range" min="0" max="1" step="0.05" value="${state.volume}" style="width:72px"></label><button data-act="reduce-fx">${state.reduceFx?'动效少':'动效'}</button>${s.phase==='prep'?(state.sandbox?'<button class="native-primary" data-act="sandbox-start">开始测试 →</button>':'<button class="native-primary" data-act="start">准备完毕 →</button>'):s.phase==='intermission'?'<button class="native-primary" data-act="next">进入下一回合 →</button>':s.phase==='battle'&&turn.isBossTurn?'<button data-act="stop">结束木桩并播报伤害</button>':s.phase==='finished'?'<button data-act="result">查看伤害报告</button><button data-act="home">回到大厅</button>':''}</div><div class="native-bench-label${g.handFull()?' is-over':''}" id="native-hand-label">整备区 ${g.handLength()} / 10 ${g.handFull()?'<em class="native-hand-warn">已满，出售或部署清出空余后才能购买</em>':''}<span id="native-drop-hint" aria-live="polite">可将场上干员拖回此处；换位后重新选朝向</span></div><div class="native-bench" id="native-hand" aria-label="整备区">${s.units.filter(u=>!u.position).map(u=>`<button data-act="select" data-uid="${u.uid}" class="${state.selected===u.uid||inspectSame('unit',u.uid)?'chosen':''}">${avatar(u.charId)}<b>${esc(data.profiles[u.chessId].name)}</b>${data.profiles[u.chessId].isGolden?'<small>精锐</small>':''}</button>`).join('')}${s.items.map(i=>`<div role="button" tabindex="0" data-act="item" data-uid="${i.uid}" class="${state.item===i.uid||inspectSame('pack',i.uid)?'chosen':''}"><span class="native-item-icon">◇</span><b>${esc(itemName(i.chessId))}</b></div>`).join('')}</div></section><aside class="native-detail">${state.sandbox?sandboxDetail():waveIntel()}${detail()}<h3>${esc(data.common.bandDataDict[s.bandId].bandName)}</h3><p>${esc(plain(data.season.bandDataListDict[s.bandId].bandDesc))}</p><p>${turn.isBossTurn?'最终木桩：生命无限，防御0、法抗0，倒计时150秒。':'开局抽取三种特训词条；每档按难度预算从敌人池抽取，空池使用占位模板。'}</p><div id="native-combat-stats"></div></aside></div><div class="native-status" id="native-status"></div><section class="native-shop" id="native-supply-shop"><div><h2>调度中心 ${s.level}</h2><button class="native-supply-toggle" data-act="supply-toggle" aria-controls="native-supply-shop" aria-expanded="${!state.supplyCollapsed}">${state.supplyCollapsed?'展开商店 ▴':'收起商店 ▾'}</button><button data-act="upgrade" ${s.phase!=='prep'?'disabled':''}>升级 ${catOn()?'ALL':(g.terms().upgradeCost??'MAX')} ◆</button><button data-act="refresh" ${s.phase!=='prep'?'disabled':''}${s.forcedRefresh?` title="特殊刷新：此次刷新出现的干员优先为${esc(data.season.bondInfoDict[s.forcedRefresh.bond]?.name||'指定盟约')}干员"`:''}>${s.forcedRefresh?`特殊刷新${s.forcedRefresh.count>1?` ×${s.forcedRefresh.count}`:''}`:'刷新'} ${s.freeRefresh?'免费':catOn()?'ALL':'1 ◆'}</button>${catOn()?'<button data-act="stockview" title="查看各干员剩余库存">库存</button>':''}<button data-act="lock" ${s.phase!=='prep'?'disabled':''}>${s.locked?'❄ 已冻结':'冻结'}</button>${s.rewardPending?.tier?'<span class="native-reward-shop-hint">三合一奖励选择中 · 点击候选卡片预览，再次点击确认</span>':''}${g.handFull()?'<span class="native-reward-shop-hint is-over" title="召唤物卡、干员与装备一起占整备区格">整备区已满，暂不可购入干员／装备</span>':''}</div><div class="native-shop-cards">${shopCards(g,s)}</div></section></main>`;canvas=document.getElementById('native-canvas');syncPlayChrome();updateHud();fitWaveFaces();draw();renderModal();showRequired();
  }finally{painting=false;paint325();}
@@ -359,6 +359,7 @@ function action(button){const a=button.dataset.act,g=state.game,uid=Number(butto
   if(a==='prep-tab'){const p=prepState();p.tab=button.dataset.tab==='equipment'?'equipment':'operator';p.scroll=window.scrollY||0;render();return;}
   // 特殊标记【S.E.E.S.】：本地解锁状态控制策略与资料可见性；本局卡池资格仍由当前策略判定。
   if(a==='prep-flags-sees'){const archive=archiveNow(),next=saveArchive(archiveStorage(),{...archive,flags:{...archive.flags,sees:!archive.flags.sees}});state.archive=next;/* 关掉标记后这一局就不能再选 S.E.E.S. 了：把草稿与已选策略一并回落到可见的那一个。 */if(isSeesBand(state.strategyDraft))state.strategyDraft=null;state.band=guardedBandId();notice(`特殊标记【S.E.E.S.】已${next.flags.sees?'打开':'关闭'}（策略和资料可见性已更新）。`);if(state.view==='lobby'){modal(renderArchiveWindow(next,esc));return;}render();return;}
+  if(a==='prep-skill-preview'){modal(renderPrepSkillPreview(data,button.dataset.char,Number(button.dataset.index),esc));return;}
   if(a==='prep-skill'){const p=prepState(),charId=button.dataset.char,index=Number(button.dataset.index),row=prepOperatorRow(data,charId);if(!row?.choices.some(choice=>choice.index===index))return;const skills={...p.skills};if(index===row.archive)delete skills[charId];else skills[charId]=index;p.skills=savePrepSkills(skills,data);p.scroll=window.scrollY||0;updatePrepCard(charId);return;}
   // 阶级是「点一下筛、再点一下取消」：只有 1–6 六个数字按钮，不额外占一行「全部」。
   if(a==='prep-tier'){const p=prepState(),tier=Number(button.dataset.tier)||0;p.tier=p.tier===tier?0:tier;p.scroll=window.scrollY||0;render();return;}
@@ -811,7 +812,7 @@ function paneLocal(scroller,x,y){
 }
 function scrollerAtPoint(x,y){
  const hit=document.elementFromPoint(x,y);
- const panes=[...root.querySelectorAll('.native-strategy-catalog, .native-strategy-pane, .native-dossier, .native-modal>section, .native-lobby')].reverse();
+ const panes=[...root.querySelectorAll('.native-strategy-catalog, .native-strategy-pane, .native-dossier, .native-modal>section, .native-prep-list, .native-lobby')].reverse();
  for(const pane of panes){
   if(paneMax(pane)<=0)continue;
   const p=paneLocal(pane,x,y);
@@ -825,12 +826,14 @@ function paneTrack(scroller){
  return scroller.querySelector(':scope > .native-strategies, :scope > .native-dossier-body, .native-strategies, .native-dossier-body')||scroller.firstElementChild;
 }
 function paneMax(scroller){
+ if(scroller.matches('.native-prep-list'))return Math.max(0,scroller.scrollWidth-scroller.clientWidth);
  if(scroller.matches('.native-lobby, .native-strategy-catalog'))return Math.max(0,scroller.scrollHeight-scroller.clientHeight);
  const track=paneTrack(scroller);
  return Math.max(0,(track?.offsetHeight||0)-scroller.clientHeight);
 }
-function shiftOf(scroller){return scroller.matches('.native-lobby, .native-strategy-catalog')?scroller.scrollTop:paneShift.get(scroller)||0;}
+function shiftOf(scroller){return scroller.matches('.native-prep-list')?scroller.scrollLeft:scroller.matches('.native-lobby, .native-strategy-catalog')?scroller.scrollTop:paneShift.get(scroller)||0;}
 function setShift(scroller,y){
+ if(scroller.matches('.native-prep-list')){const next=Math.max(0,Math.min(paneMax(scroller),y));scroller.scrollLeft=next;return next;}
  if(scroller.matches('.native-lobby, .native-strategy-catalog')){const next=Math.max(0,Math.min(paneMax(scroller),y));scroller.scrollTop=next;return next;}
  const track=paneTrack(scroller);
  if(!track)return 0;
@@ -848,13 +851,13 @@ function hitInScroller(scroller,x,y){
 function paneScroller(start){
  let node=start?.nodeType===1?start:start?.parentElement;
  while(node&&node!==root){
-  if(node.matches?.('.native-strategy-catalog, .native-strategy-pane, .native-dossier, .native-modal>section, .native-lobby')&&paneMax(node)>0)return node;
+  if(node.matches?.('.native-strategy-catalog, .native-strategy-pane, .native-dossier, .native-modal>section, .native-prep-list, .native-lobby')&&paneMax(node)>0)return node;
   node=node.parentElement;
  }
  return null;
 }
-function paneDelta(touch,clientX,clientY){
- return rotatedPlay()?touch.x-clientX:touch.y-clientY;
+function paneDelta(touch,clientX,clientY,scroller){
+ return scroller?.matches('.native-prep-list')||rotatedPlay()?touch.x-clientX:touch.y-clientY;
 }
 let paneTouch=null,paneMoved=false;
 root.addEventListener('touchstart',e=>{
@@ -867,7 +870,7 @@ root.addEventListener('touchstart',e=>{
 },{passive:true});
 root.addEventListener('touchmove',e=>{
  if(!paneTouch||e.touches.length!==1)return;
- const t=e.touches[0],dy=paneDelta(paneTouch,t.clientX,t.clientY);
+ const t=e.touches[0],dy=paneDelta(paneTouch,t.clientX,t.clientY,paneTouch.scroller);
  if(Math.abs(dy)<8)return;
  setShift(paneTouch.scroller,paneTouch.top+dy);
  paneMoved=true;
@@ -883,7 +886,7 @@ root.addEventListener('wheel',e=>{
  const scroller=scrollerAtPoint(e.clientX,e.clientY);
  if(!scroller||paneMax(scroller)<=0)return;
  e.preventDefault();
- setShift(scroller,shiftOf(scroller)+e.deltaY);
+ setShift(scroller,shiftOf(scroller)+(scroller.matches('.native-prep-list')?(e.deltaX||e.deltaY):e.deltaY));
 },{passive:false});
 root.addEventListener('click',e=>{
   if(dossierDismissedAt>0&&performance.now()-dossierDismissedAt<500){dossierDismissedAt=0;e.preventDefault();return;}

@@ -11,6 +11,7 @@
 // 名册（有哪些干员、什么阶级、挂哪些盟约）直接用 `native-bond-ban.bondRoster`，不再另算一套。
 import {bondIsCore,bondName,bondRoster,bondIds} from './native-bond-ban.js';
 import {richText,DIRECTION_NAMES} from './protocol.js';
+import {renderSkillDescription} from './native-skill-text.js';
 import {ARCHIVE_FLAG_DEFAULTS,loadArchive} from './native-archive.js';
 import {dataForPrep} from './native-sees.js';
 
@@ -90,10 +91,10 @@ const operatorCache=new WeakMap();
 function buildOperatorRows(data){
  const rows=bondRoster(data).map(row=>{
   const profile=data.profiles?.[row.chessIds[0]]||{};
-  const choices=(profile.skillChoices||[]).map((choice,i)=>({index:i,name:choice.skill?.name||`技能 ${i+1}`}));
+  const choices=(profile.skillChoices||[]).map((choice,i)=>({index:i,name:choice.skill?.name||`技能 ${i+1}`,skill:choice.skill||null}));
   return {
    charId:row.charId,name:row.name,chessId:row.chessIds[0]||null,tier:row.tier,bonds:row.bonds.slice(),
-   choices,
+   choices,rangeId:profile.rangeId||null,
    archive:Number.isInteger(profile.skillIndex)?profile.skillIndex:(choices.length?0:null),
   };
  });
@@ -198,11 +199,39 @@ function operatorCard(data,row,skills,esc,avatar){
 <div class="native-prep-body">
 <div class="native-prep-title"><b>${esc(row.name)}</b><small>${row.tier} 阶</small></div>
 <div class="native-prep-bonds">${row.bonds.map(id=>bondChip(data,id,esc,bondIsCore(data,id)?' core':'')).join('')||'<span class="native-prep-bond none">无盟约</span>'}</div>
-<div class="native-prep-skill"><div class="native-prep-skill-head"><span>新局默认技能</span><small>点击即保存</small></div>
-${row.choices.length?`<div class="native-prep-skill-options" role="group" aria-label="${esc(row.name)} 默认技能">${row.choices.map(choice=>`<button data-act="prep-skill" data-char="${esc(row.charId)}" data-index="${choice.index}" class="${current===choice.index?'chosen':''}" aria-pressed="${current===choice.index}" title="S${choice.index+1} · ${esc(choice.name)}">S${choice.index+1}</button>`).join('')}</div>`:'<span class="native-prep-no-skill">无主动技能档位</span>'}
+<div class="native-prep-skill"><div class="native-prep-skill-head"><span>新局默认技能</span><small>设定 / ◈ 预览效果</small></div>
+${row.choices.length?`<div class="native-prep-skill-options" role="group" aria-label="${esc(row.name)} 默认技能">${row.choices.map(choice=>`<span class="native-prep-skill-choice"><button data-act="prep-skill" data-char="${esc(row.charId)}" data-index="${choice.index}" class="${current===choice.index?'chosen':''}" aria-pressed="${current===choice.index}" aria-label="${esc(row.name)} 默认设为 S${choice.index+1} ${esc(choice.name)}" title="设为默认：S${choice.index+1} · ${esc(choice.name)}">S${choice.index+1}</button><button data-act="prep-skill-preview" data-char="${esc(row.charId)}" data-index="${choice.index}" class="native-prep-skill-preview-button" aria-label="预览 ${esc(row.name)} S${choice.index+1} ${esc(choice.name)} 效果" title="预览技能效果">◈</button></span>`).join('')}</div>`:'<span class="native-prep-no-skill">无主动技能档位</span>'}
 <small class="native-prep-note">${custom?'自定义默认':'跟随档案默认'} · ${esc(currentName)}</small></div>
 </div>
 </article>`;
+}
+function skillRangePreview(data,row,skill,esc){
+ const rangeId=skill?.rangeId||row.rangeId,grids=rangeId?(data.ranges?.[rangeId]?.grids||[]):[];
+ const cells=(grids||[]).map(cell=>({col:Number(cell.col),row:Number(cell.row)})).filter(cell=>Number.isFinite(cell.col)&&Number.isFinite(cell.row));
+ if(!cells.length)return `<div class="native-prep-range-empty"><span>◈</span><b>干员位置</b><small>${rangeId?`范围 ${esc(rangeId)}`:'按技能描述结算范围'}</small></div>`;
+ const coords=cells.map(cell=>({col:cell.col,row:-cell.row}));
+ const minCol=Math.min(0,...coords.map(cell=>cell.col)),maxCol=Math.max(0,...coords.map(cell=>cell.col));
+ const minRow=Math.min(0,...coords.map(cell=>cell.row)),maxRow=Math.max(0,...coords.map(cell=>cell.row));
+ const cols=maxCol-minCol+1,rows=maxRow-minRow+1,cellSize=Math.max(9,Math.min(22,220/cols,130/rows)),active=new Set(coords.map(cell=>`${cell.col},${cell.row}`));
+ const tiles=[];
+ for(let rowIndex=maxRow;rowIndex>=minRow;rowIndex--)for(let col=minCol;col<=maxCol;col++){
+  const unit=col===0&&rowIndex===0,inside=active.has(`${col},${rowIndex}`);
+  tiles.push(`<span class="native-prep-range-cell${unit?' is-unit':inside?' is-active':''}"${unit?' aria-label="干员位置"':inside?' aria-label="技能范围"':''}>${unit?'◈':''}</span>`);
+ }
+ return `<div class="native-prep-range-grid" style="--range-cols:${cols};--range-cell:${cellSize}px" role="img" aria-label="技能范围 ${esc(rangeId)}，箭头方向为前方">${tiles.join('')}</div><small class="native-prep-range-id">范围 ${esc(rangeId)} · 前方 →</small>`;
+}
+export function renderPrepSkillPreview(data,charId,index,esc=value=>String(value??'')){
+ const row=prepOperatorRow(data,charId),choice=row?.choices.find(entry=>entry.index===Number(index));
+ if(!row||!choice)return '<h2>技能预览不可用</h2><p>该技能当前不在战前名册中。</p>';
+ const skill=choice.skill||{},description=renderSkillDescription(skill)||'暂无技能效果说明。',sp=skill.spData||{};
+ const skillKind=String(skill.skillType||'').toUpperCase()==='PASSIVE'?'被动技能':'技能';
+ const details=[];
+ if(sp.initSp!=null||sp.spCost!=null)details.push(`<span>技力</span><b>${esc(sp.initSp??'—')} / ${esc(sp.spCost??'—')}</b>`);
+ if(sp.spType)details.push(`<span>回复方式</span><b>${esc(sp.spType)}</b>`);
+ if(skill.durationType)details.push(`<span>持续类型</span><b>${esc(skill.durationType)}</b>`);
+ if(skill.duration!=null)details.push(`<span>持续时间</span><b>${esc(skill.duration)} 秒</b>`);
+ const range=skillRangePreview(data,row,skill,esc);
+ return `<div class="native-prep-skill-preview-content"><header><span class="native-eyebrow">SKILL EFFECT PREVIEW / S${choice.index+1}</span><h2>${esc(row.name)} · ${esc(choice.name)}</h2><small>${skillKind} · ${row.tier} 阶</small></header><div class="native-prep-skill-preview-layout"><section class="native-prep-skill-range"><h3>作用范围</h3>${range}</section><section class="native-prep-skill-effect"><h3>技能效果</h3><p>${esc(description)}</p>${details.length?`<dl>${details.map(entry=>`<div>${entry}</div>`).join('')}</dl>`:''}</section></div></div>`;
 }
 function equipmentCard(data,item,esc){
  // 基础与精锐两种形态的效果文案都要列（精锐是基础装备三合一后的形态，数值通常不一样）。
@@ -263,7 +292,7 @@ export function renderPreparePage(data,prep={},ui={}){
  const bondSelect=(id,label,options,value)=>`<label class="native-prep-field">${label}<select id="${id}"><option value="">全部${label}</option>${options.map(option=>`<option value="${esc(option.id)}" ${option.id===value?'selected':''}>${esc(option.name)}</option>`).join('')}</select></label>`;
  return `<main class="native-lobby native-prep">
 <header class="native-prep-top"><button data-act="home">‹ 大厅</button><div><span class="native-eyebrow">PREPARATION / REFERENCE</span><h1>战前准备</h1></div><span class="native-prep-count">${total} 条资料</span></header>
-<section class="native-prep-heading"><div><span class="native-eyebrow">TACTICAL CONFIGURATION / 01</span><h2>${tab==='operator'?'干员名册':'装备资料'}</h2><p>${tab==='operator'?'点击技能档位立即设为新局默认；未自定义的干员沿用档案默认技能。':'横向浏览基础与精锐形态效果，使用下方筛选栏定位装备。'}</p></div><div class="native-prep-live-count"><b>${list.length}</b><span>/ ${total} 条目</span></div></section>
+<section class="native-prep-heading"><div><span class="native-eyebrow">TACTICAL CONFIGURATION / 01</span><h2>${tab==='operator'?'干员名册':'装备资料'}</h2><p>${tab==='operator'?'点击 S 档设为新局默认；点击 ◈ 查看技能效果与作用范围。':'横向浏览基础与精锐形态效果，使用下方筛选栏定位装备。'}</p></div><div class="native-prep-live-count"><b>${list.length}</b><span>/ ${total} 条目</span></div></section>
 <div class="native-prep-tabs">
 <button data-act="prep-tab" data-tab="operator" class="${tab==='operator'?'chosen':''}" aria-pressed="${tab==='operator'}"><span>01</span> 干员 <small>${catalog.operators.length}</small></button>
 <button data-act="prep-tab" data-tab="equipment" class="${tab==='equipment'?'chosen':''}" aria-pressed="${tab==='equipment'}"><span>02</span> 装备 <small>${catalog.equipment.length}</small></button>
