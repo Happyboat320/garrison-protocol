@@ -253,7 +253,7 @@ function tickCrownBlink(battle,enemy){
 }
 
 function tryCrownBlink(battle,enemy,skill=enemy.enemySkills.find(s=>s.prefab==='blink')){
- if(enemy.block==null||enemy.action||enemy.attackCooldown>0)return false;
+ if(enemy.block==null||enemy.action||enemy.attackCooldown>1)return false;
  if(!skill||!enemySkillReady(enemy,skill,battle.s.time))return false;
  const degen=enemy.enemyFormKind==='degen',phantom=enemy.id==='enemy_2016_csphtm',target=getActor(battle.s,enemy.block);
  if(degen&&(!target?.deployed||target.hp<=0))return false;
@@ -552,7 +552,8 @@ export function tickEnemySkills(battle,enemy,dt){
    enemy.formHold=true;enemy.formInvisible=false;enemy.invisible=false;enemy.attackCooldown=battle.enemyAttackTiming(enemy).frames;return;
   }
  }
- if(['enemy_2016_csphtm','enemy_2017_csphts'].includes(enemy.id)&&!control.silenced&&!enemy.action&&!(enemy.attackCooldown>0)){
+ // attackCooldown is reduced later this frame; <=1 lets a ready skill take the attack slot before a basic hit starts.
+ if(['enemy_2016_csphtm','enemy_2017_csphts'].includes(enemy.id)&&!control.silenced&&!enemy.action&&enemy.attackCooldown<=1){
   // AOE优先级0，闪现优先级1；目标查询绕过迷彩，仍排除不可选和沉睡。
   const targets=attackableAllies(battle.s).filter(t=>enemyTargetValid(t)&&!permissions(t).sleeping&&Math.hypot(t.x-enemy.x,t.y-enemy.y)<=2+1e-9);
   targets.sort((a,b)=>Number(b.uid===enemy.block)-Number(a.uid===enemy.block)||compareEnemyTargets({...a,tauntLevel:battle.stats(a).tauntLevel},{...b,tauntLevel:battle.stats(b).tauntLevel}));

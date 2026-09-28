@@ -10964,7 +10964,7 @@ function tickCrownBlink(battle,enemy){
 }
 
 function tryCrownBlink(battle,enemy,skill=enemy.enemySkills.find(s=>s.prefab==='blink')){
- if(enemy.block==null||enemy.action||enemy.attackCooldown>0)return false;
+ if(enemy.block==null||enemy.action||enemy.attackCooldown>1)return false;
  if(!skill||!enemySkillReady(enemy,skill,battle.s.time))return false;
  const degen=enemy.enemyFormKind==='degen',phantom=enemy.id==='enemy_2016_csphtm',target=getActor(battle.s,enemy.block);
  if(degen&&(!target?.deployed||target.hp<=0))return false;
@@ -11263,7 +11263,8 @@ function tickEnemySkills(battle,enemy,dt){
    enemy.formHold=true;enemy.formInvisible=false;enemy.invisible=false;enemy.attackCooldown=battle.enemyAttackTiming(enemy).frames;return;
   }
  }
- if(['enemy_2016_csphtm','enemy_2017_csphts'].includes(enemy.id)&&!control.silenced&&!enemy.action&&!(enemy.attackCooldown>0)){
+ // attackCooldown is reduced later this frame; <=1 lets a ready skill take the attack slot before a basic hit starts.
+ if(['enemy_2016_csphtm','enemy_2017_csphts'].includes(enemy.id)&&!control.silenced&&!enemy.action&&enemy.attackCooldown<=1){
   // AOE优先级0，闪现优先级1；目标查询绕过迷彩，仍排除不可选和沉睡。
   const targets=attackableAllies(battle.s).filter(t=>enemyTargetValid(t)&&!permissions(t).sleeping&&Math.hypot(t.x-enemy.x,t.y-enemy.y)<=2+1e-9);
   targets.sort((a,b)=>Number(b.uid===enemy.block)-Number(a.uid===enemy.block)||compareEnemyTargets({...a,tauntLevel:battle.stats(a).tauntLevel},{...b,tauntLevel:battle.stats(b).tauntLevel}));
@@ -16862,10 +16863,9 @@ function drawTerrain(c,z,map){
  drawWindCells(c,z,map,now);
  c.font='9px monospace';c.textAlign='center';c.fillStyle='#a7bebc';for(let x=map.viewport.left;x<=map.viewport.right;x++)c.fillText(String.fromCharCode(65+x),z.ox+(x+.5)*z.tw,z.oy-5);for(let y=map.viewport.top;y<=map.viewport.bottom;y++)c.fillText(canvasNumber(y+1),Math.max(8,z.ox+map.viewport.left*z.tw-10),z.oy+(y+.5)*z.th+3);
 }
-function drawBossPatrolRoute(c,z,map){const route=map?.bossPatrolRoute,v=map?.viewport;if(!Array.isArray(route)||route.length<2)return;c.save();c.beginPath();route.forEach((p,i)=>{const x=z.ox+(p.x-v.left+.5)*z.tw,y=z.oy+(p.y-v.top+.5)*z.th;if(i)c.lineTo(x,y);else c.moveTo(x,y);});c.setLineDash([7,5]);c.lineWidth=Math.max(2,z.tw*.06);c.strokeStyle='#ffd16a';c.globalAlpha=.75;c.stroke();const start=route[0],x=z.ox+(start.x-v.left+.5)*z.tw,y=z.oy+(start.y-v.top+.5)*z.th;c.setLineDash([]);c.fillStyle='#ff625d';c.beginPath();c.arc(x,y,Math.max(4,z.tw*.11),0,Math.PI*2);c.fill();c.restore();}
 function draw(){
  if(!canvas||state.view!=='game'||!state.game)return;const g=state.game,z=geometry(),dpr=Math.min(2,window.devicePixelRatio||1);if(canvas.width!==Math.round(z.r.width*dpr)||canvas.height!==Math.round(z.r.height*dpr)){canvas.width=Math.round(z.r.width*dpr);canvas.height=Math.round(z.r.height*dpr);}const c=canvas.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,z.r.width,z.r.height);const point=(x,y)=>({x:z.ox+(x+.5)*z.tw,y:z.oy+(y+.5)*z.th});c.fillStyle='#111f23';c.fillRect(0,0,z.r.width,z.r.height);
- drawTerrain(c,z,g.map);if(state.game.s.phase==='prep'&&currentTurn()?.isBossTurn&&state.game.s.finalBossId)drawBossPatrolRoute(c,z,g.map);
+ drawTerrain(c,z,g.map);
  const selected=g.s.units.find(u=>u.uid===(state.preview?.uid||state.selected)),live=selected&&g.battle?g.battle.s.units.find(u=>u.uid===selected.uid):null;
  if(selected&&(selected.position||state.preview)){
   const p=state.preview||{...selected.position,dir:selected.dir};

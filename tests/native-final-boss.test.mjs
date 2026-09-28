@@ -44,6 +44,19 @@ test('final battle has one looping boss and 30 tag-pool reinforcements scheduled
  assert.ok(boss.route.length>=8);assert.equal(boss.route[0].x,boss.route.at(-1).x);assert.equal(boss.route[0].y,boss.route.at(-1).y);
 });
 
+test('Lucian skills get the final attack-cooldown frame and the blocked blink spawns its phantom',()=>{
+ const setup=()=>{
+  const g=game({operator:true}),b=g.battle,boss=b.s.enemies.find(e=>e.finalBoss),blocker=b.s.units[0],point=boss.route[2];
+  blocker.x=point.x;blocker.y=point.y;boss.x=point.x;boss.y=point.y;boss.cmd=3;boss.block=blocker.uid;boss.action=null;boss.attackCooldown=1;
+  boss.enemySkills.find(s=>s.prefab==='aoe').nextAt=1000;boss.enemySkills.find(s=>s.prefab==='blink').nextAt=0;
+  return {b,boss,blocker};
+ };
+ let {b,boss,blocker}=setup();b.step();assert.ok(boss.crownBlink);assert.equal(boss.block,null);
+ for(let i=0;i<20;i++)b.step();assert.equal(b.s.enemies.filter(e=>e.id==='enemy_2017_csphts').length,1);
+ const phantom=b.s.enemies.find(e=>e.id==='enemy_2017_csphts');assert.equal(phantom.x,8);assert.equal(phantom.y,0);assert.ok(blocker.hp>0);
+ ({b,boss}=setup());boss.enemySkills.find(s=>s.prefab==='aoe').nextAt=0;boss.enemySkills.find(s=>s.prefab==='blink').nextAt=1000;b.step();assert.equal(boss.enemyCast?.phantomAoe,true);
+});
+
 test('timeout fails the run; the saved remaining time reaches zero on the last frame',()=>{
  const g=game(),b=g.battle;b.s.frame=Math.ceil(b.s.limit*30)-1;b.s.time=b.s.frame/30;g.tick();
  assert.equal(g.s.phase,'finished');assert.equal(g.s.hp,0);assert.equal(g.s.runResult.kind,'final-boss');assert.equal(g.s.runResult.reason,'timeout');assert.equal(g.s.runResult.success,false);
