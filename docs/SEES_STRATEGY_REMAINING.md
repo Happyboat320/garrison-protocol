@@ -32,7 +32,7 @@
 - 策略列表／已选策略回落：`native-play.visibleBands(data,archiveNow())` ＋ `guardedBandId()`（简报、`begin` 创建对局、关掉特殊标记后都走它）。
 - 战前准备：`renderPreparePage` 过 `dataForPrep(data,archive)`——未解锁时名册 112 名／装备 56 件，与改动前逐项一致；解锁后 116／57。
 - 禁用池：`native-bond-ban.SEES_EXCLUSIVE_BONDS` 从 `bondIds()` 里剔掉两条专属盟约（禁用机制仍只认 23 个盟约，下拉与简报同步收窄）。
-- 卡池：`NativeSession.eligible()` 走 `operatorAllowed`；`drawFromPool` 的装备分支走 `itemAllowed`；四人没有精锐形态 → `gain` 不会触发三合一，效果发人不会把回合开始回滚。
+- 卡池：`NativeSession.eligible()` 走 `operatorAllowed`；`drawFromPool` 的装备分支走 `itemAllowed`；四人基础档各需 3 张合成精锐，精锐档保持隐藏、不作为商店候选。
 
 ### P1 · 结算与战斗
 
@@ -57,7 +57,7 @@
 
 ## 3. 仍然没闭环的部分（2026-09-27 第二轮更新）
 
-- **四人没有精锐形态**（`upgradeChessId: null`）：rel77 的本地资料包里**没有**这四人的卫戍棋记录（`data/gamedata/current` 只有 character_table／skill_table 等，没有 autochess 表），所以「岳羽由加莉精锐 +4」「结城理精锐 +10」这两档**没有权威数据可以照抄**。按项目「推不出来的宁可不做也不要编」的规矩**不发明精锐档**；公式仍在（`tests/native-sees.test.mjs` 用合成单位验证），要开放得先拿到原作数据或用户口径。臂章的 20% 档**是可达的**（装备走 `upgradeNum:2` 的三合一）。
+- 四人原表没有 autochess 精锐记录；按用户修正后的客户端口径，`sees-content.json` 为四人登记 `upgradeNum:3` 与精锐棋记录。由加莉与结城理的卫戍档案按形态各显示当前数值（+2/+4、+5/+10），不在基础描述里另标精锐增量。虎狼丸原角色只有 PHASE_0，合成精锐档仍沿用该阶段属性。
 - **策略头像**没有官方资源（380 项资源清单里没有 `band_sees`），用 `.native-strategy-placeholder` 占位块。
 - **两条专属盟约没有原表黑板行**：数值与机制全部由 `native-sees` 承担，所以面板的「当前动态数值」在 `protocol.seesPanelLines` 里按 `data.sees.numbers` 单独算（层数上限／每资金层数／发放节奏／真实伤害比例／冷却／触发条件，见 `tests/native-sees.test.mjs`）；`strategyCoverage()` 仍会把 `sees_round_end_fund_to_layers` 报成 `pendingKeys`（`STRATEGY_EFFECT_AUDIT.md` 里已写明这是有意为之，不走策略事件解释器）。
 - ✅ **核心盟约的表现**已补：`native-fx.drawSeesCore` 在触发点画扩散环＋「S.E.E.S. 弱点追击 n%」标签（`reduceFx` 只留静止环），由 `drawFx` 统一调用，纯表现。

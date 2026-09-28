@@ -12,8 +12,8 @@
 | 商店 | **默认不进池**：`NativeSession.eligible()` 过滤 `isHidden`，商店／具名池／`later` 池／晋升奖励都抽不到；**例外**：`band_sees` 局（`native-sees.operatorAllowed`）会进池并铺库存 |
 | 名册 | **默认不列**：`catalog.roster` 只收 `charId && !isHidden`，战前准备仍是 112 名可见预设；**例外**：本地存档 `flags.sees` 打开后，`dataForPrep` 会把四人并入名册（116 名） |
 | 阶级 | 商店阶级按 S.E.E.S. 策略的分层口径 **1／2／3／6**（用户 2026-09-27），**覆盖「阶＝星级」的默认规则**；登记表 `collab-operators.json` 的 `chessLevel` 仍按星级记原始阶，运行时以 `sees-content.json` 为准 |
-| 精锐化 | **无**：`upgradeChessId = null`，四个隐藏档都没有精锐形态（所以「由加莉精锐 +4」那一档只有数据与公式，游戏内取不到） |
-| 唯一入口 | **技能测试场**：「添加干员」的列表取 `data.profiles` 全部条目（含隐藏档） |
+| 精锐化 | S.E.E.S. 局内各需 3 张基础卡合成 `isGolden` 精锐档；精锐棋记录保持隐藏，不会作为独立卡池候选。由加莉／结城理的卫戍描述会随形态显示 +2/+4、+5/+10。虎狼丸只有 PHASE_0，合成后沿用该阶段属性 |
+| 技能测试场 | 「添加干员」列表取 `data.profiles` 全部条目（含隐藏基础档与合成精锐档）；正式商店只在 S.E.E.S. 局抽到基础档 |
 | 数值来源 | **不抄写**：实体／技能／范围在构建时从 `data/normalized/current.json`（rel77.0）取，登记表只存 charId／chessId／档位 |
 | 潜能 | 一律按**无潜能**（`potentialRank = 0`）结算，与其他干员同一口径；四人「天赋效果加强／费用-1／攻击力+N」等条目**未建模** |
 | 信赖 | 未建模（本客户端所有干员都不叠加信赖加成） |

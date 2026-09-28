@@ -972,6 +972,5 @@ html.native-landscape-ui #native-modal .native-ban-entry{display:block;width:100
 }
 @media(prefers-reduced-motion:reduce){.native-prep-range-cell.is-active:after{animation:none}}
 
-/* Full viewport S.E.E.S. frame FX stays below controls and above the battlefield canvas. */
-.native-sees-fx-screen{position:fixed;inset:0;z-index:1;display:block;width:100vw;height:100vh;height:100dvh;padding:0;border:0;pointer-events:none}
-html.native-need-rotate .native-sees-fx-screen{position:absolute;inset:0;width:100%;height:100%}
+/* S.E.E.S. frame FX stays inside the battlefield board, above the map and below the cost badge. */
+.native-sees-fx-board{position:absolute;inset:0;z-index:1;display:block;width:100%;height:100%;padding:0;border:0;pointer-events:none}

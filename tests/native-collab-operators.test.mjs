@@ -114,13 +114,14 @@ test('隐藏档不挂盟约与卫戍，商店抽取与战前准备名册都看�
  for(const row of roster)assert.ok(!catalog.operators.some(o=>o.charId===row.charId),`${row.name} 不该出现在战前准备名册`);
 });
 
-test('技能测试场是唯一入口：干员表取全部 profile，加人不依赖精英化链',()=>{
+test('技能测试场包含隐藏联动档和精锐档：干员表取全部 profile',()=>{
  const source=fs.readFileSync('dist/native-play.js','utf8');
  assert.match(source,/sandboxOperators=Object\.values\(data\.profiles\)\.filter\(p=>p\?\.charId\)/, '测试场干员表仍取含隐藏档的全部 profile');
  assert.match(source,/data\.season\.charShopChessDatas\[id\]/, 'sandboxAddOperator 仍按 chessId 取商店记录');
  const pickable=Object.values(NATIVE_DATA.profiles).filter(p=>p?.charId).map(p=>p.chessId);
  for(const row of roster)assert.ok(pickable.includes(row.chessId),`${row.name} 应能在测试场选到`);
- assert.equal(NATIVE_DATA.season.charChessDataDict['chess_collab_makoto'].upgradeChessId,null,'隐藏档没有精锐化链');
+ assert.equal(NATIVE_DATA.season.charChessDataDict['chess_collab_makoto'].upgradeChessId,'chess_collab_makoto_gold','隐藏档三张合成精锐档');
+ assert.equal(NATIVE_DATA.season.charChessDataDict['chess_collab_makoto'].upgradeNum,3,'三张基础档触发合成');
 });
 
 test('通用减免兜底按文案限定伤害类型（物理减伤不吃法术），联动工作发现的两处一起锁',()=>{

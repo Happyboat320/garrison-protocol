@@ -35,16 +35,15 @@ function armbandRows(content) {
   return { normal: row(weakness.initial, trueScale.initial), elite: row(weakness.elite, trueScale.elite) };
 }
 
-function operatorGarrisonDesc(op, numbers) {
+function operatorGarrisonDesc(op, numbers, elite = false) {
   const percent = value => Number(Number(value).toFixed(1)).toString();
+  const form = elite ? 'elite' : 'initial';
   const values = {
-    uikariPerFundInitial: numbers.uikariPerFund.initial,
-    uikariPerFundElite: numbers.uikariPerFund.elite,
+    uikariPerFund: numbers.uikariPerFund[form],
     aigisPerLayerPercent: percent(numbers.aigisPerLayer * 100),
     aigisAtCapPercent: percent(numbers.aigisPerLayer * numbers.tartarusLayerCap * 100),
     tartarusLayerCap: numbers.tartarusLayerCap,
-    makotoKillLayersInitial: numbers.makotoKillLayers.initial,
-    makotoKillLayersElite: numbers.makotoKillLayers.elite
+    makotoKillLayers: numbers.makotoKillLayers[form]
   };
   const desc = String(op.garrisonDesc || '').replace(/\{([A-Za-z0-9]+)\}/g, (token, key) => {
     if (!Object.hasOwn(values, key)) throw Error('Unknown S.E.E.S. garrison text value: ' + key);
@@ -128,27 +127,33 @@ export function applySeesContent(source, content = loadSeesContent()) {
   // build-protocol 先于 build-native 跑，那时联动干员的商店/档位记录还没建（在 build-native 里才建），
   // 所以这里**缺什么补什么**：build-protocol 拿到一份能进 catalog 的最小记录，build-native 复用真正的记录。
   for (const op of operators) {
+    if (!op.goldenChessId) throw Error('S.E.E.S. operator is missing its golden chess id: ' + op.charId);
     const shop = season.charShopChessDatas[op.chessId] ??= {
-      chessId: op.chessId, goldenChessId: null, chessLevel: op.chessLevel, shopLevelSortId: op.chessLevel,
+      chessId: op.chessId, goldenChessId: op.goldenChessId, chessLevel: op.chessLevel, shopLevelSortId: op.chessLevel,
       chessType: 'NORMAL', charId: op.charId, tmplId: null, defaultSkillIndex: 0, isHidden: true
     };
+    shop.goldenChessId = op.goldenChessId;
     shop.chessLevel = op.chessLevel;
     shop.shopLevelSortId = op.chessLevel;
     shop.sees = true;
     const chess = season.charChessDataDict[op.chessId] ??= {
-      chessId: op.chessId, identifier: 0, isGolden: false, upgradeChessId: null, upgradeNum: 0,
+      chessId: op.chessId, identifier: 0, isGolden: false, upgradeChessId: op.goldenChessId, upgradeNum: 3,
       charId: op.charId, bondIds: [], garrisonIds: [],
       status: { evolvePhase: 'PHASE_2', charLevel: 1, skillLevel: 1, favorPoint: 0, equipLevel: 0 }
     };
+    chess.upgradeChessId = op.goldenChessId;
+    chess.upgradeNum = 3;
     chess.bondIds = [SEES_BOND_ID];
     // The dossier stores the previously specified per-operator SEES effect as a garrison
     // descriptor. Runtime behavior stays in native-sees/native-collab; this custom event
     // type keeps the generic garrison interpreter from applying the same effect twice.
     if (!op.garrisonId || !op.garrisonDesc) throw Error('S.E.E.S. operator is missing its garrison descriptor: ' + op.charId);
     const garrisonDesc = operatorGarrisonDesc(op, numbers);
+    const eliteGarrisonId = `${op.garrisonId}_elite`;
+    const eliteGarrisonDesc = operatorGarrisonDesc(op, numbers, true);
     season.garrisonDataDict ??= {};
-    season.garrisonDataDict[op.garrisonId] = {
-      garrisonDesc,
+    const garrisonRecord = description => ({
+      garrisonDesc: description,
       eventType: 'SEES_NATIVE',
       eventTypeDesc: 'S.E.E.S. 专属',
       eventTypeIcon: 'icon_battle',
@@ -157,9 +162,33 @@ export function applySeesContent(source, content = loadSeesContent()) {
       charLevel: 0,
       battleRuneKey: null,
       blackboard: [],
-      description: garrisonDesc
-    };
+      description
+    });
+    season.garrisonDataDict[op.garrisonId] = garrisonRecord(garrisonDesc);
+    season.garrisonDataDict[eliteGarrisonId] = garrisonRecord(eliteGarrisonDesc);
     chess.garrisonIds = [...new Set([...(chess.garrisonIds || []), op.garrisonId])];
+
+    season.charChessDataDict[op.goldenChessId] = {
+      ...structuredClone(chess),
+      chessId: op.goldenChessId,
+      isGolden: true,
+      upgradeChessId: null,
+      upgradeNum: 0,
+      garrisonIds: [eliteGarrisonId]
+    };
+    season.charShopChessDatas[op.goldenChessId] = {
+      chessId: op.goldenChessId,
+      goldenChessId: null,
+      chessLevel: op.chessLevel,
+      shopLevelSortId: 999,
+      chessType: 'NORMAL',
+      charId: op.charId,
+      tmplId: null,
+      defaultSkillIndex: shop.defaultSkillIndex || 0,
+      isHidden: true
+    };
+    season.chessNormalIdLookupDict ??= {};
+    season.chessNormalIdLookupDict[op.goldenChessId] = op.chessId;
   }
 
   // ④ 装备「S.E.E.S.臂章」：普通/精锐两条记录 ＋ 效果表 ＋ 商店记录。

@@ -558,13 +558,13 @@ export function drawDisplace(c,point,z,battle,{reduceFx=false}={}){
 // 【S.E.E.S.】核心盟约的「弱点追击」：在触发位置画一圈扩散的白金环 + 比例标签。
 // 事件由 `native-battle.seesCoreStrike` 发射（`{x,y,layers,percent}`），**纯表现**、不参与结算；
 // `reduceFx` 只留静止环与标签。
-const SEES_CORE_FX=.7;
+export const SEES_CORE_EFFECT_SECONDS=1;
 export function drawSeesCore(c,point,z,battle,{reduceFx=false,formatText=null}={}){
  const s=battle?.s;if(!s)return false;
- const hits=recent(s.events,s.time,'sees-core',SEES_CORE_FX);
+ const hits=recent(s.events,s.time,'sees-core',SEES_CORE_EFFECT_SECONDS);
  if(!hits.length)return false;
  for(const e of hits){
-  const p=point(e.x,e.y),k=reduceFx?1:Math.min(1,Math.max(0,s.time-e.t)/SEES_CORE_FX),alpha=reduceFx?.55:Math.max(0,.62*(1-k));
+  const p=point(e.x,e.y),k=reduceFx?1:Math.min(1,Math.max(0,s.time-e.t)/SEES_CORE_EFFECT_SECONDS),alpha=reduceFx?.55:Math.max(0,.62*(1-k));
   c.save();
   c.strokeStyle=`rgba(255,244,206,${alpha})`;c.lineWidth=Math.max(1.5,z.tw*.06);
   ring(c,p,z.tw*(.5+.9*k),z.tw*(.34+.62*k));
@@ -576,7 +576,6 @@ export function drawSeesCore(c,point,z,battle,{reduceFx=false,formatText=null}={
  }
  return true;
 }
-const SEES_CORE_SCREEN_SECONDS=1;
 function seesPixelRandom(seed,index){
  let value=(Number(seed)||0)+Math.imul(index+1,0x9e3779b1);value|=0;
  value=Math.imul(value^(value>>>16),0x7feb352d);value=Math.imul(value^(value>>>15),0x846ca68b);value^=value>>>16;
@@ -608,16 +607,16 @@ function drawSeesCoreCornerHit(c,x,y,angle,alpha){
  }
  c.restore();
 }
-// Full viewport S.E.E.S. presentation. It reads the same simulation-timed event as the local ring;
+// Battlefield frame S.E.E.S. presentation. It reads the same simulation-timed event as the local ring;
 // pixel positions come from the event id, so frames stay stable and never affect combat state.
 export function drawSeesCoreScreenFx(c,battle,width,height,{reduceFx=false}={}){
  const s=battle?.s;if(!s||width<=0||height<=0)return false;
- const hits=(s.events||[]).filter(e=>e.type==='sees-core'&&s.time-e.t>=0&&s.time-e.t<SEES_CORE_SCREEN_SECONDS);
+ const hits=(s.events||[]).filter(e=>e.type==='sees-core'&&s.time-e.t>=0&&s.time-e.t<SEES_CORE_EFFECT_SECONDS);
  if(!hits.length)return false;
  c.save();
  for(const e of hits){
-  const age=s.time-e.t,k=Math.max(0,Math.min(1,age/SEES_CORE_SCREEN_SECONDS)),fadeIn=Math.min(1,age/.055),fadeOut=Math.min(1,(1-k)/.24),fade=fadeIn*fadeOut;
-  const inset=Math.max(18,Math.min(width,height)*.045),seed=Number(e.id)||Math.round((Number(e.t)||0)*1000);
+  const age=s.time-e.t,k=Math.max(0,Math.min(1,age/SEES_CORE_EFFECT_SECONDS)),fadeIn=Math.min(1,age/.055),fadeOut=Math.min(1,(1-k)/.24),fade=fadeIn*fadeOut;
+  const inset=Math.max(6,Math.min(width,height)*.012),seed=Number(e.id)||Math.round((Number(e.t)||0)*1000);
   if(reduceFx){
    const alpha=.28*(1-k),length=Math.max(18,Math.min(width,height)*.085);
    c.fillStyle=`rgba(255,244,206,${alpha.toFixed(3)})`;
@@ -628,16 +627,22 @@ export function drawSeesCoreScreenFx(c,battle,width,height,{reduceFx=false}={}){
    continue;
   }
   const impact=Math.max(0,1-age/.17);
+  c.globalCompositeOperation='lighter';
+  c.strokeStyle=`rgba(255,236,174,${(fade*(.42+impact*.38)).toFixed(3)})`;
+  c.lineWidth=2+impact*2;
+  c.shadowColor='rgba(255,230,154,.9)';c.shadowBlur=8*fade;
+  c.strokeRect(inset,inset,Math.max(1,width-2*inset),Math.max(1,height-2*inset));
+  c.shadowBlur=0;
   if(impact>0){
    const corners=[{x:inset,y:inset,a:Math.PI/4},{x:width-inset,y:inset,a:3*Math.PI/4},{x:width-inset,y:height-inset,a:-Math.PI/4},{x:inset,y:height-inset,a:-3*Math.PI/4}];
-   for(const corner of corners)drawSeesCoreCornerHit(c,corner.x,corner.y,corner.a,impact*.78);
+   for(const corner of corners)drawSeesCoreCornerHit(c,corner.x,corner.y,corner.a,impact);
   }
   const perimeter=2*(Math.max(1,width-2*inset)+Math.max(1,height-2*inset));
   for(let blade=0;blade<4;blade++){
    const start=blade*.055,span=.74,progress=(age-start)/span;
    if(progress<0||progress>1)continue;
    const orbit=(progress*.9+blade*.25)%1,p=seesFramePoint(orbit,width,height,inset),bladeFade=Math.min(1,progress/.08,(1-progress)/.16)*fade;
-   drawSeesPixelBlade(c,p.x+p.nx*3,p.y+p.ny*3,p.tx===0?Math.atan2(p.ty,p.tx)+(blade%2?-.58:.58):Math.atan2(p.ty,p.tx)+(blade%2?.58:-.58),bladeFade*.9);
+   drawSeesPixelBlade(c,p.x+p.nx*3,p.y+p.ny*3,p.tx===0?Math.atan2(p.ty,p.tx)+(blade%2?-.58:.58):Math.atan2(p.ty,p.tx)+(blade%2?.58:-.58),bladeFade);
    for(let trail=1;trail<=7;trail++){
     const q=seesFramePoint(orbit-trail*5/perimeter,width,height,inset),a=bladeFade*(1-trail/8)*.6;
     c.fillStyle=`rgba(150,214,255,${a.toFixed(3)})`;c.fillRect(Math.round(q.x),Math.round(q.y),3,3);

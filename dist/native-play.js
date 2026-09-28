@@ -20,7 +20,7 @@ import {buildPhasePlan,ensureStock,STOCK_BY_TIER,garrisonText,richText,battleBoa
 import {blowerCells} from './native-environment.js';
 import {strategyCoverage} from './strategy.js';
 import {spBarFill} from './native-sp.js';
-import {playBattleEvents,resetFxClock,unlockAudio,actorOffset,drawFx,drawSeesCoreScreenFx,drawStatuses,drawElementRing,drawDownRing,drawFrostOverlay,drawConcealOverlay,drawDollOverlay,drawWhitwEyes,formTintedImage} from './native-fx.js';
+import {playBattleEvents,resetFxClock,unlockAudio,actorOffset,drawFx,drawSeesCoreScreenFx,SEES_CORE_EFFECT_SECONDS,drawStatuses,drawElementRing,drawDownRing,drawFrostOverlay,drawConcealOverlay,drawDollOverlay,drawWhitwEyes,formTintedImage} from './native-fx.js';
 import {renderSkillDescription} from './native-skill-text.js';
 import {zoneVisual} from './native-operator-effects.js';
 import {EGG_BASE_MODE,EGG_MODE_ID,apply325Display,egg325Active,format325,rewrite325Text} from './native-325.js';
@@ -791,12 +791,12 @@ function draw(){
  if(state.preview){const p=point(state.preview.x,state.preview.y);c.fillStyle='#08151195';c.fillRect(0,0,z.r.width,z.r.height);c.strokeStyle='#70e4c1';c.lineWidth=2;c.beginPath();c.moveTo(p.x,p.y-62);c.lineTo(p.x+62,p.y);c.lineTo(p.x,p.y+62);c.lineTo(p.x-62,p.y);c.closePath();c.stroke();c.fillStyle='#e9fff7';c.font='bold 32px sans-serif';c.fillText(state.preview.dir===null?'✥':['→','↓','←','↑'][state.preview.dir],p.x,p.y+10);}
  // HUD is the final canvas pass: portraits and combat effects cannot cover it.
  for(const drawOverlay of statusOverlays){c.save();c.globalAlpha=1;drawOverlay();c.restore();}
- let screenFx=document.getElementById('native-sees-fx-screen');
- if(!screenFx){screenFx=document.createElement('canvas');screenFx.id='native-sees-fx-screen';screenFx.className='native-sees-fx-screen';screenFx.setAttribute('aria-hidden','true');document.querySelector('.native-game')?.append(screenFx);}
+ let screenFx=document.getElementById('native-sees-fx-board');
+ if(!screenFx){screenFx=document.createElement('canvas');screenFx.id='native-sees-fx-board';screenFx.className='native-sees-fx-board';screenFx.setAttribute('aria-hidden','true');document.querySelector('.native-board')?.append(screenFx);}
  if(screenFx){
   if(screenFx!==seesScreenFxCanvas){seesScreenFxCanvas=screenFx;seesScreenFxWasActive=false;}
-  const rect=screenFx.getBoundingClientRect(),width=rect.width||window.innerWidth,height=rect.height||window.innerHeight,dpr=Math.min(2,window.devicePixelRatio||1),battle=g.battle;
-  const active=!!battle&&(battle.s.events||[]).some(event=>event.type==='sees-core'&&battle.s.time-event.t>=0&&battle.s.time-event.t<1);
+  const rect=screenFx.getBoundingClientRect(),width=rect.width,height=rect.height,dpr=Math.min(2,window.devicePixelRatio||1),battle=g.battle;
+  const active=!!battle&&(battle.s.events||[]).some(event=>event.type==='sees-core'&&battle.s.time-event.t>=0&&battle.s.time-event.t<SEES_CORE_EFFECT_SECONDS);
   if(active||seesScreenFxWasActive){
    if(screenFx.width!==Math.round(width*dpr)||screenFx.height!==Math.round(height*dpr)){screenFx.width=Math.round(width*dpr);screenFx.height=Math.round(height*dpr);}
    const fx=screenFx.getContext('2d');fx.setTransform(dpr,0,0,dpr,0,0);fx.clearRect(0,0,width,height);

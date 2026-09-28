@@ -26,7 +26,7 @@
 | 文件 | 内容 |
 | --- | --- |
 | `data/modes/alliance-lower/sees-content.json` | 内容登记表：策略、两条盟约、四名干员的阶级与专属卫戍说明、臂章、**全部数值**（含 `tartarusLayerCap: 264`、`coreTrueDamagePercentBase/Max: 0.05/0.40`、`coreFastThreshold: 264`、`aigisPerLayer: 0.002` 等）与文案 |
-| `scripts/lib/sees-content.mjs` | 构建期注入器：把登记表并进 `source`（策略／盟约／干员阶级、盟约归属与 garrison 描述／臂章的两档记录＋效果表），`build-protocol` 与 `build-native` 各调一次（后者**必须在联动干员建档之后**，否则 `bondIds` 与 `garrisonIds` 会被覆盖回空），并把 sees 清单写进 catalog／运行时 |
+| `scripts/lib/sees-content.mjs` | 构建期注入器：把登记表并进 `source`（策略／盟约／干员阶级、盟约归属、三合一精锐记录与两档 garrison 描述／臂章的两档记录＋效果表），`build-protocol` 与 `build-native` 各调一次（后者**必须在联动干员建档之后**，否则 `bondIds` 与 `garrisonIds` 会被覆盖回空），并把 sees 清单写进 catalog／运行时 |
 | `dist/native-sees.js` | 运行时公式与谓词（**纯函数模块，不 import session／battle／play**）：`seesUnlocked`／`isSeesBand`／`seesRun`／`operatorAllowed`／`itemAllowed`／`dataForPrep`／`visibleBands`；层数账本 `tartarusLayers`／`addTartarusLayers`（**封顶读数据**）；`coreTrueDamagePercent`（5%→40% 线性）；`coreCooldown`（≥264 → 1 秒，否则 20 秒）；`layersPerFund`（5 ＋ 由加莉 2/4）；`settleFundsToLayers`／`grantCountForLayers`／`seesGrantCandidates`；`isSeesOperator`／`weaknessSource`／`freeDeploy`／`makotoKillLayers`／`aigisLayerScale`／`bondPanelCount` |
 | `dist/native-session.js` | 卡池门控（`eligible`／装备池走 `operatorAllowed`／`itemAllowed`、`ensureStock` 为四人铺库存）、`settleTartarusRound()`（开战前结算）、虎狼丸不占部署位的上限判定 |
 | `dist/native-battle.js` | `seesCoreStrike`（核心盟约的弱点伤害触发与冷却）、`seesArmbandStrike`（臂章追加伤害）、命中类型路由加 `weaknessSource` |
@@ -47,11 +47,12 @@
 - 卡池：四人平时 `isHidden` 且**没有库存**，只有 `band_sees` 局才 `eligible()` 放行并铺库存；臂章在数据层 `hideInShop:true`，由 `itemAllowed` 在策略局放行进池。
 - 结算：**开战前**（`beginBattle` 会清零资金）把剩余资金 × 每资金层数换成【塔尔塔罗斯】层数，每 25 层发一名干员，已发到第几档记在 `s.seesGrants`；层数额度**不含**衍生敌人带来的击倒。
 - 战斗：核心盟约的弱点伤害触发按 20 秒／1 秒冷却节流；臂章追加弱点伤害（盟约时再追加真实伤害）；虎狼丸转弱点且不占部署位；埃癸斯按层数增幅；结城理击倒加层。
+- 精锐化：四人各收集 3 张基础卡后合成为 `isGolden` 精锐档；精锐档不进入卡池，仍只通过合成获得。由加莉与结城理的卫戍档案按形态分别显示 +2/+4 与 +5/+10，不再在基础描述里并列标注精锐加成。
 - 回归：`tests/native-sees.test.mjs`（19 条，含门控／封顶／公式／发人／触发节流／臂章／四名干员效果／接线门禁），并对上限、比例、发放节奏、臂章比例、埃癸斯每层值、由加莉精锐档做了「改数据 → 行为跟着变」的断言。
 
 ## 4. 仍然存在的缺口
 
-- **四人没有精锐形态**（`upgradeChessId: null`）：本地资料包（`data/gamedata/current`）没有这四人的卫戍棋数据，**没有权威来源可以照抄精锐档**，所以按「推不出来的宁可不做也不要编」不发明；「岳羽由加莉精锐 +4／结城理精锐 +10」这两档只有公式与合成单位的回归。臂章的 20% 档可达（装备三合一）。
+- 四人原表没有 autochess 精锐记录；按用户修正后的口径，客户端为四人登记了三合一精锐形态。岳羽由加莉与结城理的精锐卫戍分别显示其已生效数值（+4／+10），不把初始与精锐值并列写在描述里。
 - 策略头像没有官方资源（`band_sees` 不在 380 项资源清单里），用 `.native-strategy-placeholder` 占位。
 - 两条专属盟约没有原表黑板行：数值与机制由 `native-sees` 承担，面板的「当前动态数值」改由 `protocol.seesPanelLines` 按 `data.sees.numbers` 单独渲染；`strategyCoverage()` 会把 `sees_round_end_fund_to_layers` 报成 `pendingKeys`（有意为之，见 `STRATEGY_EFFECT_AUDIT.md`）。
 - 逐名干员自身仍未闭环的引擎通道见 `docs/PERSONA3_COLLAB_OPERATORS.md` 的「未闭环」小节与 §5.6（伤害类型改写、`attack@max_target`、替身形态对空、法术闪避、友军术法充盈进结算、无视闪避开关、技能级溅射半径均已补齐；剩下的是攻击间隔近似、起飞／降落、触发型效果登记、S1 治疗近似等）。

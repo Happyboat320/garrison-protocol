@@ -477,9 +477,9 @@
   },
   "sourceCommit": "86da4cfa3a4b958c3615fccf5afbc10b5c7f1bfb",
   "counts": {
-    "shopOperatorRecords": 137,
+    "shopOperatorRecords": 141,
     "visibleOperators": 112,
-    "chessStates": 270,
+    "chessStates": 274,
     "items": 60,
     "bonds": 25,
     "strategies": 41,

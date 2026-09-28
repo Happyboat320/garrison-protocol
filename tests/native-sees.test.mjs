@@ -200,7 +200,7 @@ test('结算的层数额度：由加莉加成、发放档位账本、候选按�
  assert.equal(layersPerFund(data,withYukari),7,'初始由加莉 +2');
  const eliteYukari=seesSession();
  eliteYukari.s.units=[{uid:1,charId:'char_4219_yukari',chessId:'chess_collab_yukari',isGolden:true,position:{x:0,y:0}}];
- assert.equal(layersPerFund(data,eliteYukari),9,'精锐档读 numbers.uikariPerFund.elite（四人没有精锐形态，这一档目前只有数据）');
+ assert.equal(layersPerFund(data,eliteYukari),9,'精锐档读 numbers.uikariPerFund.elite');
  const bench=seesSession();bench.s.units=[{uid:1,charId:'char_4219_yukari',chessId:'chess_collab_yukari',position:null}];
  assert.equal(layersPerFund(data,bench),5,'没上场不给加成');
  const run=seesSession();run.s.level=2;
