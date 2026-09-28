@@ -634,18 +634,17 @@ function seesPanelLines(data,bondId,level){
  const sees=data?.sees;if(!sees||(bondId!==SEES_BOND_ID&&bondId!==TARTARUS_BOND_ID))return [];
  const n=seesNumbers(data),cap=tartarusCap(data),grant=grantEveryLayers(data);
  const pct=(v)=>`${(Number(v)*100).toFixed(2).replace(/\.?0+$/,'')}%`;
- const layers=`当前 ${level} 层`;
  if(bondId===TARTARUS_BOND_ID)return [
   {label:'层数上限',value:`${cap} 层${level>=cap?'（已满）':''}`},
   {label:'每资金转化层数',value:`${Number(n.tartarusPerFund)||0} 层（场上由加莉：初始 +${Number(n.uikariPerFund?.initial)||0}／精锐 +${Number(n.uikariPerFund?.elite)||0}）`},
   {label:'发放节奏',value:`每 ${grant} 层发放一名【S.E.E.S.】干员（至多 ${Math.floor(cap/grant)} 名）`},
-  {label:'可获得性',value:`只在本局策略为【S.E.E.S.】时激活 · ${layers}`}
+  {label:'可获得性',value:'只在本局策略为【S.E.E.S.】时激活'}
  ];
  return [
   {label:'核心真实伤害比例',value:`${pct(coreTrueDamagePercent(data,level))}（0 层 ${pct(coreTrueDamagePercent(data,0))} → ${cap} 层 ${pct(coreTrueDamagePercent(data,cap))}，随层数线性）`},
   {label:'触发冷却',value:`${coreCooldown(data,level)} 秒${level>=Number(n.coreFastThreshold)&&Number(n.coreFastThreshold)>0?'（已满层，缩短）':''}`},
   {label:'触发条件',value:'造成弱点伤害时，对全场敌人结算「场上 S.E.E.S. 干员攻击总和 × 上面这个比例」的真实伤害'},
-  {label:'可获得性',value:`只在本局策略为【S.E.E.S.】时激活 · ${layers}`}
+  {label:'可获得性',value:'只在本局策略为【S.E.E.S.】时激活'}
  ];
 }
 // 面板 HTML：受层数影响的数值 + 少量「阈值／累计」类备注（不含层数参数本身）。
@@ -660,7 +659,8 @@ function bondCurrentPreviewHtml(data,bondId,layers){
  if(bondId==='skillfulShip'&&Number(values.power_bond_stack_cnt))lines.push(line('扩大范围阈值',`${values.power_bond_stack_cnt}层`));
  if(bondId==='raidShip'&&Number(values.power_bond_stack_cnt))lines.push(line('闲置强化状态',level>=values.power_bond_stack_cnt?`攻击速度 +${values.power_attack_speed}，攻击/生命提升已生效`:`未激活（需${values.power_bond_stack_cnt}层）`));
  for(const row of seesPanelLines(data,bondId,level))lines.push(line(row.label,`${row.value}`));
- return lines.length?`<section class="native-bond-current"><h3>当前动态数值 · ${level}层</h3><ul>${lines.join('')}</ul></section>`:'';
+ const layerLabel=bondId===SEES_BOND_ID?`随【塔尔塔洛斯】${level}层`:`${level}层`;
+ return lines.length?`<section class="native-bond-current"><h3>当前动态数值 · ${layerLabel}</h3><ul>${lines.join('')}</ul></section>`:'';
 }
 // 富文本 → 显示文本。原表用尖括号区分两类东西：
 //   样式标签：`<@ba.vup>`、`<$ba.stun>`、`<@autochess.gray>`、闭合的 `</>` —— 丢掉；
@@ -16365,7 +16365,7 @@ const {renderSkillDescription} = load("native-skill-text.js");
 const {zoneVisual} = load("native-operator-effects.js");
 const {EGG_BASE_MODE,EGG_MODE_ID,apply325Display,egg325Active,format325,rewrite325Text} = load("native-325.js");
 // S.E.E.S. 策略（用户 2026-09-27 口径）：解锁标记决定策略列表里能不能看到它，本局选了它才会带进卡池。
-const {visibleBands,isSeesBand,bondPanelCount,TARTARUS_BOND_ID,freeDeploy} = load("native-sees.js");
+const {visibleBands,isSeesBand,bondPanelCount,SEES_BOND_ID,TARTARUS_BOND_ID,freeDeploy} = load("native-sees.js");
 const CAT_MODE_ID='mode_cat_all',CAT_BASE_MODE='mode_single_normal';
 const data=NATIVE_DATA,root=document.getElementById('app'),strategyCoverageById=Object.fromEntries(strategyCoverage(data).map(x=>[x.id,x])),SAVE='garrison-native-manual-v1',CHECKPOINT_SAVE='garrison-native-safe-v1',VIEW_SAVE='garrison-native-view-v1';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -16520,7 +16520,7 @@ function sandboxRemoveEnemy(uid){const sb=state.sandbox;if(!sb)return;sb.enemyDr
 function sandboxReset(){const previous=state.sandbox?.previousGame||null;state.sandbox=newSandbox();state.sandbox.previousGame=previous;state.sandbox.previousView='lobby';state.game=state.sandbox.economy;state.view='game';state.paused=true;render();}
 function sandboxDetail(){const sb=state.sandbox,b=sb?.battle,ops=sandboxOperators,ens=sandboxEnemies;return `<section class="sandbox-inline"><div class="sandbox-inline-head"><b>技能测试内容</b><small>${sb?.phase==='setup'?'按正式场景方式选择干员、拖拽/点击地块并确认朝向':'沿用正式战斗控制器，可暂停、单步和手动释放技能'}</small></div><details open><summary>添加干员</summary><input id="sandbox-op-search" type="search" value="${esc(sb?.opQuery||'')}" placeholder="搜索名称或 ID" aria-label="搜索测试干员"><div class="sandbox-inline-results">${ops.map(o=>`<button data-act="sandbox-add-op" data-id="${o.id}" data-sandbox-op="${esc((o.name+' '+o.id).toLowerCase())}" ${sb?.opQuery&&!((o.name+' '+o.id).toLowerCase().includes(sb.opQuery.toLowerCase()))?'hidden':''}>${avatar(o.charId)}<span><b>${esc(o.name)}</b><small>${o.rank} 阶${o.isGolden?' · 精锐':''}</small></span></button>`).join('')}</div></details><details open><summary>添加敌人</summary><input id="sandbox-enemy-search" type="search" value="${esc(sb?.enemyQuery||'')}" placeholder="搜索敌人名称或 ID" aria-label="搜索测试敌人"><button class="sandbox-dummy" data-act="sandbox-add-dummy">＋ 不行动木桩</button><div class="sandbox-inline-results">${ens.map(e=>`<button data-act="sandbox-add-enemy" data-id="${e.id}" data-sandbox-enemy="${esc((e.name+' '+e.id).toLowerCase())}" ${sb?.enemyQuery&&!((e.name+' '+e.id).toLowerCase().includes(sb.enemyQuery.toLowerCase()))?'hidden':''}><span class="sandbox-enemy-glyph">◆</span><span><b>${esc(e.name)}</b><small>${e.applyWay==='RANGED'?'远程':'近战'} · ${e.motion==='FLY'?'飞行':'地面'}</small></span></button>`).join('')}</div></details><div class="sandbox-inline-picked"><b>已选敌人</b>${(sb?.enemyDrafts||[]).map(d=>`<div><span>${d.dummy?'∞':'◆'} ${esc(d.dummy?'不行动木桩':data.enemies[d.id]?.name||d.id)}</span><button data-act="sandbox-remove-enemy" data-uid="${d.uid}">移除</button></div>`).join('')||'<small>暂无敌人</small>'}</div><div class="sandbox-inline-actions"><button data-act="sandbox-start" ${sb?.phase!=='setup'?'disabled':''}>开始测试</button><button data-act="sandbox-step" ${sb?.phase!=='battle'?'disabled':''}>单步</button><button data-act="sandbox-clear-enemies">清空敌人</button><button data-act="sandbox-reset">重置</button><button data-act="sandbox-exit">退出</button></div>${sb?.battle?`<div class="sandbox-inline-live"><b>测试干员</b>${sb.economy.s.units.map(u=>{const live=b.s.units.find(v=>v.uid===u.uid),p=data.profiles[u.chessId];return live?`<div><span>${esc(p.name)} · ${Math.round(live.hp)}/${Math.round(live.maxHp)}</span><button data-act="sandbox-fill-sp" data-uid="${u.uid}">充能</button><button data-act="sandbox-skill" data-uid="${u.uid}">${live.skillLeft>0||live.ammo>0?'结束技能':'释放技能'}</button></div>`:''}).join('')||'<small>暂无已部署干员</small>'}<b>测试敌人</b>${(sb.enemyDrafts||[]).map(d=>`<div><span>${d.dummy?'∞':'◆'} ${esc(d.dummy?'不行动木桩':data.enemies[d.id]?.name||d.id)}</span><button data-act="sandbox-remove-enemy" data-uid="${d.uid}">移除</button></div>`).join('')||'<small>暂无敌人</small>'}</div>`:''}</section>`;}
 function bondOperators(id){const seen=new Set();return Object.values(data.season.charShopChessDatas).filter(shop=>shop.charId&&!shop.isHidden&&data.profiles[shop.chessId]?.bonds?.includes(id)).map(shop=>{if(seen.has(shop.charId))return null;seen.add(shop.charId);const p=data.profiles[shop.chessId];return {chessId:shop.chessId,charId:shop.charId,name:p.name,rank:shop.chessLevel};}).filter(Boolean).sort((a,b)=>a.rank-b.rank||a.name.localeCompare(b.name,'zh-CN'));}
-function sortedBondRows(rows,layers={}){return Object.entries(rows).filter(([id,b])=>b.active||b.count>0||(layers[id]||0)>0).sort(([aId,a],[bId,b])=>Number(b.active)-Number(a.active)||(layers[bId]||0)-(layers[aId]||0)||b.count-a.count||aId.localeCompare(bId));}
+function sortedBondRows(rows,layers={}){const layerOf=id=>id===SEES_BOND_ID?0:(layers[id]||0);return Object.entries(rows).filter(([id,b])=>b.active||b.count>0||layerOf(id)>0).sort(([aId,a],[bId,b])=>Number(b.active)-Number(a.active)||layerOf(bId)-layerOf(aId)||b.count-a.count||aId.localeCompare(bId));}
 // 盟约面板的「当前动态数值」：受层数影响的每一项都由 protocol.bondCurrentPreviewHtml 按原表的
 // descParamBaseList／descParamPerStackList 生成（含叙拉古的攻速与隐匿持续时间、谢拉格寒风时长），
 // 这里只做一层薄封装，别再往这里加手写数值——漏项就是这么来的。
@@ -16528,9 +16528,9 @@ function bondCurrentPreview(id,layers){return bondCurrentPreviewHtml(data,id,lay
 // 盟约侧栏与盟约面板的 HTML 只在这里各生成一份：render() 用它们建初始 DOM，updateBondLive() 在战斗中
 // 按 0.2 秒的 HUD 节奏重建。战斗中的层数变化（谢拉格「敌人进入冻结→叠层」、卫戍/装备发的层）原来要等
 // 回合结束才看得到——侧栏只在 render() 里生成，而战斗中 render() 只在阶段切换时才跑（用户 2026-09-23 报的）。
-function bondSidebarHtml(g,rows=g.bonds()){const s=g.s;return sortedBondRows(rows,s.bondLayers).map(([id,b])=>{const info=data.season.bondInfoDict[id],tartarus=id===TARTARUS_BOND_ID,panel=bondPanelCount(data,s,id,b.count);return `<button data-act="bond-info" data-id="${id}" class="${b.active?'active':''}"><b>${info.name}</b><span>${tartarus?`${panel} 层`:`${b.count} / ${info.activeCount}`}</span><small>${tartarus?'':(info.noStack?'':(s.bondLayers[id]||0)+' 层')}</small></button>`;}).join('')||'<p>部署干员以激活盟约</p>';}
+function bondSidebarHtml(g,rows=g.bonds()){const s=g.s;return sortedBondRows(rows,s.bondLayers).map(([id,b])=>{const info=data.season.bondInfoDict[id],tartarus=id===TARTARUS_BOND_ID,panel=bondPanelCount(data,s,id,b.count);return `<button data-act="bond-info" data-id="${id}" class="${b.active?'active':''}"><b>${info.name}</b><span>${tartarus?`${panel} 层`:`${b.count} / ${info.activeCount}`}</span><small>${tartarus||id===SEES_BOND_ID||info.noStack?'':(s.bondLayers[id]||0)+' 层'}</small></button>`;}).join('')||'<p>部署干员以激活盟约</p>';}
 function bondModalHtml(id){
- const g=state.game,b=data.season.bondInfoDict[id],members=bondOperators(id),live=new Set((g?.s.units||[]).filter(u=>u.position).map(u=>u.charId)),layer=g?.s.bondLayers?.[id]||0,active=g?.bonds?.()?.[id]?.active;
+ const g=state.game,b=data.season.bondInfoDict[id],members=bondOperators(id),live=new Set((g?.s.units||[]).filter(u=>u.position).map(u=>u.charId)),layer=g?.s.bondLayers?.[id===SEES_BOND_ID?TARTARUS_BOND_ID:id]||0,active=g?.bonds?.()?.[id]?.active;
  return `<h2>${esc(b.name)}</h2><p>${esc(plain(b.desc))}</p>${bondCurrentPreview(id,layer)}<p class="muted small">${active?'当前盟约已激活，动态数值生效中。':'当前盟约尚未激活，动态数值仅作预览。'}</p><div class="native-bond-roster" aria-label="盟约干员">${members.map(m=>{const on=live.has(m.charId);return `<div class="native-bond-member${on?' active':''}">${avatar(m.charId)}<span><b>${esc(m.name)}</b><small>${m.rank} 阶${on?' · 场上':''}</small></span></div>`;}).join('')||'<small>暂无可用干员</small>'}</div>`;
 }
 // 侧栏按钮与打开着的盟约面板都按当前层数重算；只有内容真的变了才写 DOM（不打断悬停/焦点）。

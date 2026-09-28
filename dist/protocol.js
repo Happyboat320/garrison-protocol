@@ -230,18 +230,17 @@ function seesPanelLines(data,bondId,level){
  const sees=data?.sees;if(!sees||(bondId!==SEES_BOND_ID&&bondId!==TARTARUS_BOND_ID))return [];
  const n=seesNumbers(data),cap=tartarusCap(data),grant=grantEveryLayers(data);
  const pct=(v)=>`${(Number(v)*100).toFixed(2).replace(/\.?0+$/,'')}%`;
- const layers=`当前 ${level} 层`;
  if(bondId===TARTARUS_BOND_ID)return [
   {label:'层数上限',value:`${cap} 层${level>=cap?'（已满）':''}`},
   {label:'每资金转化层数',value:`${Number(n.tartarusPerFund)||0} 层（场上由加莉：初始 +${Number(n.uikariPerFund?.initial)||0}／精锐 +${Number(n.uikariPerFund?.elite)||0}）`},
   {label:'发放节奏',value:`每 ${grant} 层发放一名【S.E.E.S.】干员（至多 ${Math.floor(cap/grant)} 名）`},
-  {label:'可获得性',value:`只在本局策略为【S.E.E.S.】时激活 · ${layers}`}
+  {label:'可获得性',value:'只在本局策略为【S.E.E.S.】时激活'}
  ];
  return [
   {label:'核心真实伤害比例',value:`${pct(coreTrueDamagePercent(data,level))}（0 层 ${pct(coreTrueDamagePercent(data,0))} → ${cap} 层 ${pct(coreTrueDamagePercent(data,cap))}，随层数线性）`},
   {label:'触发冷却',value:`${coreCooldown(data,level)} 秒${level>=Number(n.coreFastThreshold)&&Number(n.coreFastThreshold)>0?'（已满层，缩短）':''}`},
   {label:'触发条件',value:'造成弱点伤害时，对全场敌人结算「场上 S.E.E.S. 干员攻击总和 × 上面这个比例」的真实伤害'},
-  {label:'可获得性',value:`只在本局策略为【S.E.E.S.】时激活 · ${layers}`}
+  {label:'可获得性',value:'只在本局策略为【S.E.E.S.】时激活'}
  ];
 }
 // 面板 HTML：受层数影响的数值 + 少量「阈值／累计」类备注（不含层数参数本身）。
@@ -256,7 +255,8 @@ export function bondCurrentPreviewHtml(data,bondId,layers){
  if(bondId==='skillfulShip'&&Number(values.power_bond_stack_cnt))lines.push(line('扩大范围阈值',`${values.power_bond_stack_cnt}层`));
  if(bondId==='raidShip'&&Number(values.power_bond_stack_cnt))lines.push(line('闲置强化状态',level>=values.power_bond_stack_cnt?`攻击速度 +${values.power_attack_speed}，攻击/生命提升已生效`:`未激活（需${values.power_bond_stack_cnt}层）`));
  for(const row of seesPanelLines(data,bondId,level))lines.push(line(row.label,`${row.value}`));
- return lines.length?`<section class="native-bond-current"><h3>当前动态数值 · ${level}层</h3><ul>${lines.join('')}</ul></section>`:'';
+ const layerLabel=bondId===SEES_BOND_ID?`随【塔尔塔洛斯】${level}层`:`${level}层`;
+ return lines.length?`<section class="native-bond-current"><h3>当前动态数值 · ${layerLabel}</h3><ul>${lines.join('')}</ul></section>`:'';
 }
 // 富文本 → 显示文本。原表用尖括号区分两类东西：
 //   样式标签：`<@ba.vup>`、`<$ba.stun>`、`<@autochess.gray>`、闭合的 `</>` —— 丢掉；
