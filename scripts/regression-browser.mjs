@@ -153,6 +153,21 @@ const page=await browser.newPage({viewport:{width:1440,height:900}}),errors=[];p
  assert.deepEqual(errors,[]);const report={passed:true,desktop:['lobby','limitations','wave-editor-defaults','briefing','buy','deploy','start','pause','resume-after-reload'],responsive,offlineFileLaunch:true,errors};await fs.writeFile('artifacts/s0-s3/browser-report.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));
 });
 
+suite('prep-scroll',async(browser)=>{
+ const page=await browser.newPage({viewport:{width:1830,height:795}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(URL);await page.waitForFunction(()=>window.__garrisonReady===true);await page.locator('[data-act=prepare]').click();
+ const aligned=await page.evaluate(()=>{const x=s=>document.querySelector(s).getBoundingClientRect().x;return {header:x('.native-prep-top'),tabs:x('.native-prep-tabs'),list:x('#prep-list')};});
+ assert.ok(Math.abs(aligned.header-aligned.tabs)<1&&Math.abs(aligned.header-aligned.list)<1,JSON.stringify(aligned));
+ const list=page.locator('#prep-list'),box=await list.boundingBox(),before=await list.evaluate(el=>el.scrollLeft);await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.wheel(0,160);await page.waitForTimeout(80);const after=await list.evaluate(el=>el.scrollLeft);
+ assert.ok(after>before+80,'vertical wheel moves the roster horizontally');assert.ok(after-before<390,'roster scrolls continuously rather than snapping a card/page');
+ await page.setViewportSize({width:810,height:348});await page.waitForTimeout(80);await list.evaluate(el=>el.scrollLeft=0);
+ const landscape=await list.evaluate(el=>({rows:getComputedStyle(el).gridTemplateRows.split(' ').length,rect:el.getBoundingClientRect().toJSON()}));assert.equal(landscape.rows,1,'landscape keeps cards tall enough for skill controls');
+ for(const selector of ['[data-act=prep-skill]','[data-act=prep-skill-preview]']){const control=page.locator(selector).first(),rect=await control.boundingBox();assert.ok(await control.isVisible()&&rect&&rect.y>=landscape.rect.y&&rect.y+rect.height<=landscape.rect.bottom,selector+' is available within the card viewport');}
+ await page.locator('[data-act=prep-skill-preview]').first().click();assert.ok(await page.locator('#native-modal').isVisible(),'landscape skill preview opens');await page.locator('#native-modal [data-act=close]').click();
+ const skill=page.locator('[data-act=prep-skill][data-index="0"]').first();await skill.click();assert.equal(await skill.getAttribute('aria-pressed'),'true','landscape skill selection works');
+ assert.deepEqual(errors,[]);await page.close();
+});
+
 // ── combat｜原 scripts/combat-acceptance.cjs ───────────────────────────────
 suite("combat",async(browser)=>{
 const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
