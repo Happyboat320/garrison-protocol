@@ -110,7 +110,7 @@ test('legacy single pool migrates to one template; a wave draws from only one of
  assert.ok(b.ids.every(id=>id==='enemy_b'));
 });
 
-test('wave plan rebuilds from roster seed without advancing game RNG and marks boss as dummy',()=>{
+test('wave plan rebuilds from roster seed without advancing game RNG and marks the final phase as a boss battle',()=>{
  const random=rng(11);const roster=createWaveRoster({random,data,modeId:'mode_single_funny'});
  const turn=buildPhasePlan(data,'mode_single_funny').find(t=>t.round===1);
  const table=emptyWaveTable();
@@ -121,7 +121,7 @@ test('wave plan rebuilds from roster seed without advancing game RNG and marks b
  assert.equal(after,other());
  const plan=buildWavePlan(data,turn,roster,table);
  assert.equal(plan.placeholders,1);
- assert.equal(buildWavePlan(data,buildPhasePlan(data,'mode_single_funny').find(t=>t.isBossTurn),roster,table).benchmark,true);
+ assert.equal(buildWavePlan(data,buildPhasePlan(data,'mode_single_funny').find(t=>t.isBossTurn),roster,table).finalBoss,true);
 });
 
 test('table normalize keeps only positive costs and known types',()=>{

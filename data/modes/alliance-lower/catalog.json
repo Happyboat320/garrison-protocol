@@ -91734,6 +91734,304 @@
         }
       ],
       "windSources": [],
+      "bossDoorRoutes": [
+        {
+          "motionMode": "WALK",
+          "startPosition": {
+            "col": 10,
+            "row": 12
+          },
+          "endPosition": {
+            "col": 2,
+            "row": 9
+          },
+          "spawnRandomRange": {
+            "x": 0,
+            "y": 0
+          },
+          "spawnOffset": {
+            "x": 0,
+            "y": 0
+          },
+          "checkpoints": [],
+          "allowDiagonalMove": false,
+          "visitEveryTileCenter": false,
+          "visitEveryNodeCenter": false,
+          "visitEveryCheckPoint": false
+        },
+        {
+          "motionMode": "WALK",
+          "startPosition": {
+            "col": 10,
+            "row": 9
+          },
+          "endPosition": {
+            "col": 2,
+            "row": 9
+          },
+          "spawnRandomRange": {
+            "x": 0,
+            "y": 0
+          },
+          "spawnOffset": {
+            "x": 0,
+            "y": 0
+          },
+          "checkpoints": [],
+          "allowDiagonalMove": false,
+          "visitEveryTileCenter": false,
+          "visitEveryNodeCenter": false,
+          "visitEveryCheckPoint": false
+        }
+      ],
+      "bossPatrolRoute": [
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 0,
+          "checkpointIndex": 0
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 0,
+          "checkpointIndex": 1
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 0,
+          "checkpointIndex": 2
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 0,
+          "checkpointIndex": 3
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 4
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 0,
+          "checkpointIndex": 5
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 0,
+          "checkpointIndex": 6
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 1,
+          "checkpointIndex": 7
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 2,
+          "checkpointIndex": 8
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 3,
+          "checkpointIndex": 9
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 3,
+          "checkpointIndex": 10
+        },
+        {
+          "kind": "move",
+          "x": 2,
+          "y": 3,
+          "checkpointIndex": 11
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 3,
+          "checkpointIndex": 12
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 3,
+          "checkpointIndex": 13
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 2,
+          "checkpointIndex": 14
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 1,
+          "checkpointIndex": 15
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 0,
+          "checkpointIndex": 16
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 0,
+          "checkpointIndex": 17
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 18
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 0,
+          "checkpointIndex": 19
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 0,
+          "checkpointIndex": 20
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 1,
+          "checkpointIndex": 21
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 2,
+          "checkpointIndex": 22
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 3,
+          "checkpointIndex": 23
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 24
+        },
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 3,
+          "checkpointIndex": 25
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 26
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 2,
+          "checkpointIndex": 27
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 1,
+          "checkpointIndex": 28
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 1,
+          "checkpointIndex": 29
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 0,
+          "checkpointIndex": 30
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 0,
+          "checkpointIndex": 31
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 32
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 0,
+          "checkpointIndex": 33
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 0,
+          "checkpointIndex": 34
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 0,
+          "checkpointIndex": 35
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 36
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 0,
+          "checkpointIndex": 37
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 0,
+          "checkpointIndex": 38
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 0,
+          "checkpointIndex": 39
+        },
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 0,
+          "checkpointIndex": 40
+        }
+      ],
       "viewport": {
         "left": 2,
         "right": 10,
@@ -92766,6 +93064,304 @@
       "weight": 50,
       "devices": [],
       "windSources": [],
+      "bossDoorRoutes": [
+        {
+          "motionMode": "WALK",
+          "startPosition": {
+            "col": 10,
+            "row": 12
+          },
+          "endPosition": {
+            "col": 2,
+            "row": 9
+          },
+          "spawnRandomRange": {
+            "x": 0,
+            "y": 0
+          },
+          "spawnOffset": {
+            "x": 0,
+            "y": 0
+          },
+          "checkpoints": [],
+          "allowDiagonalMove": false,
+          "visitEveryTileCenter": false,
+          "visitEveryNodeCenter": false,
+          "visitEveryCheckPoint": false
+        },
+        {
+          "motionMode": "WALK",
+          "startPosition": {
+            "col": 10,
+            "row": 9
+          },
+          "endPosition": {
+            "col": 2,
+            "row": 9
+          },
+          "spawnRandomRange": {
+            "x": 0,
+            "y": 0
+          },
+          "spawnOffset": {
+            "x": 0,
+            "y": 0
+          },
+          "checkpoints": [],
+          "allowDiagonalMove": false,
+          "visitEveryTileCenter": false,
+          "visitEveryNodeCenter": false,
+          "visitEveryCheckPoint": false
+        }
+      ],
+      "bossPatrolRoute": [
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 0,
+          "checkpointIndex": 0
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 0,
+          "checkpointIndex": 1
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 0,
+          "checkpointIndex": 2
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 0,
+          "checkpointIndex": 3
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 4
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 0,
+          "checkpointIndex": 5
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 0,
+          "checkpointIndex": 6
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 0,
+          "checkpointIndex": 7
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 1,
+          "checkpointIndex": 8
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 2,
+          "checkpointIndex": 9
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 3,
+          "checkpointIndex": 10
+        },
+        {
+          "kind": "move",
+          "x": 2,
+          "y": 3,
+          "checkpointIndex": 11
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 3,
+          "checkpointIndex": 12
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 3,
+          "checkpointIndex": 13
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 3,
+          "checkpointIndex": 14
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 3,
+          "checkpointIndex": 15
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 2,
+          "checkpointIndex": 16
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 1,
+          "checkpointIndex": 17
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 1,
+          "checkpointIndex": 18
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 1,
+          "checkpointIndex": 19
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 1,
+          "checkpointIndex": 20
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 2,
+          "checkpointIndex": 21
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 22
+        },
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 3,
+          "checkpointIndex": 23
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 24
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 2,
+          "checkpointIndex": 25
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 1,
+          "checkpointIndex": 26
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 1,
+          "checkpointIndex": 27
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 1,
+          "checkpointIndex": 28
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 1,
+          "checkpointIndex": 29
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 30
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 0,
+          "checkpointIndex": 31
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 0,
+          "checkpointIndex": 32
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 0,
+          "checkpointIndex": 33
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 0,
+          "checkpointIndex": 34
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 0,
+          "checkpointIndex": 35
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 36
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 0,
+          "checkpointIndex": 37
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 0,
+          "checkpointIndex": 38
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 0,
+          "checkpointIndex": 39
+        },
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 0,
+          "checkpointIndex": 40
+        }
+      ],
       "viewport": {
         "left": 2,
         "right": 10,
@@ -93836,6 +94432,244 @@
         }
       ],
       "windSources": [],
+      "bossDoorRoutes": [
+        {
+          "motionMode": "WALK",
+          "startPosition": {
+            "col": 10,
+            "row": 12
+          },
+          "endPosition": {
+            "col": 2,
+            "row": 9
+          },
+          "spawnRandomRange": {
+            "x": 0,
+            "y": 0
+          },
+          "spawnOffset": {
+            "x": 0,
+            "y": 0
+          },
+          "checkpoints": [],
+          "allowDiagonalMove": false,
+          "visitEveryTileCenter": false,
+          "visitEveryNodeCenter": false,
+          "visitEveryCheckPoint": false
+        },
+        {
+          "motionMode": "WALK",
+          "startPosition": {
+            "col": 10,
+            "row": 9
+          },
+          "endPosition": {
+            "col": 2,
+            "row": 9
+          },
+          "spawnRandomRange": {
+            "x": 0,
+            "y": 0
+          },
+          "spawnOffset": {
+            "x": 0,
+            "y": 0
+          },
+          "checkpoints": [],
+          "allowDiagonalMove": false,
+          "visitEveryTileCenter": false,
+          "visitEveryNodeCenter": false,
+          "visitEveryCheckPoint": false
+        }
+      ],
+      "bossPatrolRoute": [
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 0,
+          "checkpointIndex": 0
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 0,
+          "checkpointIndex": 1
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 0,
+          "checkpointIndex": 2
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 0,
+          "checkpointIndex": 3
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 4
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 1,
+          "checkpointIndex": 5
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 2,
+          "checkpointIndex": 6
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 2,
+          "checkpointIndex": 7
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 3,
+          "checkpointIndex": 8
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 3,
+          "checkpointIndex": 9
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 3,
+          "checkpointIndex": 10
+        },
+        {
+          "kind": "move",
+          "x": 2,
+          "y": 3,
+          "checkpointIndex": 11
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 3,
+          "checkpointIndex": 12
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 3,
+          "checkpointIndex": 13
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 3,
+          "checkpointIndex": 14
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 3,
+          "checkpointIndex": 15
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 3,
+          "checkpointIndex": 16
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 3,
+          "checkpointIndex": 17
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 18
+        },
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 3,
+          "checkpointIndex": 19
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 20
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 3,
+          "checkpointIndex": 21
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 3,
+          "checkpointIndex": 22
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 3,
+          "checkpointIndex": 23
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 2,
+          "checkpointIndex": 24
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 1,
+          "checkpointIndex": 25
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 26
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 0,
+          "checkpointIndex": 27
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 0,
+          "checkpointIndex": 28
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 0,
+          "checkpointIndex": 29
+        },
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 0,
+          "checkpointIndex": 30
+        }
+      ],
       "viewport": {
         "left": 2,
         "right": 10,
@@ -94892,6 +95726,220 @@
         }
       ],
       "windSources": [],
+      "bossDoorRoutes": [
+        {
+          "motionMode": "WALK",
+          "startPosition": {
+            "col": 10,
+            "row": 12
+          },
+          "endPosition": {
+            "col": 2,
+            "row": 9
+          },
+          "spawnRandomRange": {
+            "x": 0,
+            "y": 0
+          },
+          "spawnOffset": {
+            "x": 0,
+            "y": 0
+          },
+          "checkpoints": [],
+          "allowDiagonalMove": false,
+          "visitEveryTileCenter": false,
+          "visitEveryNodeCenter": false,
+          "visitEveryCheckPoint": false
+        },
+        {
+          "motionMode": "WALK",
+          "startPosition": {
+            "col": 10,
+            "row": 9
+          },
+          "endPosition": {
+            "col": 2,
+            "row": 9
+          },
+          "spawnRandomRange": {
+            "x": 0,
+            "y": 0
+          },
+          "spawnOffset": {
+            "x": 0,
+            "y": 0
+          },
+          "checkpoints": [],
+          "allowDiagonalMove": false,
+          "visitEveryTileCenter": false,
+          "visitEveryNodeCenter": false,
+          "visitEveryCheckPoint": false
+        }
+      ],
+      "bossPatrolRoute": [
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 0,
+          "checkpointIndex": 0
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 0,
+          "checkpointIndex": 1
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 1,
+          "checkpointIndex": 2
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 1,
+          "checkpointIndex": 3
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 1,
+          "checkpointIndex": 4
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 1,
+          "checkpointIndex": 5
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 1,
+          "checkpointIndex": 6
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 1,
+          "checkpointIndex": 7
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 2,
+          "checkpointIndex": 8
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 3,
+          "checkpointIndex": 9
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 3,
+          "checkpointIndex": 10
+        },
+        {
+          "kind": "move",
+          "x": 2,
+          "y": 3,
+          "checkpointIndex": 11
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 3,
+          "checkpointIndex": 12
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 3,
+          "checkpointIndex": 13
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 2,
+          "checkpointIndex": 14
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 2,
+          "checkpointIndex": 15
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 2,
+          "checkpointIndex": 16
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 2,
+          "checkpointIndex": 17
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 2,
+          "checkpointIndex": 18
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 3,
+          "checkpointIndex": 19
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 20
+        },
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 3,
+          "checkpointIndex": 21
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 22
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 2,
+          "checkpointIndex": 23
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 1,
+          "checkpointIndex": 24
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 0,
+          "checkpointIndex": 25
+        },
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 0,
+          "checkpointIndex": 26
+        }
+      ],
       "viewport": {
         "left": 2,
         "right": 10,
@@ -96061,6 +97109,268 @@
         }
       ],
       "windSources": [],
+      "bossDoorRoutes": [
+        {
+          "motionMode": "WALK",
+          "startPosition": {
+            "col": 10,
+            "row": 12
+          },
+          "endPosition": {
+            "col": 2,
+            "row": 9
+          },
+          "spawnRandomRange": {
+            "x": 0,
+            "y": 0
+          },
+          "spawnOffset": {
+            "x": 0,
+            "y": 0
+          },
+          "checkpoints": [],
+          "allowDiagonalMove": false,
+          "visitEveryTileCenter": false,
+          "visitEveryNodeCenter": false,
+          "visitEveryCheckPoint": false
+        },
+        {
+          "motionMode": "WALK",
+          "startPosition": {
+            "col": 10,
+            "row": 9
+          },
+          "endPosition": {
+            "col": 2,
+            "row": 9
+          },
+          "spawnRandomRange": {
+            "x": 0,
+            "y": 0
+          },
+          "spawnOffset": {
+            "x": 0,
+            "y": 0
+          },
+          "checkpoints": [],
+          "allowDiagonalMove": false,
+          "visitEveryTileCenter": false,
+          "visitEveryNodeCenter": false,
+          "visitEveryCheckPoint": false
+        }
+      ],
+      "bossPatrolRoute": [
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 0,
+          "checkpointIndex": 0
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 0,
+          "checkpointIndex": 1
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 0,
+          "checkpointIndex": 2
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 0,
+          "checkpointIndex": 3
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 4
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 0,
+          "checkpointIndex": 5
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 0,
+          "checkpointIndex": 6
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 1,
+          "checkpointIndex": 7
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 2,
+          "checkpointIndex": 8
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 3,
+          "checkpointIndex": 9
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 3,
+          "checkpointIndex": 10
+        },
+        {
+          "kind": "move",
+          "x": 2,
+          "y": 3,
+          "checkpointIndex": 11
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 3,
+          "checkpointIndex": 12
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 3,
+          "checkpointIndex": 13
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 3,
+          "checkpointIndex": 14
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 3,
+          "checkpointIndex": 15
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 3,
+          "checkpointIndex": 16
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 3,
+          "checkpointIndex": 17
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 18
+        },
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 3,
+          "checkpointIndex": 19
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 20
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 2,
+          "checkpointIndex": 21
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 1,
+          "checkpointIndex": 22
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 1,
+          "checkpointIndex": 23
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 1,
+          "checkpointIndex": 24
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 0,
+          "checkpointIndex": 25
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 26
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 0,
+          "checkpointIndex": 27
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 0,
+          "checkpointIndex": 28
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 0,
+          "checkpointIndex": 29
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 30
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 0,
+          "checkpointIndex": 31
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 0,
+          "checkpointIndex": 32
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 0,
+          "checkpointIndex": 33
+        },
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 0,
+          "checkpointIndex": 34
+        }
+      ],
       "viewport": {
         "left": 2,
         "right": 10,
@@ -97150,6 +98460,316 @@
         }
       ],
       "windSources": [],
+      "bossDoorRoutes": [
+        {
+          "motionMode": "WALK",
+          "startPosition": {
+            "col": 10,
+            "row": 12
+          },
+          "endPosition": {
+            "col": 2,
+            "row": 9
+          },
+          "spawnRandomRange": {
+            "x": 0,
+            "y": 0
+          },
+          "spawnOffset": {
+            "x": 0,
+            "y": 0
+          },
+          "checkpoints": [],
+          "allowDiagonalMove": false,
+          "visitEveryTileCenter": false,
+          "visitEveryNodeCenter": false,
+          "visitEveryCheckPoint": false
+        },
+        {
+          "motionMode": "WALK",
+          "startPosition": {
+            "col": 10,
+            "row": 9
+          },
+          "endPosition": {
+            "col": 2,
+            "row": 9
+          },
+          "spawnRandomRange": {
+            "x": 0,
+            "y": 0
+          },
+          "spawnOffset": {
+            "x": 0,
+            "y": 0
+          },
+          "checkpoints": [],
+          "allowDiagonalMove": false,
+          "visitEveryTileCenter": false,
+          "visitEveryNodeCenter": false,
+          "visitEveryCheckPoint": false
+        }
+      ],
+      "bossPatrolRoute": [
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 0,
+          "checkpointIndex": 0
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 0,
+          "checkpointIndex": 1
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 1,
+          "checkpointIndex": 2
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 1,
+          "checkpointIndex": 3
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 1,
+          "checkpointIndex": 4
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 1,
+          "checkpointIndex": 5
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 6
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 0,
+          "checkpointIndex": 7
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 0,
+          "checkpointIndex": 8
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 0,
+          "checkpointIndex": 9
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 1,
+          "checkpointIndex": 10
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 2,
+          "checkpointIndex": 11
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 3,
+          "checkpointIndex": 12
+        },
+        {
+          "kind": "move",
+          "x": 2,
+          "y": 3,
+          "checkpointIndex": 13
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 3,
+          "checkpointIndex": 14
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 2,
+          "checkpointIndex": 15
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 2,
+          "checkpointIndex": 16
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 2,
+          "checkpointIndex": 17
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 3,
+          "checkpointIndex": 18
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 3,
+          "checkpointIndex": 19
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 3,
+          "checkpointIndex": 20
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 3,
+          "checkpointIndex": 21
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 22
+        },
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 3,
+          "checkpointIndex": 23
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 24
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 2,
+          "checkpointIndex": 25
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 1,
+          "checkpointIndex": 26
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 1,
+          "checkpointIndex": 27
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 1,
+          "checkpointIndex": 28
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 1,
+          "checkpointIndex": 29
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 1,
+          "checkpointIndex": 30
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 1,
+          "checkpointIndex": 31
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 1,
+          "checkpointIndex": 32
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 0,
+          "checkpointIndex": 33
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 0,
+          "checkpointIndex": 34
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 0,
+          "checkpointIndex": 35
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 36
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 1,
+          "checkpointIndex": 37
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 1,
+          "checkpointIndex": 38
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 1,
+          "checkpointIndex": 39
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 1,
+          "checkpointIndex": 40
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 0,
+          "checkpointIndex": 41
+        },
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 0,
+          "checkpointIndex": 42
+        }
+      ],
       "viewport": {
         "left": 2,
         "right": 10,
@@ -98204,6 +99824,280 @@
         }
       ],
       "windSources": [],
+      "bossDoorRoutes": [
+        {
+          "motionMode": "WALK",
+          "startPosition": {
+            "col": 10,
+            "row": 12
+          },
+          "endPosition": {
+            "col": 2,
+            "row": 9
+          },
+          "spawnRandomRange": {
+            "x": 0,
+            "y": 0
+          },
+          "spawnOffset": {
+            "x": 0,
+            "y": 0
+          },
+          "checkpoints": [],
+          "allowDiagonalMove": false,
+          "visitEveryTileCenter": false,
+          "visitEveryNodeCenter": false,
+          "visitEveryCheckPoint": false
+        },
+        {
+          "motionMode": "WALK",
+          "startPosition": {
+            "col": 10,
+            "row": 9
+          },
+          "endPosition": {
+            "col": 2,
+            "row": 9
+          },
+          "spawnRandomRange": {
+            "x": 0,
+            "y": 0
+          },
+          "spawnOffset": {
+            "x": 0,
+            "y": 0
+          },
+          "checkpoints": [],
+          "allowDiagonalMove": false,
+          "visitEveryTileCenter": false,
+          "visitEveryNodeCenter": false,
+          "visitEveryCheckPoint": false
+        }
+      ],
+      "bossPatrolRoute": [
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 0,
+          "checkpointIndex": 0
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 0,
+          "checkpointIndex": 1
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 0,
+          "checkpointIndex": 2
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 0,
+          "checkpointIndex": 3
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 4
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 0,
+          "checkpointIndex": 5
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 0,
+          "checkpointIndex": 6
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 0,
+          "checkpointIndex": 7
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 1,
+          "checkpointIndex": 8
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 2,
+          "checkpointIndex": 9
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 3,
+          "checkpointIndex": 10
+        },
+        {
+          "kind": "move",
+          "x": 2,
+          "y": 3,
+          "checkpointIndex": 11
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 3,
+          "checkpointIndex": 12
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 3,
+          "checkpointIndex": 13
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 3,
+          "checkpointIndex": 14
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 3,
+          "checkpointIndex": 15
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 3,
+          "checkpointIndex": 16
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 3,
+          "checkpointIndex": 17
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 18
+        },
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 3,
+          "checkpointIndex": 19
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 20
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 3,
+          "checkpointIndex": 21
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 3,
+          "checkpointIndex": 22
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 3,
+          "checkpointIndex": 23
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 3,
+          "checkpointIndex": 24
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 3,
+          "checkpointIndex": 25
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 3,
+          "checkpointIndex": 26
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 2,
+          "checkpointIndex": 27
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 1,
+          "checkpointIndex": 28
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 0,
+          "checkpointIndex": 29
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 0,
+          "checkpointIndex": 30
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 0,
+          "checkpointIndex": 31
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 32
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 0,
+          "checkpointIndex": 33
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 0,
+          "checkpointIndex": 34
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 0,
+          "checkpointIndex": 35
+        },
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 0,
+          "checkpointIndex": 36
+        }
+      ],
       "viewport": {
         "left": 2,
         "right": 10,
@@ -99287,6 +101181,388 @@
           "direction": "DOWN"
         }
       ],
+      "bossDoorRoutes": [
+        {
+          "motionMode": "WALK",
+          "startPosition": {
+            "col": 10,
+            "row": 12
+          },
+          "endPosition": {
+            "col": 2,
+            "row": 9
+          },
+          "spawnRandomRange": {
+            "x": 0,
+            "y": 0
+          },
+          "spawnOffset": {
+            "x": 0,
+            "y": 0
+          },
+          "checkpoints": [],
+          "allowDiagonalMove": false,
+          "visitEveryTileCenter": false,
+          "visitEveryNodeCenter": false,
+          "visitEveryCheckPoint": false
+        },
+        {
+          "motionMode": "WALK",
+          "startPosition": {
+            "col": 10,
+            "row": 9
+          },
+          "endPosition": {
+            "col": 2,
+            "row": 9
+          },
+          "spawnRandomRange": {
+            "x": 0,
+            "y": 0
+          },
+          "spawnOffset": {
+            "x": 0,
+            "y": 0
+          },
+          "checkpoints": [],
+          "allowDiagonalMove": false,
+          "visitEveryTileCenter": false,
+          "visitEveryNodeCenter": false,
+          "visitEveryCheckPoint": false
+        }
+      ],
+      "bossPatrolRoute": [
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 0,
+          "checkpointIndex": 0
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 0,
+          "checkpointIndex": 1
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 1,
+          "checkpointIndex": 2
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 2,
+          "checkpointIndex": 3
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 4
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 3,
+          "checkpointIndex": 5
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 3,
+          "checkpointIndex": 6
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 2,
+          "checkpointIndex": 7
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 1,
+          "checkpointIndex": 8
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 0,
+          "checkpointIndex": 9
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 10
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 0,
+          "checkpointIndex": 11
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 1,
+          "checkpointIndex": 12
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 2,
+          "checkpointIndex": 13
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 3,
+          "checkpointIndex": 14
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 3,
+          "checkpointIndex": 15
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 3,
+          "checkpointIndex": 16
+        },
+        {
+          "kind": "move",
+          "x": 2,
+          "y": 3,
+          "checkpointIndex": 17
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 3,
+          "checkpointIndex": 18
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 3,
+          "checkpointIndex": 19
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 3,
+          "checkpointIndex": 20
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 2,
+          "checkpointIndex": 21
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 1,
+          "checkpointIndex": 22
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 0,
+          "checkpointIndex": 23
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 24
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 0,
+          "checkpointIndex": 25
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 1,
+          "checkpointIndex": 26
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 2,
+          "checkpointIndex": 27
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 3,
+          "checkpointIndex": 28
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 3,
+          "checkpointIndex": 29
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 30
+        },
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 3,
+          "checkpointIndex": 31
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 32
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 2,
+          "checkpointIndex": 33
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 1,
+          "checkpointIndex": 34
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 2,
+          "checkpointIndex": 35
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 36
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 3,
+          "checkpointIndex": 37
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 3,
+          "checkpointIndex": 38
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 2,
+          "checkpointIndex": 39
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 1,
+          "checkpointIndex": 40
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 0,
+          "checkpointIndex": 41
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 42
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 0,
+          "checkpointIndex": 43
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 44
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 0,
+          "checkpointIndex": 45
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 1,
+          "checkpointIndex": 46
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 2,
+          "checkpointIndex": 47
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 3,
+          "checkpointIndex": 48
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 3,
+          "checkpointIndex": 49
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 50
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 2,
+          "checkpointIndex": 51
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 1,
+          "checkpointIndex": 52
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 0,
+          "checkpointIndex": 53
+        },
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 0,
+          "checkpointIndex": 54
+        }
+      ],
       "viewport": {
         "left": 2,
         "right": 10,
@@ -100334,6 +102610,232 @@
         }
       ],
       "windSources": [],
+      "bossDoorRoutes": [
+        {
+          "motionMode": "WALK",
+          "startPosition": {
+            "col": 10,
+            "row": 12
+          },
+          "endPosition": {
+            "col": 2,
+            "row": 9
+          },
+          "spawnRandomRange": {
+            "x": 0,
+            "y": 0
+          },
+          "spawnOffset": {
+            "x": 0,
+            "y": 0
+          },
+          "checkpoints": [],
+          "allowDiagonalMove": false,
+          "visitEveryTileCenter": false,
+          "visitEveryNodeCenter": false,
+          "visitEveryCheckPoint": false
+        },
+        {
+          "motionMode": "WALK",
+          "startPosition": {
+            "col": 10,
+            "row": 9
+          },
+          "endPosition": {
+            "col": 2,
+            "row": 9
+          },
+          "spawnRandomRange": {
+            "x": 0,
+            "y": 0
+          },
+          "spawnOffset": {
+            "x": 0,
+            "y": 0
+          },
+          "checkpoints": [],
+          "allowDiagonalMove": false,
+          "visitEveryTileCenter": false,
+          "visitEveryNodeCenter": false,
+          "visitEveryCheckPoint": false
+        }
+      ],
+      "bossPatrolRoute": [
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 0,
+          "checkpointIndex": 0
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 0,
+          "checkpointIndex": 1
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 0,
+          "checkpointIndex": 2
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 0,
+          "checkpointIndex": 3
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 1,
+          "checkpointIndex": 4
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 2,
+          "checkpointIndex": 5
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 3,
+          "checkpointIndex": 6
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 3,
+          "checkpointIndex": 7
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 3,
+          "checkpointIndex": 8
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 3,
+          "checkpointIndex": 9
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 3,
+          "checkpointIndex": 10
+        },
+        {
+          "kind": "move",
+          "x": 2,
+          "y": 3,
+          "checkpointIndex": 11
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 3,
+          "checkpointIndex": 12
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 3,
+          "checkpointIndex": 13
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 3,
+          "checkpointIndex": 14
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 3,
+          "checkpointIndex": 15
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 3,
+          "checkpointIndex": 16
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 3,
+          "checkpointIndex": 17
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 18
+        },
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 3,
+          "checkpointIndex": 19
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 20
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 3,
+          "checkpointIndex": 21
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 3,
+          "checkpointIndex": 22
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 2,
+          "checkpointIndex": 23
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 1,
+          "checkpointIndex": 24
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 0,
+          "checkpointIndex": 25
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 0,
+          "checkpointIndex": 26
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 0,
+          "checkpointIndex": 27
+        },
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 0,
+          "checkpointIndex": 28
+        }
+      ],
       "viewport": {
         "left": 2,
         "right": 10,
@@ -101386,6 +103888,292 @@
         }
       ],
       "windSources": [],
+      "bossDoorRoutes": [
+        {
+          "motionMode": "WALK",
+          "startPosition": {
+            "col": 10,
+            "row": 12
+          },
+          "endPosition": {
+            "col": 2,
+            "row": 9
+          },
+          "spawnRandomRange": {
+            "x": 0,
+            "y": 0
+          },
+          "spawnOffset": {
+            "x": 0,
+            "y": 0
+          },
+          "checkpoints": [],
+          "allowDiagonalMove": false,
+          "visitEveryTileCenter": false,
+          "visitEveryNodeCenter": false,
+          "visitEveryCheckPoint": false
+        },
+        {
+          "motionMode": "WALK",
+          "startPosition": {
+            "col": 10,
+            "row": 9
+          },
+          "endPosition": {
+            "col": 2,
+            "row": 9
+          },
+          "spawnRandomRange": {
+            "x": 0,
+            "y": 0
+          },
+          "spawnOffset": {
+            "x": 0,
+            "y": 0
+          },
+          "checkpoints": [],
+          "allowDiagonalMove": false,
+          "visitEveryTileCenter": false,
+          "visitEveryNodeCenter": false,
+          "visitEveryCheckPoint": false
+        }
+      ],
+      "bossPatrolRoute": [
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 0,
+          "checkpointIndex": 0
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 0,
+          "checkpointIndex": 1
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 0,
+          "checkpointIndex": 2
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 0,
+          "checkpointIndex": 3
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 4
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 0,
+          "checkpointIndex": 5
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 0,
+          "checkpointIndex": 6
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 1,
+          "checkpointIndex": 7
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 2,
+          "checkpointIndex": 8
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 3,
+          "checkpointIndex": 9
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 3,
+          "checkpointIndex": 10
+        },
+        {
+          "kind": "move",
+          "x": 2,
+          "y": 3,
+          "checkpointIndex": 11
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 3,
+          "checkpointIndex": 12
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 3,
+          "checkpointIndex": 13
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 3,
+          "checkpointIndex": 14
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 3,
+          "checkpointIndex": 15
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 2,
+          "checkpointIndex": 16
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 2,
+          "checkpointIndex": 17
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 2,
+          "checkpointIndex": 18
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 2,
+          "checkpointIndex": 19
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 20
+        },
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 3,
+          "checkpointIndex": 21
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 22
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 2,
+          "checkpointIndex": 23
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 2,
+          "checkpointIndex": 24
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 2,
+          "checkpointIndex": 25
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 2,
+          "checkpointIndex": 26
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 3,
+          "checkpointIndex": 27
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 3,
+          "checkpointIndex": 28
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 3,
+          "checkpointIndex": 29
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 2,
+          "checkpointIndex": 30
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 1,
+          "checkpointIndex": 31
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 0,
+          "checkpointIndex": 32
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 0,
+          "checkpointIndex": 33
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 34
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 0,
+          "checkpointIndex": 35
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 0,
+          "checkpointIndex": 36
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 0,
+          "checkpointIndex": 37
+        },
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 0,
+          "checkpointIndex": 38
+        }
+      ],
       "viewport": {
         "left": 2,
         "right": 10,
@@ -102430,6 +105218,292 @@
         }
       ],
       "windSources": [],
+      "bossDoorRoutes": [
+        {
+          "motionMode": "WALK",
+          "startPosition": {
+            "col": 10,
+            "row": 12
+          },
+          "endPosition": {
+            "col": 2,
+            "row": 9
+          },
+          "spawnRandomRange": {
+            "x": 0,
+            "y": 0
+          },
+          "spawnOffset": {
+            "x": 0,
+            "y": 0
+          },
+          "checkpoints": [],
+          "allowDiagonalMove": false,
+          "visitEveryTileCenter": false,
+          "visitEveryNodeCenter": false,
+          "visitEveryCheckPoint": false
+        },
+        {
+          "motionMode": "WALK",
+          "startPosition": {
+            "col": 10,
+            "row": 9
+          },
+          "endPosition": {
+            "col": 2,
+            "row": 9
+          },
+          "spawnRandomRange": {
+            "x": 0,
+            "y": 0
+          },
+          "spawnOffset": {
+            "x": 0,
+            "y": 0
+          },
+          "checkpoints": [],
+          "allowDiagonalMove": false,
+          "visitEveryTileCenter": false,
+          "visitEveryNodeCenter": false,
+          "visitEveryCheckPoint": false
+        }
+      ],
+      "bossPatrolRoute": [
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 0,
+          "checkpointIndex": 0
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 0,
+          "checkpointIndex": 1
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 0,
+          "checkpointIndex": 2
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 0,
+          "checkpointIndex": 3
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 4
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 0,
+          "checkpointIndex": 5
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 0,
+          "checkpointIndex": 6
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 1,
+          "checkpointIndex": 7
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 2,
+          "checkpointIndex": 8
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 3,
+          "checkpointIndex": 9
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 3,
+          "checkpointIndex": 10
+        },
+        {
+          "kind": "move",
+          "x": 2,
+          "y": 3,
+          "checkpointIndex": 11
+        },
+        {
+          "kind": "move",
+          "x": 3,
+          "y": 3,
+          "checkpointIndex": 12
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 3,
+          "checkpointIndex": 13
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 2,
+          "checkpointIndex": 14
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 1,
+          "checkpointIndex": 15
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 1,
+          "checkpointIndex": 16
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 1,
+          "checkpointIndex": 17
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 2,
+          "checkpointIndex": 18
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 3,
+          "checkpointIndex": 19
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 3,
+          "checkpointIndex": 20
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 3,
+          "checkpointIndex": 21
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 22
+        },
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 3,
+          "checkpointIndex": 23
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 3,
+          "checkpointIndex": 24
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 3,
+          "checkpointIndex": 25
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 3,
+          "checkpointIndex": 26
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 3,
+          "checkpointIndex": 27
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 2,
+          "checkpointIndex": 28
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 1,
+          "checkpointIndex": 29
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 1,
+          "checkpointIndex": 30
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 1,
+          "checkpointIndex": 31
+        },
+        {
+          "kind": "move",
+          "x": 4,
+          "y": 0,
+          "checkpointIndex": 32
+        },
+        {
+          "kind": "move",
+          "x": 5,
+          "y": 0,
+          "checkpointIndex": 33
+        },
+        {
+          "kind": "move",
+          "x": 6,
+          "y": 0,
+          "checkpointIndex": 34
+        },
+        {
+          "kind": "move",
+          "x": 7,
+          "y": 0,
+          "checkpointIndex": 35
+        },
+        {
+          "kind": "move",
+          "x": 8,
+          "y": 0,
+          "checkpointIndex": 36
+        },
+        {
+          "kind": "move",
+          "x": 9,
+          "y": 0,
+          "checkpointIndex": 37
+        },
+        {
+          "kind": "move",
+          "x": 10,
+          "y": 0,
+          "checkpointIndex": 38
+        }
+      ],
       "viewport": {
         "left": 2,
         "right": 10,

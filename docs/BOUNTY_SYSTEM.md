@@ -1,6 +1,6 @@
 # 回合悬赏与机变决策
 
-2026-09-21 实装，2026-09-22 改为**每两回合一次**，2026-09-23 把候选池改回原表。出现节奏：从第 2 回合开始每隔一个回合（第 2、4、6… 回合）生成四个不重复候选，第 1 回合与最终无限生命木桩都没有回合悬赏。候选固定包含 1 奖金和 4 奖金档，另外两档从 0、2、3、5、6 里还有候选的档位中随机选择，0 档固定为源石虫。节奏常量在 `dist/native-bounty.js` 的 `BOUNTY_FIRST_ROUND` / `BOUNTY_INTERVAL` 与 `bountyRoundActive(round)`，判定入口是 `NativeSession.ensureRoundBounty()`（道具悬赏走 `chooseBounty`，不受这个节奏限制）。
+2026-09-21 实装，2026-09-22 改为**每两回合一次**，2026-09-23 把候选池改回原表。出现节奏：从第 2 回合开始每隔一个回合（第 2、4、6… 回合）生成四个不重复候选，第 1 回合与最终 Boss 阶段都没有回合悬赏。候选固定包含 1 奖金和 4 奖金档，另外两档从 0、2、3、5、6 里还有候选的档位中随机选择，0 档固定为源石虫。节奏常量在 `dist/native-bounty.js` 的 `BOUNTY_FIRST_ROUND` / `BOUNTY_INTERVAL` 与 `bountyRoundActive(round)`，判定入口是 `NativeSession.ensureRoundBounty()`（道具悬赏走 `chooseBounty`，不受这个节奏限制）。
 
 ## 候选与奖金（2026-09-23 改回原表）
 

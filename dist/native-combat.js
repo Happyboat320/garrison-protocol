@@ -483,6 +483,7 @@ export function advanceEnemy(e,dt,onEvent,stopForAttack=false){
   else{e.x+=dx/d*move;e.y+=dy/d*move;break;}
  }
  e.progress=remainingDistance(e);
+ if(e.cmd>=e.route.length&&e.finalBossPatrol){e.cmd=0;e.cmdLeft=null;e.segment=0;e.progress=remainingDistance(e);return false;}
  return e.cmd>=e.route.length;
 }
 // 持续伤害区域（logicEffects kind:'field'）的标识：同一名敌人的常驻光环/流血只保留一份，

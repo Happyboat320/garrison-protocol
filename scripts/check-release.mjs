@@ -2,7 +2,7 @@ import fs from 'node:fs';
 
 const report=JSON.parse(fs.readFileSync('data/modes/alliance-lower/readiness.json','utf8'));
 const blockers=[];
-if(report.s6?.acceptedScopeComplete!==true)blockers.push('用户约定的 S06 范围（最终阶段木桩替代）尚未验收通过');
+if(report.s6?.acceptedScopeComplete!==true)blockers.push('最终 Boss 范围尚未逐名验收完成');
 for(const phase of ['s4','s5']){
  if(!Array.isArray(report[phase]?.pending))blockers.push(phase+' 缺少待完成项清单');
  else if(report[phase].pending.length)blockers.push(phase+' 仍有 '+report[phase].pending.length+' 项未完成');

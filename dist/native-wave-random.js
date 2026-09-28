@@ -131,7 +131,7 @@ export function scheduleWaveQueue(queue,level,round){
 
 export function buildWavePlan(data,turn,roster=null,table=null){
  if(!turn)return null;
- if(turn.isBossTurn)return {round:turn.round,benchmark:true,total:0,targets:1,queue:[],level:null,levelId:null,assignment:null};
+ if(turn.isBossTurn)return {round:turn.round,finalBoss:true,total:0,targets:1,queue:[],level:null,levelId:null,assignment:null};
  const levelId=turn.battles[0]?.levelId.toLowerCase(),level=data.levels[levelId];if(!level)throw Error('缺少关卡模板 '+levelId);
  const assignment=roster?.rounds?.[turn.round];
  if(!assignment||assignment.boss)return {round:turn.round,benchmark:false,total:0,targets:0,queue:[],level,levelId,assignment:assignment||null};
@@ -146,4 +146,18 @@ export function buildWavePlan(data,turn,roster=null,table=null){
   queue.push({id,route:pick.index,cost:enemyCost(waveTable,id),placeholder:pack.unfilled,unfilled:pack.unfilled});
  });
  return {round:turn.round,benchmark:false,total:queue.length,targets:queue.length,queue:scheduleWaveQueue(queue,level,turn.round),level,levelId,assignment,scale,pack,filled:pack.unfilled?0:queue.length,placeholders:pack.unfilled?queue.length:0};
+}
+
+// 最终 Boss 战的 30 名增援：候选只取本局三条特训词条的 III 档（高压）模板，
+// 再用独立种子每 3 秒抽一名，并从本阵地保存的上/下红门路线入场。
+export function buildFinalBossAddQueue(data,roster,seed,doorRoutes,table=null){
+ if(!Array.isArray(roster?.types)||roster.types.length!==3||!Array.isArray(doorRoutes)||doorRoutes.length!==2)throw Error('最终 Boss 波次缺少三条特训词条或上下红门路线');
+ const sourceTable=filterRandomPoolTable(table||loadWaveTable(),data),candidatePool=[];
+ roster.types.forEach((type,index)=>{
+  const pack=fillBudgetWave(waveRng((Number(seed)^0x51ed270b^Math.imul(index+1,0x9e3779b9))>>>0),sourceTable,type,3);
+  for(const id of pack.ids)if(data.enemies?.[id]&&enemyPoolEligible(id,data)&&!['BOSS','LEADER'].includes(data.enemies[id].levelType))candidatePool.push(id);
+ });
+ if(!candidatePool.length)throw Error('三条特训词条的 III 档敌人池均为空');
+ const random=waveRng((Number(seed)^0x6d2b79f5)>>>0);
+ return Array.from({length:30},(_,index)=>{const id=candidatePool[Math.floor(random()*candidatePool.length)];return {id,at:(index+1)*3,route:random()<.5?0:1,cost:enemyCost(sourceTable,id),derived:false};});
 }

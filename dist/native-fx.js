@@ -576,6 +576,93 @@ export function drawSeesCore(c,point,z,battle,{reduceFx=false,formatText=null}={
  }
  return true;
 }
+const SEES_CORE_SCREEN_SECONDS=1;
+function seesPixelRandom(seed,index){
+ let value=(Number(seed)||0)+Math.imul(index+1,0x9e3779b1);value|=0;
+ value=Math.imul(value^(value>>>16),0x7feb352d);value=Math.imul(value^(value>>>15),0x846ca68b);value^=value>>>16;
+ return (value>>>0)/4294967296;
+}
+function seesFramePoint(progress,width,height,inset){
+ const w=Math.max(1,width-inset*2),h=Math.max(1,height-inset*2),length=2*(w+h),d=((progress%1)+1)%1*length;
+ if(d<w)return{x:inset+d,y:inset,tx:1,ty:0,nx:0,ny:1};
+ if(d<w+h)return{x:inset+w,y:inset+d-w,tx:0,ty:1,nx:-1,ny:0};
+ if(d<2*w+h)return{x:inset+w-(d-w-h),y:inset+h,tx:-1,ty:0,nx:0,ny:-1};
+ return{x:inset,y:inset+h-(d-2*w-h),tx:0,ty:-1,nx:1,ny:0};
+}
+function drawSeesPixelBlade(c,x,y,angle,alpha,scale=1){
+ c.save();c.translate(Math.round(x),Math.round(y));c.rotate(angle);c.globalCompositeOperation='lighter';
+ for(let i=-9;i<=9;i++){
+  const taper=1-Math.abs(i)/12,px=Math.round(i*3*scale),h=Math.max(2,Math.round((2+taper*2)*scale));
+  c.fillStyle=`rgba(255,244,206,${(alpha*taper).toFixed(3)})`;c.fillRect(px,Math.round(-h/2),Math.max(2,Math.round(3*scale)),h);
+  if(i%3===0){c.fillStyle=`rgba(150,214,255,${(alpha*taper*.68).toFixed(3)})`;c.fillRect(px,Math.round(h/2),Math.max(2,Math.round(2*scale)),Math.max(1,Math.round(scale)));}
+ }
+ c.restore();
+}
+function drawSeesCoreCornerHit(c,x,y,angle,alpha){
+ if(alpha<=0)return;
+ c.save();c.translate(Math.round(x),Math.round(y));c.rotate(angle);c.globalCompositeOperation='lighter';
+ for(let i=0;i<5;i++){
+  const reach=7+i*5,size=i<2?4:3,a=alpha*(1-i*.13);
+  c.fillStyle=`rgba(255,244,206,${a.toFixed(3)})`;c.fillRect(reach,0,size,size);
+  c.fillStyle=`rgba(150,214,255,${(a*.65).toFixed(3)})`;c.fillRect(-reach,-size,size,size);
+ }
+ c.restore();
+}
+// Full viewport S.E.E.S. presentation. It reads the same simulation-timed event as the local ring;
+// pixel positions come from the event id, so frames stay stable and never affect combat state.
+export function drawSeesCoreScreenFx(c,battle,width,height,{reduceFx=false}={}){
+ const s=battle?.s;if(!s||width<=0||height<=0)return false;
+ const hits=(s.events||[]).filter(e=>e.type==='sees-core'&&s.time-e.t>=0&&s.time-e.t<SEES_CORE_SCREEN_SECONDS);
+ if(!hits.length)return false;
+ c.save();
+ for(const e of hits){
+  const age=s.time-e.t,k=Math.max(0,Math.min(1,age/SEES_CORE_SCREEN_SECONDS)),fadeIn=Math.min(1,age/.055),fadeOut=Math.min(1,(1-k)/.24),fade=fadeIn*fadeOut;
+  const inset=Math.max(18,Math.min(width,height)*.045),seed=Number(e.id)||Math.round((Number(e.t)||0)*1000);
+  if(reduceFx){
+   const alpha=.28*(1-k),length=Math.max(18,Math.min(width,height)*.085);
+   c.fillStyle=`rgba(255,244,206,${alpha.toFixed(3)})`;
+   for(const corner of [{x:inset,y:inset,sx:1,sy:1},{x:width-inset,y:inset,sx:-1,sy:1},{x:width-inset,y:height-inset,sx:-1,sy:-1},{x:inset,y:height-inset,sx:1,sy:-1}]){
+    c.fillRect(Math.round(corner.x),Math.round(corner.y),Math.round(length*corner.sx),2);
+    c.fillRect(Math.round(corner.x),Math.round(corner.y),2,Math.round(length*corner.sy));
+   }
+   continue;
+  }
+  const impact=Math.max(0,1-age/.17);
+  if(impact>0){
+   const corners=[{x:inset,y:inset,a:Math.PI/4},{x:width-inset,y:inset,a:3*Math.PI/4},{x:width-inset,y:height-inset,a:-Math.PI/4},{x:inset,y:height-inset,a:-3*Math.PI/4}];
+   for(const corner of corners)drawSeesCoreCornerHit(c,corner.x,corner.y,corner.a,impact*.78);
+  }
+  const perimeter=2*(Math.max(1,width-2*inset)+Math.max(1,height-2*inset));
+  for(let blade=0;blade<4;blade++){
+   const start=blade*.055,span=.74,progress=(age-start)/span;
+   if(progress<0||progress>1)continue;
+   const orbit=(progress*.9+blade*.25)%1,p=seesFramePoint(orbit,width,height,inset),bladeFade=Math.min(1,progress/.08,(1-progress)/.16)*fade;
+   drawSeesPixelBlade(c,p.x+p.nx*3,p.y+p.ny*3,p.tx===0?Math.atan2(p.ty,p.tx)+(blade%2?-.58:.58):Math.atan2(p.ty,p.tx)+(blade%2?.58:-.58),bladeFade*.9);
+   for(let trail=1;trail<=7;trail++){
+    const q=seesFramePoint(orbit-trail*5/perimeter,width,height,inset),a=bladeFade*(1-trail/8)*.6;
+    c.fillStyle=`rgba(150,214,255,${a.toFixed(3)})`;c.fillRect(Math.round(q.x),Math.round(q.y),3,3);
+   }
+  }
+  // Smoke breaks into blocky pixels along the perimeter and drifts just inside the frame.
+  for(let i=0;i<20;i++){
+   const seedA=seesPixelRandom(seed,i*5),seedB=seesPixelRandom(seed,i*5+1),seedC=seesPixelRandom(seed,i*5+2),born=.13+seedA*.4,life=.34+seedB*.28,p=(age-born)/life;
+   if(p<0||p>1)continue;
+   const edge=seesFramePoint(seedC+p*(seedB-.5)*.035,width,height,inset),drift=5+p*(10+seedA*18),size=Math.round(2+seedB*3);
+   const x=Math.round(edge.x+edge.nx*drift+edge.tx*(seedA-.5)*9),y=Math.round(edge.y+edge.ny*drift+edge.ty*(seedA-.5)*9),alpha=(1-p)*fade*(.22+seedC*.2);
+   c.fillStyle=`rgba(22,47,45,${alpha.toFixed(3)})`;c.fillRect(x,y,size,size);
+   if(i%4===0){c.fillStyle=`rgba(126,223,192,${(alpha*.62).toFixed(3)})`;c.fillRect(x+size,y-size,2,2);}
+  }
+  // Short impact sparks; fixed event seeds prevent per-frame flicker.
+  for(let i=0;i<18;i++){
+   const seedA=seesPixelRandom(seed,120+i*3),seedB=seesPixelRandom(seed,121+i*3),seedC=seesPixelRandom(seed,122+i*3),born=.025+seedA*.42,life=.12+seedB*.15,p=(age-born)/life;
+   if(p<0||p>1)continue;
+   const edge=seesFramePoint(seedC,width,height,inset),distance=p*(12+seedA*28),side=(seedB-.5)*16,x=Math.round(edge.x+edge.nx*distance+edge.tx*side),y=Math.round(edge.y+edge.ny*distance+edge.ty*side),size=seedC>.55?3:2,alpha=(1-p)*fade*.9;
+   c.fillStyle=i%3===0?`rgba(150,214,255,${alpha.toFixed(3)})`:`rgba(255,244,206,${alpha.toFixed(3)})`;c.fillRect(x,y,size,size);
+  }
+ }
+ c.restore();
+ return true;
+}
 export function drawFx(c,point,z,battle,opts={}){ const s=battle.s,t=s.time,reduce=!!opts.reduceFx;
  drawCombatFx(c,point,z,battle,reduce);
  drawZones(c,point,z,battle,{reduceFx:reduce});

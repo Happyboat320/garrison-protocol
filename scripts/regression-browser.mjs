@@ -144,7 +144,7 @@ const page=await browser.newPage({viewport:{width:1440,height:900}}),errors=[];p
  // 技能测试场的入口已按用户口径从大厅删掉（功能代码仍在，只是暂时没有 UI 入口），
  // 所以这一段浏览器流程暂时到这里为止；等它有了新入口（例如接到「输入密码」后面）再补回来。
  await page.locator('[data-act=new]').click();assert.match(await page.locator('body').innerText(),/战前准备/);await page.locator('[data-act=begin]').click();await acceptRoundBounty(page);assert.ok(await page.locator('.native-game').isVisible());
- const buy=page.locator('[data-act=buy]').first();await buy.click();await buy.click();assert.equal(await page.locator('.native-bench [data-act=select]').count(),1);const handUnit=page.locator('.native-bench [data-act=select]').first();await handUnit.click();assert.equal(await page.locator('.native-dossier').count(),1);await page.locator('[data-act=inspect-close]').click();assert.equal(await page.locator('.native-dossier').count(),0);await handUnit.click();assert.equal(await page.locator('.native-dossier').count(),1);await page.locator('[data-act=limits]').click();assert.equal(await page.locator('.native-dossier').count(),0);assert.equal(await page.locator('#native-modal').count(),1);assert.match(await page.locator('#native-modal').innerText(),/已知差异/);await page.locator('#native-modal [data-act=close]').click();assert.equal(await page.locator('#native-modal').count(),0);await page.waitForTimeout(550);const canvas=page.locator('#native-canvas');await canvas.scrollIntoViewIfNeeded();const rect=await canvas.boundingBox();assert.ok(rect);await page.mouse.click(rect.x+rect.width*.35,rect.y+rect.height*.25);await page.locator('.native-facing').waitFor({state:'visible'});await page.locator('.native-facing [data-act=aim][data-dir="0"]').click();await page.locator('.native-facing [data-act=place-confirm]').click();assert.match(await page.locator('#native-wave-progress').innerText(),/1 \/ 8/);await page.screenshot({path:'artifacts/s0-s3/prep.png'});
+ const buy=page.locator('[data-act=buy]').first();await buy.click();await buy.click();assert.equal(await page.locator('.native-bench [data-act=select]').count(),1);const handUnit=page.locator('.native-bench [data-act=select]').first();await handUnit.click();assert.equal(await page.locator('.native-dossier').count(),1);await page.locator('[data-act=inspect-close]').click();assert.equal(await page.locator('.native-dossier').count(),0);await handUnit.click();assert.equal(await page.locator('.native-dossier').count(),1);await page.locator('[data-act=limits]').click();assert.equal(await page.locator('.native-dossier').count(),0);assert.equal(await page.locator('#native-modal').count(),1);assert.match(await page.locator('#native-modal').innerText(),/已知差异/);await page.locator('#native-modal [data-act=close]').click();assert.equal(await page.locator('#native-modal').count(),0);await page.waitForTimeout(550);const canvas=page.locator('#native-canvas');await canvas.scrollIntoViewIfNeeded();const rect=await canvas.boundingBox();assert.ok(rect);let facing=false;for(const [px,py] of [[.35,.25],[.45,.3],[.55,.35],[.65,.4],[.3,.55],[.5,.65],[.7,.5]]){await page.mouse.click(rect.x+rect.width*px,rect.y+rect.height*py);await page.waitForTimeout(50);if(await page.locator('.native-facing').isVisible()){facing=true;break;}}assert.ok(facing,'随机阵地上至少应找到一个可部署格');await page.locator('.native-facing [data-act=aim][data-dir="0"]').click();await page.locator('.native-facing [data-act=place-confirm]').click();assert.match(await page.locator('#native-wave-progress').innerText(),/1 \/ 8/);await page.screenshot({path:'artifacts/s0-s3/prep.png'});
  await page.locator('[data-act=start]').click();await page.waitForFunction(()=>document.querySelector('.native-game')?.classList.contains('is-battle'));await page.waitForTimeout(250);assert.match(await page.locator('#native-status').innerText(),/费用|秒/);await page.screenshot({path:'artifacts/s0-s3/combat.png'});
  await page.locator('[data-act=pause]').click();assert.match(await page.locator('[data-act=pause]').innerText(),/继续/);await page.locator('[data-act=pause]').click();
  await page.locator('[data-act=home]').click();assert.ok(await page.locator('[data-act=resume]').count()>=1);await page.reload();await page.waitForFunction(()=>window.__garrisonReady===true);assert.equal(await page.locator('[data-act=resume]').count(),1);
@@ -366,7 +366,10 @@ suite('round-end',async(browser)=>{
    page.on('pageerror',e=>errors.push(e.message));
    await page.route('**/native.bundle.js*',route=>route.fulfill({contentType:'application/javascript',body:instrumented}));
    await page.goto(URL);await page.waitForFunction(()=>window.__garrisonReady);
-   await page.locator('[data-act=new]').click();await page.locator('[data-act=begin]').click();await acceptRoundBounty(page);
+   await page.locator('[data-act=new]').click();
+   assert.match(await page.locator('.native-briefing-boss').innerText(),/卢西恩/);
+   await page.waitForFunction(()=>{const img=document.querySelector('.native-briefing-boss img');return img?.complete&&img.naturalWidth>0;});
+   await page.locator('[data-act=begin]').click();await acceptRoundBounty(page);
    if(mode==='animations-disabled')await page.addStyleTag({content:'*{animation:none!important;transition:none!important}'});
    if(mode==='animations-paused')await page.addStyleTag({content:'.native-round-end *{animation-play-state:paused!important}'});
    for(const loss of [10,0]){
@@ -403,8 +406,8 @@ suite('round-end',async(browser)=>{
 suite('round-end-flow',async(browser)=>{
  const source=await fs.readFile('dist/native.bundle.js','utf8'),marker="root.setAttribute('data-view','native');";
  assert.ok(source.includes(marker));
- const instrumented=source.replace(marker,"window.__roundEndFlow={state,render,buildPhasePlan,data};"+marker);
- for(const kind of ['wave','dummy-timeout','dummy-manual']){
+ const instrumented=source.replace(marker,"window.__roundEndFlow={state,render,save,showResult,buildPhasePlan,data};"+marker);
+ for(const kind of ['wave','boss-timeout','boss-win']){
   const page=await browser.newPage({reducedMotion:'no-preference'}),errors=[];
   try{
    page.on('pageerror',e=>errors.push(e.message));
@@ -417,10 +420,14 @@ suite('round-end-flow',async(browser)=>{
     state.game.s.round=buildPhasePlan(data,state.game.s.modeId).find(t=>t.isBossTurn).round;render();
    });
    await page.locator('[data-act=start]').click();
-   if(kind==='dummy-manual')await page.locator('[data-act=stop]').click();
-   else await page.evaluate(()=>{
+   if(kind==='wave')await page.evaluate(()=>{const b=window.__roundEndFlow.state.game.battle;b.s.queue=[];b.s.enemies=[];b.s.pendingEnemySpawns=[];b.s.total=0;b.s.limit=b.s.time+.1;});
+   else if(kind==='boss-win')await page.evaluate(()=>{
+    const {state,render,save,showResult}=window.__roundEndFlow,b=state.game.battle;
+    b.finish('boss-killed');state.game.finishCurrentBattle();state.game.s.runResult.units=[{uid:999,id:'曲线检查',damage:150,dpsSamples:[0,20,50,10]}];save();render();showResult();
+   });
+   else if(kind==='boss-timeout')await page.evaluate(()=>{
     const b=window.__roundEndFlow.state.game.battle;
-    // 保留真实 tick -> finishCurrentBattle -> frame -> render 的结算链路，只快进到时限前。
+    // 保留真实 tick -> finishCurrentBattle -> frame -> render 的结算链路，只快进到 Boss 时限前。
     b.s.frame=Math.ceil(b.s.limit*30)-1;b.s.time=b.s.frame/30;
    });
    if(kind==='wave'){
@@ -429,12 +436,13 @@ suite('round-end-flow',async(browser)=>{
     assert.equal(await page.evaluate(()=>window.__roundEndFlow.state.game.s.round),2);
    }else{
     await page.waitForSelector('#native-modal');
-    assert.match(await page.locator('#native-modal').innerText(),/木桩测试完成/);
-    await page.locator('#native-modal [data-act=close]').click();
+    assert.match(await page.locator('#native-modal').innerText(),/Boss/);
+    if(kind==='boss-win'){assert.equal(await page.locator('.native-dps-chart').count(),1,'角色伤害存在时报告应显示曲线');assert.match(await page.locator('.native-result-dps').innerText(),/角色全程 DPS/);await page.locator('[data-act=result-unit]').click();assert.equal(await page.locator('.native-dps-chart').count(),1);}
+    else assert.match(await page.locator('.native-result-dps').innerText(),/本次没有造成伤害/);
     await page.reload();await page.waitForFunction(()=>window.__garrisonReady);
     assert.equal(await page.evaluate(()=>window.__roundEndFlow.state.game.s.phase),'finished');
     await page.locator('[data-act=result]').click();
-    assert.match(await page.locator('#native-modal').innerText(),/木桩测试完成/);
+    assert.match(await page.locator('#native-modal').innerText(),/Boss/);
     await page.locator('#native-modal [data-act=home]').click();
     assert.equal(await page.locator('.native-lobby').count(),1);
    }

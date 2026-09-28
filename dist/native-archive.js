@@ -125,7 +125,7 @@ export function runRecord(game,data,{at=Date.now()}={}){
    equipment:(u.equipment||[]).map(i=>({chessId:i.chessId,name:itemName(data,i.chessId)}))
   };
  }).sort((a,b)=>b.damage-a.damage||a.name.localeCompare(b.name));
- const history=s.history||[],boss=history.some(r=>r?.kind==='training-dummy')||s.round>=14;
+ const history=s.history||[],boss=history.some(r=>r?.kind==='final-boss'&&r.success===true)||history.some(r=>r?.kind==='training-dummy')||s.round>=14;
  // 存活波数＝**打完且生命还在**的普通波次数：死在最后一波时那一波不算「存活」（用户口径里的存活波数）。
  // 总共打了多少场单独记在 battles 里，方便对着战报核对。
  const battles=history.filter(r=>r?.kind!=='training-dummy').length;
@@ -137,7 +137,7 @@ export function runRecord(game,data,{at=Date.now()}={}){
   battles,
   cleared:boss&&s.hp>0,
   hp:s.hp,maxHp:s.maxHp,
-  finalRound:!!result&&(result.kind==='training-dummy'||s.round>=14),
+  finalRound:!!result&&(result.kind==='final-boss'||result.kind==='training-dummy'||s.round>=14),
   finalKind:result?.kind||null,
   finalDamage:Number(result?.totalDamage)||0,
   finalElapsed:Number(result?.elapsed)||0,

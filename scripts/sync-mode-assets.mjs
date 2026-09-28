@@ -5,6 +5,8 @@ const root='dist/assets/prts';await fs.mkdir(root,{recursive:true});
 const requested=new Map();const add=(id,title,kind)=>requested.set(id,{id,title:'File:'+title,kind});
 for(const s of Object.values(source.season.charShopChessDatas))if(s.charId&&base.entities[s.charId])add(s.charId,'头像_'+base.entities[s.charId].name+'.png','operator');
 for(const {id} of collectModeEnemies(source))if(base.enemies[id])add(id,'头像_敌人_'+base.enemies[id].codex.name.trim()+'.png','enemy');
+// 最终 Boss 通常不在 enemyInfoDict 的道中池里，但战前简报仍须使用它的 PRTS 头像。
+for(const boss of Object.values(source.common.bossInfoDict||{})){const id=boss.handbookEnemyId||boss.enemyId;if(id&&base.enemies[id])add(id,'头像_敌人_'+base.enemies[id].codex.name.trim()+'.png','enemy-boss');}
 for(const s of Object.values(source.season.bandDataListDict))add(s.bandId,'卫戍协议：盟约_策略发起人_'+source.common.bandDataDict[s.bandId].bandName+'.png','strategy');
 const request=async u=>{const r=await fetch(u,{signal:AbortSignal.timeout(45000)});if(!r.ok)throw Error('HTTP '+r.status+' '+u);return r;};
 const normalize=t=>t.replace(/^(File|文件):/,'').replaceAll('_',' ');const existing=JSON.parse(await fs.readFile(root+'/manifest.json','utf8').catch(()=>'{"assets":{}}'));const manifest={schemaVersion:1,sourcePage:'https://prts.wiki/w/卫戍协议：盟约_下半',sourceCommit:source.source.commit,assets:{...existing.assets},missing:[]};const list=[...requested.values()];

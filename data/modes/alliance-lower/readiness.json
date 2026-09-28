@@ -490,7 +490,7 @@
     "requiredSkills": 269,
     "effectTemplates": 72,
     "enemies": 215,
-    "artAssets": 380
+    "artAssets": 390
   },
   "dataReferences": [],
   "s4": {
@@ -530,24 +530,24 @@
       "dual-client sync check"
     ]
   },
-  "finalStageException": {
-    "kind": "training-dummy",
-    "health": "infinite",
-    "manualFinish": true,
-    "clock": "bossTurnHpReduceTime"
+  "finalStage": {
+    "kind": "final-boss",
+    "availableBossIds": [
+      "boss_5"
+    ],
+    "duration": "100 seconds + remaining life at battle start",
+    "adds": {
+      "count": 30,
+      "interval": 3,
+      "doors": "upper/lower"
+    },
+    "victory": "boss-killed"
   },
   "s6": {
     "dataCatalogComplete": true,
     "playableParityComplete": false,
-    "acceptedScopeComplete": true,
-    "acceptanceEvidence": {
-      "tests": [
-        "npm test (301 passed)",
-        "npm run test:browser (passed)"
-      ],
-      "manifest": "112 operators, needsSpecialHandler=0",
-      "boundary": "exact action frames and mode-external dependencies remain S7 comparison scope"
-    },
+    "acceptedScopeComplete": false,
+    "acceptanceEvidence": null,
     "dependencyScope": "visible fixed presets only; DIY/support selections require local profile resolution",
     "requiredSkillIds": [
       "skchr_inside_1",

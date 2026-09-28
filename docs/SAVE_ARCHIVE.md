@@ -23,8 +23,8 @@
 | `waves` | **存活波数**＝打完且生命还在的普通波次数（死在最后一波时那一波不算） | `s.history` + `s.hp` |
 | `battles` | 总共打了几场（对账用） | `s.history` |
 | `round` / `hp` / `maxHp` | 停在第几回合、剩余生命 | `s.round`／`s.hp` |
-| `cleared` | 是否通关＝打到最终轮且生命 > 0 | `s.history` 里有 `training-dummy`（或 `round>=14`）且 `hp>0` |
-| `finalRound` / `finalKind` | 最终轮是不是木桩轮 | 最后一条结算的 `kind` |
+| `cleared` | 是否击败最终 Boss（旧记录仍兼容） | 最后一条 `final-boss` 结果 `success=true`，或旧局到达最终回合且生命 > 0 |
+| `finalRound` / `finalKind` | 最终轮结算类型（当前为 `final-boss`） | 最后一条 `final-boss`、旧 `training-dummy` 或最终回合结算 |
 | `finalDamage` / `finalElapsed` / `finalDps` / `finalKills` / `finalLeaks` | **最终轮输出**与其它结算数 | `s.runResult`（没有就用 `history.at(-1)`） |
 | `finalBonds[]` | **最终轮盟约情况**：`{id,name,count,rawCount,active}`，按层数降序 | `game.bonds()` → `protocol.activeBonds` |
 | `bannedBonds[]` | 本局缺席（被禁）的盟约 | `s.bondBan.bonds` + 原表名字 |

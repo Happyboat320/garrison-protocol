@@ -422,7 +422,7 @@ export function dealDamage(battle,opts){
  // `creditUid`：**无来源伤害**（PRTS 写「造成的伤害为无来源法术持续伤害」的炼金单元）仍然要把战报归属算给召唤者，
  // 但伤害本身没有 source，所以不会被「来源相关」的效果（反伤、吸血、某些敌人能力）认领。
  const credit=opts.creditUid!=null?getActor(battle.s,opts.creditUid):(source?.kind==='summon'?getActor(battle.s,source.ownerUid):source);
- if(credit&&battle.s.units.includes(credit)&&battle.s.enemies.includes(target)){credit.damage=(credit.damage||0)+result.total;battle.s.damage[credit.uid]=(battle.s.damage[credit.uid]||0)+result.total;}
+ if(credit&&battle.s.units.includes(credit)&&battle.s.enemies.includes(target)){credit.damage=(credit.damage||0)+result.total;battle.s.damage[credit.uid]=(battle.s.damage[credit.uid]||0)+result.total;if(battle.s.finalBossId&&result.total>0){battle.s.damageTimeline??={};const samples=battle.s.damageTimeline[credit.uid]??(battle.s.damageTimeline[credit.uid]=[]),second=Math.max(0,Math.floor(battle.s.time));while(samples.length<=second)samples.push(0);samples[second]+=result.total;}}
  battle.emit('hit',{uid:target.uid,x:target.x,y:target.y,type,amount:result.total,blocked:!!result.blocked,skill:!!opts.skill});
  if(result.blocked)battle.s.effects.push({x:target.x,y:target.y,text:'抵消',life:.5,type:'block'});
  log(battle,'damage',{eventId:event.eventId,parentEventId:event.parentEventId,attackId:event.attackId,cause:event.cause,sourceUid:source?.uid,targetUid:target.uid,hp:result.hp,shield:result.shield,blocked:!!result.blocked});

@@ -21,6 +21,7 @@
 .native-home{display:grid;grid-template-columns:minmax(280px,420px) minmax(0,1fr);gap:48px;align-items:start}.native-home h2,.native-briefing h2{font-size:18px;margin:24px 0 12px}.native-home select{width:100%;padding:12px}.native-home p,.native-briefing>p{line-height:1.8;font-size:13px}.native-home button,.native-home a{display:block;width:100%;margin-top:12px;padding:14px}.native-tags{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:8px 0 28px}.native-tags article{padding:16px;background:#edf2eb;border:1px solid #a2bdb0}.native-tags b{display:block;font-size:22px}.native-tags small{display:block;margin:6px 0;font-size:11px;opacity:.7}.native-tags p{margin:0;font-size:13px;line-height:1.6}.native-briefing .native-strategies{max-height:480px}
 /* 战前简报：地图缩略图排在「本局特训」词条右侧（`.with-map` 给词条容器补一列，颜色走上面的 .terrain-* 色板）。 */
 .native-tags.with-map{grid-template-columns:repeat(3,minmax(0,1fr)) minmax(170px,220px);align-items:start}
+.native-briefing-tagline{display:flex;align-items:center;justify-content:space-between;gap:14px}.native-briefing-boss{display:inline-flex;align-items:center;gap:8px;padding:5px 10px;border:1px solid #a97a4e;border-radius:8px;background:#2a2020;color:#f5d6b8}.native-briefing-boss small{font-size:10px;letter-spacing:.08em;color:#f4a776}.native-briefing-boss img{width:34px;height:34px;object-fit:contain}.native-briefing-boss b{font-size:13px}
 .native-briefing-map{display:flex;flex-direction:column;gap:6px;padding:12px;color:#cfe7de;background:#0d2023d9;border:1px solid #386764;box-shadow:0 14px 40px #0002}
 .native-briefing-map b{font-size:14px;color:#edfdf6}
 .native-briefing-map small{color:#80b5ab;font-family:var(--mono,'Arial Narrow',sans-serif);font-size:10px;letter-spacing:.05em}
@@ -464,6 +465,7 @@ html.native-landscape-ui .native-strategy-select-actions button{padding:7px 13px
    「损失生命 / 完美通关」的播报接着在同一个横幅里出现。只做表现，数值来自 s.lastBattle。 */
 /* 作战报告底部动作行吸底：手机伤害列表要滚动时，回到大厅／导出不能被列表顶出屏幕。 */
 .native-result-actions{position:sticky;bottom:-1px;z-index:1;display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;padding:10px 0 4px;background:linear-gradient(180deg,#17292400,#172924 34%)}
+.native-result-dps{margin:18px 0;padding:14px;border:1px solid #315451;border-radius:10px;background:#102225}.native-result-dps h3{margin:0 0 10px;color:#cce7dd;font-size:14px}.native-result-unit-list{display:flex;flex-wrap:wrap;gap:6px}.native-result-unit-list button{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:7px 10px;border:1px solid #345a55;border-radius:7px;background:#172d30;color:#d7e8e1;font-size:12px}.native-result-unit-list button.chosen{border-color:#77e2ba;background:#1a423a}.native-result-unit-list b{color:#f2d39a}.native-dps-chart{display:block;width:100%;height:120px;margin:12px 0 4px;overflow:visible}.native-dps-chart path{fill:none;stroke:#54756d;stroke-width:1}.native-dps-chart polyline{fill:none;stroke:#79e0b8;stroke-width:2;vector-effect:non-scaling-stroke}.native-result-dps>small{color:#91b1a7;font-size:10px}
 .native-result-actions>button{flex:1 1 140px;padding:11px 16px;font-size:13px}
 .native-round-end{--round-accent:#77e8d0;position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;color:#e7fff4;font-family:inherit;text-align:center;padding:12px;box-sizing:border-box}
 .native-round-end[data-tone=danger]{--round-accent:#ffac88}
@@ -969,3 +971,7 @@ html.native-landscape-ui #native-modal .native-ban-entry{display:block;width:100
  html.native-landscape-ui .native-prep-actions button{padding:4px 6px;font-size:9px}
 }
 @media(prefers-reduced-motion:reduce){.native-prep-range-cell.is-active:after{animation:none}}
+
+/* Full viewport S.E.E.S. frame FX stays below controls and above the battlefield canvas. */
+.native-sees-fx-screen{position:fixed;inset:0;z-index:1;display:block;width:100vw;height:100vh;height:100dvh;padding:0;border:0;pointer-events:none}
+html.native-need-rotate .native-sees-fx-screen{position:absolute;inset:0;width:100%;height:100%}

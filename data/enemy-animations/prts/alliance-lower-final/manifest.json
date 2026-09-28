@@ -1,0 +1,205 @@
+{
+  "schemaVersion": 1,
+  "source": "PRTS enemy /spine pages",
+  "retrievedAt": "2026-09-28T00:59:27.083Z",
+  "models": [
+    {
+      "bossId": "boss_1",
+      "enemyId": "enemy_9013_acstmk",
+      "name": "假想敌：胄",
+      "wiki": "假想敌：胄",
+      "wikiUrl": "https://prts.wiki/w/%E5%81%87%E6%83%B3%E6%95%8C%EF%BC%9A%E8%83%84/spine",
+      "prefix": "https://torappu.prts.wiki/assets/enemy_spine/enemy_9013_acstmk/",
+      "files": [
+        {
+          "url": "https://torappu.prts.wiki/assets/enemy_spine/enemy_9013_acstmk/enemy_9013_acstmk.atlas",
+          "file": "data/enemy-animations/prts/alliance-lower-final/enemy_9013_acstmk/enemy_9013_acstmk.atlas",
+          "bytes": 1548,
+          "sha256": "8ea673b038754c0cd4aa179b6d9b39a01321598cb18a05865d026b2abf0c4578"
+        },
+        {
+          "url": "https://torappu.prts.wiki/assets/enemy_spine/enemy_9013_acstmk/enemy_9013_acstmk.skel",
+          "file": "data/enemy-animations/prts/alliance-lower-final/enemy_9013_acstmk/enemy_9013_acstmk.skel",
+          "bytes": 67747,
+          "sha256": "7e807f1b574b3bc0135940252f1f8fa653e59a926f9c988eacd926d419ae9280"
+        },
+        {
+          "url": "https://torappu.prts.wiki/assets/enemy_spine/enemy_9013_acstmk/enemy_9013_acstmk.png",
+          "file": "data/enemy-animations/prts/alliance-lower-final/enemy_9013_acstmk/enemy_9013_acstmk.png",
+          "bytes": 236808,
+          "sha256": "766a887873e1edda694d711ff4cf245a3d381cc81c78a077d6dac3a38743f5b6"
+        }
+      ]
+    },
+    {
+      "bossId": "boss_2",
+      "enemyId": "enemy_9017_achunt",
+      "name": "假想敌：铳",
+      "wiki": "假想敌：铳",
+      "wikiUrl": "https://prts.wiki/w/%E5%81%87%E6%83%B3%E6%95%8C%EF%BC%9A%E9%93%B3/spine",
+      "prefix": "https://torappu.prts.wiki/assets/enemy_spine/enemy_9017_achunt/",
+      "files": [
+        {
+          "url": "https://torappu.prts.wiki/assets/enemy_spine/enemy_9017_achunt/enemy_9017_achunt.atlas",
+          "file": "data/enemy-animations/prts/alliance-lower-final/enemy_9017_achunt/enemy_9017_achunt.atlas",
+          "bytes": 3699,
+          "sha256": "5e93de56a2eb9e65e7de09ccdb654b75d3a1c1a2a10d539581433ef460c3e57b"
+        },
+        {
+          "url": "https://torappu.prts.wiki/assets/enemy_spine/enemy_9017_achunt/enemy_9017_achunt.skel",
+          "file": "data/enemy-animations/prts/alliance-lower-final/enemy_9017_achunt/enemy_9017_achunt.skel",
+          "bytes": 118172,
+          "sha256": "a031319357754e4e5c46a4b8c8d85a86adc4b3cb0ee60e753aba8db256d5f951"
+        },
+        {
+          "url": "https://torappu.prts.wiki/assets/enemy_spine/enemy_9017_achunt/enemy_9017_achunt.png",
+          "file": "data/enemy-animations/prts/alliance-lower-final/enemy_9017_achunt/enemy_9017_achunt.png",
+          "bytes": 112457,
+          "sha256": "83b3bc5ad9abfaf9afb77fa070269dd042b5ed8f95b87cd456f90a75403826a1"
+        }
+      ]
+    },
+    {
+      "bossId": "boss_3",
+      "enemyId": "enemy_9021_acduml",
+      "name": "假想敌：管",
+      "wiki": "假想敌：管",
+      "wikiUrl": "https://prts.wiki/w/%E5%81%87%E6%83%B3%E6%95%8C%EF%BC%9A%E7%AE%A1/spine",
+      "prefix": "https://torappu.prts.wiki/assets/enemy_spine/enemy_9021_acduml/",
+      "files": [
+        {
+          "url": "https://torappu.prts.wiki/assets/enemy_spine/enemy_9021_acduml/enemy_9021_acduml.atlas",
+          "file": "data/enemy-animations/prts/alliance-lower-final/enemy_9021_acduml/enemy_9021_acduml.atlas",
+          "bytes": 5010,
+          "sha256": "c96fc1b469b50ec9f9b8bd7f36dd208a32829a0548b47dbd85ea256ab6fed0f2"
+        },
+        {
+          "url": "https://torappu.prts.wiki/assets/enemy_spine/enemy_9021_acduml/enemy_9021_acduml.skel",
+          "file": "data/enemy-animations/prts/alliance-lower-final/enemy_9021_acduml/enemy_9021_acduml.skel",
+          "bytes": 100255,
+          "sha256": "a46df3eb9fe893dfd67a48d96477b55b7a79ddd627bc19907bde727916670a8c"
+        },
+        {
+          "url": "https://torappu.prts.wiki/assets/enemy_spine/enemy_9021_acduml/enemy_9021_acduml.png",
+          "file": "data/enemy-animations/prts/alliance-lower-final/enemy_9021_acduml/enemy_9021_acduml.png",
+          "bytes": 210481,
+          "sha256": "fdd7f5db84db718204517773b08bccdef4772db8035008e0c8bef69b4487e573"
+        }
+      ]
+    },
+    {
+      "bossId": "boss_4",
+      "enemyId": "enemy_1521_dslily",
+      "name": "盐风主教昆图斯",
+      "wiki": "盐风主教昆图斯",
+      "wikiUrl": "https://prts.wiki/w/%E7%9B%90%E9%A3%8E%E4%B8%BB%E6%95%99%E6%98%86%E5%9B%BE%E6%96%AF/spine",
+      "prefix": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1521_dslily/",
+      "files": [
+        {
+          "url": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1521_dslily/enemy_1521_dslily.atlas",
+          "file": "data/enemy-animations/prts/alliance-lower-final/enemy_1521_dslily/enemy_1521_dslily.atlas",
+          "bytes": 12124,
+          "sha256": "c058efea60ec01569e5f85b12fba64780b5b3619e0e7086f63f83919da58acab"
+        },
+        {
+          "url": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1521_dslily/enemy_1521_dslily.skel",
+          "file": "data/enemy-animations/prts/alliance-lower-final/enemy_1521_dslily/enemy_1521_dslily.skel",
+          "bytes": 775533,
+          "sha256": "09600c535ac34e76506c0314ccba9c1a6fe99370bdb5e331e38b2f2e2cb8862a"
+        },
+        {
+          "url": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1521_dslily/enemy_1521_dslily.png",
+          "file": "data/enemy-animations/prts/alliance-lower-final/enemy_1521_dslily/enemy_1521_dslily.png",
+          "bytes": 1035063,
+          "sha256": "ec4d9ae7d0de2846a1af1b4d956c010374d7b80fc08d7e7da96b4f65cb241201"
+        }
+      ]
+    },
+    {
+      "bossId": "boss_5",
+      "enemyId": "enemy_2016_csphtm",
+      "name": "卢西恩，“猩红血钻”",
+      "wiki": "卢西恩，“猩红血钻”",
+      "wikiUrl": "https://prts.wiki/w/%E5%8D%A2%E8%A5%BF%E6%81%A9%EF%BC%8C%E2%80%9C%E7%8C%A9%E7%BA%A2%E8%A1%80%E9%92%BB%E2%80%9D/spine",
+      "prefix": "https://torappu.prts.wiki/assets/enemy_spine/enemy_2016_csphtm/",
+      "files": [
+        {
+          "url": "https://torappu.prts.wiki/assets/enemy_spine/enemy_2016_csphtm/enemy_2016_csphtm.atlas",
+          "file": "data/enemy-animations/prts/alliance-lower-final/enemy_2016_csphtm/enemy_2016_csphtm.atlas",
+          "bytes": 7731,
+          "sha256": "cb3c7ac208177a67ffc8e68ac5e50e3d73aa63a83429ae8980ddffbcaa15a212"
+        },
+        {
+          "url": "https://torappu.prts.wiki/assets/enemy_spine/enemy_2016_csphtm/enemy_2016_csphtm.skel",
+          "file": "data/enemy-animations/prts/alliance-lower-final/enemy_2016_csphtm/enemy_2016_csphtm.skel",
+          "bytes": 369927,
+          "sha256": "4e0af01b1958ea49b4145418d0f654455f5bdf034002141a13b89b6d6765f9bb"
+        },
+        {
+          "url": "https://torappu.prts.wiki/assets/enemy_spine/enemy_2016_csphtm/enemy_2016_csphtm.png",
+          "file": "data/enemy-animations/prts/alliance-lower-final/enemy_2016_csphtm/enemy_2016_csphtm.png",
+          "bytes": 177406,
+          "sha256": "535d6503793b3f2f7f57e8946ca27785c108dba5ef7f94f61eed2d05928e6bb0"
+        }
+      ]
+    },
+    {
+      "bossId": "boss_6",
+      "enemyId": "enemy_1559_vtlionk",
+      "gameEnemyId": "enemy_9032_aclionk",
+      "name": "阿利斯泰尔，帝国余晖",
+      "wiki": "阿利斯泰尔，帝国余晖",
+      "wikiUrl": "https://prts.wiki/w/%E9%98%BF%E5%88%A9%E6%96%AF%E6%B3%B0%E5%B0%94%EF%BC%8C%E5%B8%9D%E5%9B%BD%E4%BD%99%E6%99%96/spine",
+      "prefix": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1559_vtlionk/",
+      "files": [
+        {
+          "url": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1559_vtlionk/enemy_1559_vtlionk.atlas",
+          "file": "data/enemy-animations/prts/alliance-lower-final/enemy_1559_vtlionk/enemy_1559_vtlionk.atlas",
+          "bytes": 3700,
+          "sha256": "2ef3e81329bcd13a10487e9d36284651afccf560674989dd6a4b187d5bcf2fe7"
+        },
+        {
+          "url": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1559_vtlionk/enemy_1559_vtlionk.skel",
+          "file": "data/enemy-animations/prts/alliance-lower-final/enemy_1559_vtlionk/enemy_1559_vtlionk.skel",
+          "bytes": 127566,
+          "sha256": "330c17ca790bb5d219c98f1ac8c408307bfbc3e032f403ac57e3165186733846"
+        },
+        {
+          "url": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1559_vtlionk/enemy_1559_vtlionk.png",
+          "file": "data/enemy-animations/prts/alliance-lower-final/enemy_1559_vtlionk/enemy_1559_vtlionk.png",
+          "bytes": 154611,
+          "sha256": "f96f448c790d8c51495b04cddb65d7531e763e0d2a7483004f51fe315aa49b16"
+        }
+      ]
+    },
+    {
+      "bossId": "boss_7",
+      "enemyId": "enemy_2054_smdeer",
+      "gameEnemyId": "enemy_9033_acdeer",
+      "name": "“萨米的意志”",
+      "wiki": "“萨米的意志”",
+      "wikiUrl": "https://prts.wiki/w/%E2%80%9C%E8%90%A8%E7%B1%B3%E7%9A%84%E6%84%8F%E5%BF%97%E2%80%9D/spine",
+      "prefix": "https://torappu.prts.wiki/assets/enemy_spine/enemy_2054_smdeer/",
+      "files": [
+        {
+          "url": "https://torappu.prts.wiki/assets/enemy_spine/enemy_2054_smdeer/enemy_2054_smdeer.atlas",
+          "file": "data/enemy-animations/prts/alliance-lower-final/enemy_2054_smdeer/enemy_2054_smdeer.atlas",
+          "bytes": 3642,
+          "sha256": "91cbd0abba637f0f168f6decb7ed6abf966040a187c839a6e05a624ddabfbc1f"
+        },
+        {
+          "url": "https://torappu.prts.wiki/assets/enemy_spine/enemy_2054_smdeer/enemy_2054_smdeer.skel",
+          "file": "data/enemy-animations/prts/alliance-lower-final/enemy_2054_smdeer/enemy_2054_smdeer.skel",
+          "bytes": 204901,
+          "sha256": "a57127deaa5632af85351cd3175d2b96bb24b0d6f3c05e60c5b7a412139d6064"
+        },
+        {
+          "url": "https://torappu.prts.wiki/assets/enemy_spine/enemy_2054_smdeer/enemy_2054_smdeer.png",
+          "file": "data/enemy-animations/prts/alliance-lower-final/enemy_2054_smdeer/enemy_2054_smdeer.png",
+          "bytes": 633618,
+          "sha256": "09f60401c5086000be51e137e7b2c09112b155965750e4724a078a6ea240f30d"
+        }
+      ]
+    }
+  ]
+}
