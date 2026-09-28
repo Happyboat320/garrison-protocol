@@ -82,7 +82,7 @@ export function isolatedPlatform(tile){return !!tile&&tile.tileKey==='tile_fence
 // `hitCountHp` 是运行时状态（碎片、余烬、再生形态都会置真），拿它当缩放依据会让碎片以外的敌人也缩水。
 export const FORM_SPRITE_TINTS=['ember','puppet'];
 export function enemySprite(enemy){
- const base={key:enemy?.id||null,scale:Number(enemy?.spriteScale)||1,tint:null};
+ const base={key:enemy?.spriteId||enemy?.id||null,scale:Number(enemy?.spriteScale)||1,tint:null};
  if(!enemy||enemy.revivePhase!=='form')return base;
  const sprite=enemy.revive?.sprite;
  if(!sprite)return base;

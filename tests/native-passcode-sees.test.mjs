@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
 import {NATIVE_DATA} from '../dist/runtime-data.js';
-import {renderPreparePage} from '../dist/native-prep.js';
+import {renderArchiveWindow} from '../dist/native-prep.js';
 import {appendRun,emptyArchive,normalizeArchive,runRecord,saveArchive,loadArchive} from '../dist/native-archive.js';
 import {PASSCODES,applyPasscode,matchPasscode,normalizePasscode} from '../dist/native-passcode.js';
 
@@ -62,12 +62,13 @@ test('密码表登记完整：flag 必须在档案默认值里有对应项',()=>
  }
 });
 
-test('解锁后战前准备页的【S.E.E.S.】显示为开',()=>{
+test('解锁后战绩与解锁浮窗的【S.E.E.S.】显示为开',()=>{
  const g=new NativeSessionStub();
  const archive=applyPasscode(appendRun(emptyArchive(),runRecord(g,NATIVE_DATA,{at:1700000000000})),'20100305').archive;
- const html=renderPreparePage(NATIVE_DATA,{tab:'operator'},{esc:v=>String(v??''),avatar:()=>'',archive});
- assert.match(html,/data-act="prep-flags-sees" class="chosen" aria-pressed="true"/);
- assert.ok(html.includes('【S.E.E.S.】开'));
+ // 2026-09-28 重设计：解锁标记开关在「战绩与解锁」浮窗里（不再是战前准备页的区块）。
+ const html=renderArchiveWindow(archive,v=>String(v??''));
+ assert.match(html,/data-act="prep-flags-sees" class="native-archive-toggle" aria-pressed="true"/);
+ assert.ok(html.includes('策略：S.E.E.S.'));
 });
 
 test('接线门禁：确认键走 applyPasscode、命中弹窗、未命中只提示「什么都没有发生」',()=>{

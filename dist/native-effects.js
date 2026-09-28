@@ -358,6 +358,9 @@ export function dealDamage(battle,opts){
  // 唯一入口就是这里（`NativeBattle.moduleElementBurstScale`），别在技能结算里再乘一次。
  if(source&&battle.s.enemies.includes(target)&&battle.moduleElementBurstScale)value*=battle.moduleElementBurstScale(source,target);
  if(!opts.sourceDamageHandled)value*=battle.enemyOutgoingDamageMultiplier?.(source)??1;
+ // 萨米的意志半血被动（PRTS：生命值低于50%时，受到的物理/法术伤害降低60%）：真伤与元素损伤/爆发不跟减，
+ // 神经损伤走 applyElementDamage 也不经过这里。madnessResist 在 prepareFinalBoss 从本期黑板读入。
+ if(target.madnessResist&&battle.s.enemies.includes(target)&&['physical','arts'].includes(type)&&target.hp<target.maxHp*.5)value*=1-Number(target.madnessResist);
  // 「无视闪避」（opts.ignoreDodge）：整段闪避判定直接跳过——虎狼丸天赋「黑色猎犬」的 6 次斩击文案写「无视闪避」，
 // 以前靠在结算期间把 `enemyUnblockedDodge` 压 0 再写回来绕过，现在有正式开关（伤害管线里唯一的闪避入口就在这里）。
  const ignoreDodge=opts.ignoreDodge===true;

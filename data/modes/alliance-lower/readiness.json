@@ -533,7 +533,9 @@
   "finalStage": {
     "kind": "final-boss",
     "availableBossIds": [
-      "boss_5"
+      "boss_4",
+      "boss_5",
+      "boss_7"
     ],
     "duration": "100 seconds + remaining life at battle start",
     "adds": {

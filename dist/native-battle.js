@@ -16,6 +16,7 @@ import {equipmentStatMods,equipGenericExcluded,equipMagicPenetration,equipWeakne
 import {SEES_BOND_ID,TARTARUS_BOND_ID,seesRun,coreTrueDamagePercent,coreCooldown,isSeesOperator,weaknessSource} from './native-sees.js';
 import {nativeWavePlan} from './native-waves.js';
 import {scheduleWaveQueue,buildFinalBossAddQueue} from './native-wave-random.js';
+import {finalBossMechanics,finalBossSpawnPoint} from './native-final-boss.js';
 import {enemyCombatScale} from './native-wave-random.js';
 import {damage,applyDamage,recoverHP,attackTiming,FPS} from './combat.js';
 import {applyStatus,tickStatuses,permissions,statusAttributeChanges,isIsolated,yinYangAttackScale} from './status.js';
@@ -63,8 +64,20 @@ export class NativeBattle {
   const addScale=enemyCombatScale(this.data.season.modeDataDict[this.economy.s.modeId],turn.round,{hidden:false});
   this.s.queue=buildFinalBossAddQueue(this.data,this.economy.s.waveRoster,this.economy.s.finalBossAddSeed||this.economy.s.randomState,doors);
   this.s.total=this.s.queue.length+1;
-  const start=patrol[0];this.combatScale={atk:1,hp:1,moveSpeed:1};this.spawn({id:boss.enemyId,route:0},{x:start.x,y:start.y,route:patrol,routeDiagonal:false});
-  const actor=this.s.enemies.at(-1);actor.hp=actor.maxHp=actor.baseMaxHp=actor.finalBossHp=Number(boss.hp);actor.finalBoss=true;actor.finalBossPatrol=true;actor.spriteScale=2.2;actor.leak=0;this.s.finalBossUid=actor.uid;this.combatScale=addScale;
+  const mechanics=finalBossMechanics(boss.enemyId),start=mechanics?.static?finalBossSpawnPoint(this.map,patrol,[...this.s.units,...(this.s.summons||[])]):patrol[0];this.combatScale={atk:1,hp:1,moveSpeed:1};this.spawn({id:boss.enemyId,route:0},{x:start.x,y:start.y,route:patrol,routeDiagonal:false});
+  const actor=this.s.enemies.at(-1);actor.hp=actor.maxHp=actor.baseMaxHp=actor.finalBossHp=Number(boss.hp);actor.finalBoss=true;actor.finalBossPatrol=true;actor.spriteId=boss.handbookEnemyId||boss.enemyId;actor.leak=0;this.s.finalBossUid=actor.uid;this.combatScale=addScale;
+  // 逐名机制登记（native-final-boss.js FINAL_BOSS_MECHANICS）：受击矩形、自缚站桩、不可阻挡、失衡免疫与
+  // 表现缩放。两位站桩 Boss 的普攻由 native-enemy-skills 的逐名 tick 全权接管，通用普攻必须关掉，
+  // 否则会出现「冰凌/延迟斩之外又多一次普通单发」的双算。
+  actor.spriteScale=mechanics?.spriteScale??2.2;
+  if(mechanics?.hitRect)actor.hitRect={...mechanics.hitRect};
+  if(mechanics?.static)actor.formHold=true;
+  if(mechanics?.unblockable){actor.unblockable=true;actor.baseUnblockable=true;}
+  if(mechanics?.shiftImmune)actor.shiftImmune=true;
+  if(mechanics?.range&&!actor.range)actor.range=mechanics.range;
+  if(mechanics?.static){actor.canAttack=actor.baseCanAttack=false;}
+  if(boss.enemyId==='enemy_9033_acdeer'){actor.madnessResist=Number(actor.enemyTalent?.['Madness.damage_resistance'])||0;}
+  if(boss.enemyId==='enemy_1521_dslily'){actor.dslilyForm=1;actor.dslilySpawnAt=this.s.time;}
  }
  spawnMineCamp(config){return spawnMineCamp(this,config);}
  toggleMineCamp(uid){return toggleMineCamp(this,uid);}
@@ -116,7 +129,7 @@ export class NativeBattle {
  dominionAttackSpeed(actor){return actor.deployed&&actor.hp>0&&!actor.hidden?dominionCell(this,actor)?.attackSpeed||0:0;}
  onActorMoved(actor){paintDominion(this,actor);}
  enemyAttackTiming(e){return attackTiming(Math.max(.1,e.interval+(e.attackIntervalMod||0)),Math.max(10,Math.min(600,(e.attackSpeed+enemyConditionalAttackSpeed(e)+(e.attackSpeedMod||0)+(e.operatorAttackSpeedMod||0)+enemyWineBuffs(this,e).attackSpeed+statusAttributeChanges(e).attackSpeed+(e.envAttackSpeed||0))*(e.waterAttackSpeedScale??1)*(e.envAttackSpeedScale??1))),windupSeconds(Math.max(.1,e.interval+(e.attackIntervalMod||0))));}
- enemyAttackDamage(enemy,scale=1,target=null){return enemy.atk*scale*yinYangAttackScale(enemy,target)*(enemy.id==='enemy_2048_smgrd'&&dominionCell(this,target)?Number(enemy.enemyTalent['DamageUp.atk_scale']):1)*enemyConditionalAttackMultiplier(enemy,target)*(enemy.waterAttackMultiplier??1)*(1+Math.min(0,statusAttributeChanges(enemy).attack||0));}
+ enemyAttackDamage(enemy,scale=1,target=null){return enemy.atk*scale*yinYangAttackScale(enemy,target)*(enemy.id==='enemy_2048_smgrd'&&dominionCell(this,target)?Number(enemy.enemyTalent['DamageUp.atk_scale']):1)*(enemy.id==='enemy_1521_dslily'&&enemy.dslilyForm>1?1+Number(enemy.enemyTalent?.['atkup'+(enemy.dslilyForm===2?'1':'2')+'.atk']||0):1)*enemyConditionalAttackMultiplier(enemy,target)*(enemy.waterAttackMultiplier??1)*(1+Math.min(0,statusAttributeChanges(enemy).attack||0));}
  enemyDamageDealt(enemy,opts,result){enemyTraitDamageDealt(this,enemy,result);}
  liberatePrisoners(){liberateEnemyPrisoners(this);}
  refreshMudrockShield(enemy,bb){refreshEnemyMudrockShield(this,enemy,bb);}
@@ -433,7 +446,11 @@ export class NativeBattle {
  cellsForRangeId(u,rangeId){const grids=rangeId?this.data.ranges[rangeId]?.grids:null;return grids?.length?this.cellsForGrids(u,grids):null;}
  // forceSkill=true 时无视当前是否开技，一律按技能范围算：自动释放要看的是「开技后能不能打到」。
  rangeWithSkill(u,skill=false,forceSkill=false){const p=this.profile(u),sid=this.skillRangeId(u,skill,forceSkill),r=this.data.ranges[sid]||p.range,grids=r?.grids||[{row:0,col:1}];return {skill:sid!==p.rangeId,rangeId:sid,cells:this.cellsForGrids(u,grids)};}
- inside(u,e,skill=(u.skillLeft>0||u.ammo>0)){if(e.hidden)return false;const cells=this.range(u,skill);if(e.trainingDummy&&e.area){for(const cell of cells)if(cell.x>=e.area.left&&cell.x<=e.area.right&&cell.y>=e.area.top&&cell.y<=e.area.bottom)return true;return false;}return containsTarget(cells.map(g=>[g.x,g.y]),e);}
+ // 最终 Boss（昆图斯/萨米）的巨型受击矩形：格子按「格心落在矩形内」判定，与木桩 area 同一口径。
+ // hitRect:{length,width,offsetY} 来自 PRTS「巨型单位」口径（长4.95×宽2.95、向上偏移1，本期覆盖）。
+ hitAreaOf(e){if(e.trainingDummy&&e.area)return e.area;if(!e.hitRect)return null;const half=Number(e.hitRect.length)/2,halfW=Number(e.hitRect.width)/2,cy=e.y-(Number(e.hitRect.offsetY)||0);return {left:e.x-half,right:e.x+half,top:cy-halfW,bottom:cy+halfW};}
+ hitAreaContains(area,cell){return cell.x>=area.left-1e-9&&cell.x<=area.right+1e-9&&cell.y>=area.top-1e-9&&cell.y<=area.bottom+1e-9;}
+ inside(u,e,skill=(u.skillLeft>0||u.ammo>0)){if(e.hidden)return false;const cells=this.range(u,skill),area=this.hitAreaOf(e);if(area){for(const cell of cells)if(this.hitAreaContains(area,cell))return true;return false;}return containsTarget(cells.map(g=>[g.x,g.y]),e);}
  // 自动释放专用：技能开启后这次攻击能不能真的打到它。
  // 与 targets() 的区别是范围强制用技能范围，且不要求「当前就能选中」（飞行单位在开技前可能不可选）。
  skillWouldHitTarget(u,p){
@@ -442,7 +459,8 @@ export class NativeBattle {
   const cells=this.rangeWithSkill(u,false,true).cells;
   if(!cells.length)return false;
   const canReach=e=>{
-   if(e.trainingDummy&&e.area)return cells.some(cell=>cell.x>=e.area.left&&cell.x<=e.area.right&&cell.y>=e.area.top&&cell.y<=e.area.bottom);
+   const area=this.hitAreaOf(e);
+   if(area)return cells.some(cell=>this.hitAreaContains(area,cell));
    return containsTarget(cells.map(g=>[g.x,g.y]),e);
   };
   return this.s.enemies.some(e=>e.hp>0&&!e.hidden&&!e.invulnerable&&!e.untargetable&&
@@ -939,6 +957,7 @@ u.skillRangeHold=sk.rangeId||null;u.skillRangeHoldAt=this.s.time;const skillAir=
   if(this.s.banner){this.s.banner.life-=dt;if(this.s.banner.life<=0)this.s.banner=null;}
   this.s.effects=this.s.effects.filter(e=>(e.life-=dt)>0);this.s.enemies=this.s.enemies.filter(e=>e.hp>0);pruneEvents(this.s);this.flushEnemySpawns();
   if(this.s.finalBossId&&this.s.finalBossUid&&!this.s.enemies.some(e=>e.uid===this.s.finalBossUid&&e.hp>0))this.finish('boss-killed');
+  else if(this.s.benchmark){if(this.s.time>=this.s.limit)this.finish('timeout');}
   else if((!this.s.queue.some(q=>this.isPrimaryEnemy(q.id))&&!this.s.enemies.some(e=>!e.nonPrimary)&&!this.s.pendingEnemySpawns?.some(row=>this.isPrimaryEnemy(row.q.id)))||this.s.time>=this.s.limit||Math.min(ROUND_LEAK_CAP,this.s.leaks)>=this.economy.s.hp)this.finish(this.s.finalBossId?'timeout':'complete');
  }
  finish(reason='manual'){if(this.s.finished)return;this.s.finished=true;const totalDamage=Object.values(this.s.damage).reduce((a,b)=>a+b,0),elapsed=Math.max(0,this.s.time),bucketCount=Math.ceil(elapsed),samplesFor=uid=>Array.from({length:bucketCount},(_,i)=>{const width=i===bucketCount-1&&elapsed-i>0?elapsed-i:1;return (Number(this.s.damageTimeline?.[uid]?.[i])||0)/width;}),units=this.s.units.map(u=>({uid:u.uid,id:u.id,damage:u.damage||0,healing:u.healing||0,dpsSamples:samplesFor(u.uid)}));if(this.s.finalBossId){const meta=this.data.finalBosses[this.s.finalBossId];this.s.result={kind:'final-boss',bossId:this.s.finalBossId,bossName:this.turn.finalBoss?.enemyProfile?.name||meta?.profiles?.[this.economy.s.modeId]?.name||meta?.enemyId||this.s.finalBossId,reason,success:reason==='boss-killed',elapsed,totalDamage,dps:elapsed>0?totalDamage/elapsed:0,timePenalty:this.s.timePenalty||0,kills:this.s.kills,leaks:this.s.leaks,units};}else this.s.result={kind:'battle',elapsed,kills:this.s.kills,leaks:this.s.leaks+(this.s.time>=this.s.limit?this.s.enemies.reduce((n,e)=>n+e.leak,0):0),units,totalDamage};}

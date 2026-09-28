@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
 import {NATIVE_DATA} from '../dist/runtime-data.js';
 import {NativeSession} from '../dist/native-session.js';
-import {renderPreparePage} from '../dist/native-prep.js';
+import {renderArchiveWindow} from '../dist/native-prep.js';
 import {ARCHIVE_KEY,ARCHIVE_LIMIT,appendRun,archiveFromRecord,emptyArchive,exportRecord,loadArchive,mergeArchives,normalizeArchive,runRecord,saveArchive} from '../dist/native-archive.js';
 import {NO_BOND_BAN} from './no-bond-ban.mjs';
 
@@ -154,10 +154,12 @@ test('导入时按 id 合并、保留置顶顺序，技能配置与开关一起�
  assert.equal(mergeArchives(big,emptyArchive()).runs.length,ARCHIVE_LIMIT);
 });
 
-test('战前准备页：最近对局字段全列；未解锁时隐藏彩蛋整块不出现',()=>{
+test('战绩与解锁浮窗：最近对局字段全列；未解锁时隐藏彩蛋整块不出现',()=>{
  const {g,at}=finishedRun();
  const archive=appendRun(emptyArchive(),runRecord(g,NATIVE_DATA,{at}));
- const html=renderPreparePage(NATIVE_DATA,{tab:'operator'},{esc:v=>String(v??''),avatar:()=>'',archive});
+ // 2026-09-28 重设计：最近对局与解锁标记从战前准备页挪进独立的「战绩与解锁」浮窗。
+ const esc=v=>String(v??'');
+ const html=renderArchiveWindow(archive,esc);
  for(const label of ['最近对局','词条','地图','存活波数','是否通关','最终轮输出','最终轮盟约情况','最终轮场上阵容'])
   assert.ok(html.includes(label),'页面要列出「'+label+'」');
  assert.ok(html.includes('维娜·维多利亚'),'阵容里要有具体干员');
@@ -168,11 +170,11 @@ test('战前准备页：最近对局字段全列；未解锁时隐藏彩蛋整�
  assert.ok(!html.includes('特殊标记'),'未解锁时不该看到「特殊标记」');
  assert.ok(!html.includes('prep-flags-sees'),'未解锁时不该有开关按钮');
  assert.ok(!html.includes('S.E.E.S.'),'未解锁时不该泄露彩蛋名字');
- const on=renderPreparePage(NATIVE_DATA,{tab:'operator'},{esc:v=>String(v??''),avatar:()=>'',archive:{...archive,flags:{sees:true}}});
- assert.ok(on.includes('特殊标记'),'解锁后才显示这一块');
- assert.match(on,/data-act="prep-flags-sees" class="chosen" aria-pressed="true"/,'解锁后显示为开且高亮');
- const empty=renderPreparePage(NATIVE_DATA,{tab:'operator'},{esc:v=>String(v??''),avatar:()=>''});
- assert.ok(empty.includes('还没有记录'),'没有档案时给提示，不报错');
+ const on=renderArchiveWindow({...archive,flags:{sees:true}},esc);
+ assert.ok(on.includes('策略：S.E.E.S.')&&on.includes('prep-flags-sees'),'解锁后浮窗要有 S.E.E.S. 解锁项与开关');
+ assert.match(on,/data-act="prep-flags-sees" class="native-archive-toggle" aria-pressed="true"/,'解锁后显示为开');
+ const empty=renderArchiveWindow(undefined,esc);
+ assert.ok(empty.includes('尚无对局记录'),'没有档案时给提示，不报错');
  assert.ok(!empty.includes('prep-flags-sees'),'空档案同样看不到彩蛋');
 });
 
@@ -182,17 +184,18 @@ test('接线门禁：大厅导出按钮、导入分支、记账时机都在',()=
  assert.match(play,/if\(a==='export'\)\{const archive=archiveWithPrepSkills\(archiveNow\(\)\)/,'导出走档案＋对局存档');
  assert.match(play,/incoming=archiveFromRecord\(record\)/,'导入要认档案');
  assert.match(play,/if\(!game&&!incoming\)throw Error/,'既没有对局也没有档案时要报错');
- assert.match(play,/saveArchive\(archiveStorage\(\),mergeArchives\(/,'导入要合并而不是覆盖');
+ assert.match(play,/mergeArchives\(archiveWithPrepSkills\(archiveNow\(\)\),record\.archive\)/,'导入要合并而不是覆盖');
  assert.match(play,/recordRunIfOver\(g\)/,'对局结束要记账');
  assert.match(play,/if\(a==='prep-flags-sees'\)/,'开关要有动作');
+ // 2026-09-28 重设计：战绩与解锁是独立浮窗（renderArchiveWindow），由大厅动作打开。
+ assert.match(play,/if\(a==='archive'&&state\.view==='lobby'\)\{modal\(renderArchiveWindow\(archiveNow\(\),esc\)\);return;\}/,'大厅「战绩与解锁」入口打开浮窗');
  const prep=fs.readFileSync('dist/native-prep.js','utf8');
- assert.match(prep,/archiveSection\(archive,esc\)/,'页面要渲染档案区');
- assert.match(prep,/const archive=ui\.archive\|\|loadArchive\(storage\(\)\)/,'页面自己读本地档案（调用签名不变）');
+ assert.match(prep,/export function renderArchiveWindow\(archive,esc/,'浮窗由 native-prep.js 输出');
  const browser=fs.readFileSync('scripts/build-browser.mjs','utf8');
- assert.ok(browser.includes("'native-archive.js'"),'打包清单要登记 native-archive.js');
+ assert.ok(browser.includes("'native-prep.js'"),'打包清单要登记 native-prep.js');
  // 样式单独一个文件，由 native-play 启动时挂 <link>，类名两边要对得上。
  const css=fs.readFileSync('dist/native-archive.css','utf8');
- for(const cls of ['native-prep-archive','native-prep-flags','native-prep-run','native-prep-run-lineup'])
+ for(const cls of ['native-archive-window','native-archive-runs','native-archive-toggle','native-archive-unlocks','native-archive-run-list'])
   assert.ok(css.includes('.'+cls),'native-archive.css 要有 .'+cls);
  assert.match(play,/ensureArchiveStyles/,'启动时要挂档案区样式');
  assert.match(play,/href='\.\/native-archive\.css'/);

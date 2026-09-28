@@ -280,6 +280,9 @@ function tryCrownBlink(battle,enemy,skill=enemy.enemySkills.find(s=>s.prefab==='
 export function tickEnemySkills(battle,enemy,dt){
  if(!enemy.enemySkills)return;
  if(enemy.hp<=0){cancelEnemyCast(battle,enemy);return;}
+ // 最终 Boss 逐名分流：普攻与技能由专用 tick 全权接管（通用普攻已在 prepareFinalBoss 关闭）。
+ if(enemy.id==='enemy_9033_acdeer'){tickSmdeer(battle,enemy);return;}
+ if(enemy.id==='enemy_1521_dslily'){tickDslily(battle,enemy);return;}
  if(tickCrownBlink(battle,enemy))return;
  if(enemy.enemyFormKind==='xi')tickXiMarks(battle,enemy);
  if(enemy.enemyFormKind==='zaro'){tickZaroCage(battle,enemy);if(!enemy.hidden&&dt>0)battle.addBloodDebt(Number(enemy.enemyTalent['Passive.sp'])*dt);}
@@ -707,4 +710,166 @@ export function tickEnemySkills(battle,enemy,dt){
   endEnemySkill(battle,enemy);
  }
  enemy.attackCooldown=Math.max(enemy.attackCooldown,Math.ceil(enemy.interval*FPS));
+}
+
+// ===== 最终 Boss 逐名实装（docs/FINAL_BOSS_4_5_7_PLAN_2026-09-28.md 施工单；用户 2026-09-28 继续推进）=====
+// 两个 Boss 的普攻与技能在这里全权接管：native-battle 的通用普攻对它们关闭（canAttack=false），
+// tickEnemySkills 头部按 enemy.id 分流到这里。目标选取就地实现（enemyAttackTargets 在 native-enemy-attacks
+// 里反向 import 本模块，不能再引回来）。
+
+// ===== boss_7 “萨米的意志”（enemy_9033_acdeer）=====
+// PRTS 敌人页（级别0）＋本期 h07_07_s 覆盖：
+// - 普攻「冰凌」：对目标所在整列，自该列最上方每 0.2 秒落下一枚冰凌，物理伤害（baseAttackTime 6）；
+//   半血后「普通攻击可额外选择1个不同的列」（Madness.enemy_smdeer_mad[attack].max_cnt=2，普通 1 列）。
+// - 「自然涌动」Lasso：40/60 秒 CD，选 1 名我方单位晕眩 10 秒并每秒承受 20% 攻击力法伤；
+//   半血后额外选 1 个目标（Madness.enemy_smdeer_mad[skill].max_target=2）。
+// - 半血被动：物理/法术伤害降低 60%（Madness.damage_resistance，真伤/元素不减）——在 dealDamage 结算。
+// - 「叹息」Doom 999/999 秒：本时限内不可达，保留原表资料不做触发。
+// - 自缚（formHold）、不可阻挡、失衡免疫与巨型受击矩形在 prepareFinalBoss/inside() 套用。
+const SMDEER_SPIKE_INTERVAL=.2,SMDEER_MAD_RATIO=.5;
+function smdeerMad(enemy){return enemy.hp<enemy.maxHp*SMDEER_MAD_RATIO;}
+function smdeerFieldTargets(battle,enemy){
+ return attackableAllies(battle.s).filter(u=>enemyTargetValid(u)&&!permissions(u).sleeping&&Math.hypot(u.x-enemy.x,u.y-enemy.y)<=enemy.range+1e-9)
+  .sort((a,b)=>compareEnemyTargets({tauntLevel:a.kind==='summon'?(a.neutral?a.taunt||0:0):battle.stats(a).tauntLevel,deployAt:a.deployAt||0,uid:a.uid},{tauntLevel:b.kind==='summon'?(b.neutral?b.taunt||0:0):battle.stats(b).tauntLevel,deployAt:b.deployAt||0,uid:b.uid}));
+}
+function tickSmdeerIce(battle,enemy){
+ const storm=enemy.iceStorm;if(!storm)return false;
+ let done=true;
+ for(const column of storm.columns){
+  if(column.row>=storm.rows)continue;
+  if(battle.s.time+1e-9<column.nextAt){done=false;continue;}
+  column.nextAt+=SMDEER_SPIKE_INTERVAL;
+  const y=storm.top+column.row;column.row++;
+  const victims=attackableAllies(battle.s).filter(t=>Math.round(t.x)===column.x&&Math.round(t.y)===y);
+  for(const target of victims)dealDamage(battle,{source:enemy,target,amount:battle.enemyAttackDamage(enemy,1),type:'physical',cause:'attack',attackId:storm.attackId});
+  battle.emit('strike',{uid:enemy.uid,x:column.x,y:storm.top,targetX:column.x,targetY:y,ranged:true,enemy:true,type:'physical',style:'ice-spike',hit:victims.length});
+  if(column.row<storm.rows)done=false;
+ }
+ if(done)enemy.iceStorm=null;
+ return true;
+}
+function tickSmdeer(battle,enemy){
+ const control=permissions(enemy);
+ if(enemy.enemyCast&&!control.skill){cancelEnemyCast(battle,enemy);return;}
+ const cast=enemy.enemyCast;
+ if(cast?.lasso){
+  const skill=enemy.enemySkills[cast.index];
+  while(battle.s.time+1e-9>=cast.nextAt&&cast.nextAt<cast.endsAt){
+   cast.nextAt+=1;
+   for(const entry of cast.targets){
+    const target=getActor(battle.s,entry.uid);
+    if(target?.deployed&&target.hp>0&&target.deployGen===entry.deployGen)dealDamage(battle,{source:enemy,target,amount:battle.enemyAttackDamage(enemy,Number(skill.bb.atk_scale)),type:'arts',cause:'skill',attackId:cast.attackId});
+   }
+  }
+  if(battle.s.time+1e-9>=cast.endsAt){enemy.stanceUntil=0;endEnemySkill(battle,enemy);}
+  return;
+ }
+ if(tickSmdeerIce(battle,enemy))return;
+ if(!control.attack||control.silenced||enemy.action||enemy.attackCooldown>0)return;
+ // 自然涌动优先于普攻冰凌（技能占用攻击档）。
+ const lasso=enemy.enemySkills.find(s=>s.prefab==='Lasso');
+ if(lasso&&enemySkillReady(enemy,lasso,battle.s.time)){
+  const picked=smdeerFieldTargets(battle,enemy).slice(0,smdeerMad(enemy)?Math.max(1,Number(enemy.enemyTalent['Madness.enemy_smdeer_mad[skill].max_target'])||2):Math.max(1,Number(lasso.bb.max_target)||1));
+  if(picked.length&&beginEnemySkill(battle,enemy,lasso,{lasso:true,targets:picked.map(t=>({uid:t.uid,deployGen:t.deployGen})),nextAt:battle.s.time+1,endsAt:battle.s.time+Number(lasso.bb.projectile_life_time),attackId:newAttackId(battle)})){
+   enemy.stanceUntil=enemy.enemyCast.endsAt;enemy.attackCooldown=battle.enemyAttackTiming(enemy).frames;
+   for(const target of picked)if(applyStatus(target,'stun',Number(lasso.bb.projectile_life_time),{source:enemy.uid}))battle.emit('control',{uid:target.uid,kind:'stun',x:target.x,y:target.y});
+   return;
+  }
+ }
+ const targets=smdeerFieldTargets(battle,enemy);
+ if(!targets.length)return;
+ const maxColumns=smdeerMad(enemy)?Math.max(1,Number(enemy.enemyTalent['Madness.enemy_smdeer_mad[attack].max_cnt'])||2):Math.max(1,Number(enemy.enemyTalent['Madness.attack@max_cnt'])||1);
+ const columns=[];
+ for(const target of targets){const x=Math.round(target.x);if(columns.some(entry=>entry.x===x))continue;columns.push({x,row:0,nextAt:battle.s.time});if(columns.length>=maxColumns)break;}
+ if(!columns.length)return;
+ const timing=battle.enemyAttackTiming(enemy);
+ enemy.attackCooldown=timing.frames;
+ for(const column of columns)column.nextAt=battle.s.time+timing.windupFrames/FPS;
+ enemy.iceStorm={columns,top:0,rows:battle.map.rows,attackId:newAttackId(battle)};
+ battle.emit('enemy-skill',{uid:enemy.uid,x:enemy.x,y:enemy.y,skill:'IceSpike',columns:columns.map(c=>c.x)});
+}
+
+// ===== boss_4 盐风主教昆图斯（enemy_1521_dslily）=====
+// PRTS 敌人页（级别0）＋本期 h07_04_s 覆盖：
+// - 普攻：同时攻击防御最高的 2 名我方单位，攻击本身无伤害，0.4 秒后造成 100% 攻击力物理伤害并附加
+//   20% 攻击力神经损伤（epdamage.attack@ep_damage_ratio）。攻击半径 99＝全场。
+// - 形态（growup1/2）：已损生命跨越 33%×当前阶段数，或开战后 75/200 秒，进入第二/第三形态；
+//   攻击力 +40%/+70%（atkup1.atk/atkup2.atk，在 NativeBattle.enemyAttackDamage 生效）；
+//   换形态启用对应技能组（Tidewater/Rockfall 的 G1/G2 档），形态期 CD 独立初始化，旧组停用。
+// - 大潮 Tidewater：全场我方单位，法术伤害＋神经损伤（数值读各形态技能黑板）。
+// - 崩坍 Rockfall：防御最高 2/4/8 人（按形态），1 秒后 140% 攻击力物理伤害。
+// - 断裂生殖 SummonTentac 与子代装置、物种爆发 Doom：按用户 2026-09-28 指示豁免（overrides 的
+//   ignoredSkillPrefabs 显式停用，原表资料保留）；子代相关机制与预置地块都不做。
+const DSLILY_FORM_SKILLS={1:['Tidewater','Rockfall','SummonTentac'],2:['TidewaterG1','RockfallG1','SummonTentacG1'],3:['TidewaterG2','RockfallG2','SummonTentacG2']};
+const DSLILY_ROCKFALL_TARGETS={1:2,2:4,3:8};
+function dslilyFormSkills(enemy,form=(enemy.dslilyForm||1)){return (DSLILY_FORM_SKILLS[form]||[]).map(name=>enemy.enemySkills.find(s=>s.prefab===name)).filter(Boolean);}
+function dslilyAdvanceForm(battle,enemy,form){
+ enemy.dslilyForm=form;
+ const active=new Set(DSLILY_FORM_SKILLS[form]||[]);
+ for(const skill of enemy.enemySkills){
+  if(active.has(skill.prefab))skill.nextAt=battle.s.time+Math.max(0,Number(skill.initCooldown)||0);
+  else if(Object.values(DSLILY_FORM_SKILLS).some(names=>names.includes(skill.prefab)))skill.nextAt=Infinity;
+ }
+ battle.emit('enemy-phase',{uid:enemy.uid,x:enemy.x,y:enemy.y,phase:'form-'+form,text:form===2?'第二形态':'第三形态'});
+}
+function tickDslilyForms(battle,enemy){
+ const form=enemy.dslilyForm||1;if(form>=3)return;
+ const lost=enemy.maxHp-enemy.hp;
+ if(form===1){
+  const ratio=Number(enemy.enemyTalent['growup1.hp_ratio'])||1/3,interval=Number(enemy.enemyTalent['growup1.interval'])||75;
+  if(lost>=enemy.maxHp*ratio||battle.s.time>=enemy.dslilySpawnAt+interval)dslilyAdvanceForm(battle,enemy,2);
+ }else{
+  const ratio=Number(enemy.enemyTalent['growup2.hp_ratio'])||1/3,interval=Number(enemy.enemyTalent['growup2.interval'])||200;
+  if(lost>=enemy.maxHp*ratio*form||battle.s.time>=enemy.dslilySpawnAt+interval)dslilyAdvanceForm(battle,enemy,3);
+ }
+}
+function tickDslilyStrikes(battle,enemy){
+ const list=enemy.pendingStrikes;if(!list?.length)return;
+ enemy.pendingStrikes=list.filter(strike=>{
+  if(battle.s.time+1e-9<strike.at)return true;
+  for(const entry of strike.entries){
+   const target=getActor(battle.s,entry.uid);
+   if(!target?.deployed||target.hp<=0||target.deployGen!==entry.deployGen)continue;
+   battle.resolveEnemyStrike(enemy,target,{scale:strike.scale,type:strike.type,attackId:strike.attackId});
+   if(strike.ep>0&&target.hp>0)applyElementDamage(battle,{source:enemy,target,amount:battle.enemyAttackDamage(enemy,strike.ep),type:'neural',cause:'skill',attackId:strike.attackId});
+  }
+  return false;
+ });
+ if(!enemy.pendingStrikes.length)enemy.pendingStrikes=null;
+}
+function dslilyHighestDef(battle,enemy,count){
+ return attackableAllies(battle.s).slice().sort((a,b)=>battle.stats(b).def-battle.stats(a).def||a.uid-b.uid).slice(0,count);
+}
+function tickDslily(battle,enemy){
+ const control=permissions(enemy);
+ if(enemy.enemyCast&&!control.skill){cancelEnemyCast(battle,enemy);return;}
+ tickDslilyStrikes(battle,enemy);
+ tickDslilyForms(battle,enemy);
+ if(!control.attack||control.silenced||enemy.action||enemy.attackCooldown>0)return;
+ const timing=battle.enemyAttackTiming(enemy);
+ const ready=dslilyFormSkills(enemy).filter(s=>enemySkillReady(enemy,s,battle.s.time));
+ if(ready.length){
+  const priority=Math.min(...ready.map(s=>s.priority)),top=ready.filter(s=>s.priority===priority),skill=top.length>1?top[Math.floor(battle.economy.random()*top.length)]:top[0];
+  if(skill.prefab.startsWith('Tidewater')){
+   if(beginEnemySkill(battle,enemy,skill,{dslilyTide:true})){
+    const attackId=newAttackId(battle),scale=Number(skill.bb.atk_scale)||0,ep=Number(skill.bb.ep_damage_ratio)||0;
+    for(const target of attackableAllies(battle.s)){
+     if(scale>0)dealDamage(battle,{source:enemy,target,amount:battle.enemyAttackDamage(enemy,scale),type:'arts',cause:'skill',attackId});
+     if(ep>0&&target.hp>0)applyElementDamage(battle,{source:enemy,target,amount:battle.enemyAttackDamage(enemy,ep),type:'neural',cause:'skill',attackId});
+    }
+    endEnemySkill(battle,enemy);enemy.attackCooldown=timing.frames;return;
+   }
+  }else if(skill.prefab.startsWith('Rockfall')){
+   const targets=dslilyHighestDef(battle,enemy,DSLILY_ROCKFALL_TARGETS[enemy.dslilyForm||1]||2);
+   if(targets.length&&beginEnemySkill(battle,enemy,skill,{dslilyRockfall:true})){
+    enemy.pendingStrikes??=[];enemy.pendingStrikes.push({at:battle.s.time+1,attackId:newAttackId(battle),scale:Number(skill.bb.atk_scale)||1.4,type:'physical',ep:0,entries:targets.map(t=>({uid:t.uid,deployGen:t.deployGen}))});
+    endEnemySkill(battle,enemy);enemy.attackCooldown=timing.frames;return;
+   }
+  }
+ }
+ // 普攻：防御最高的 2 名，攻击本身无伤害，0.4 秒后物理＋神经损伤。
+ const targets=dslilyHighestDef(battle,enemy,2);
+ if(!targets.length)return;
+ enemy.attackCooldown=timing.frames;
+ enemy.pendingStrikes??=[];enemy.pendingStrikes.push({at:battle.s.time+.4,attackId:newAttackId(battle),scale:1,type:'physical',ep:Number(enemy.enemyTalent['epdamage.attack@ep_damage_ratio'])||0,entries:targets.map(t=>({uid:t.uid,deployGen:t.deployGen}))});
 }

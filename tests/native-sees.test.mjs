@@ -61,12 +61,15 @@ test('注入：策略、两条专属盟约、四名干员与臂章都进了运�
  assert.equal(data.common.bandDataDict[SEES_BAND_ID].bandName,'S.E.E.S.');
  assert.equal(data.season.bondInfoDict[TARTARUS_BOND_ID].activeCount,0,'【塔尔塔罗斯】是 0/0 特殊盟约');
  assert.equal(data.season.bondInfoDict[SEES_BOND_ID].activeCount,3,'【S.E.E.S.】核心盟约 3/3');
+ const SEES_GARRISON={chess_collab_kormr:'garrison_sees_kormr',chess_collab_yukari:'garrison_sees_yukari',chess_collab_aigis:'garrison_sees_aigis',chess_collab_makoto:'garrison_sees_makoto'};
  for(const id of SEES_CHESS){
   const shop=shopOf(id),chess=data.season.charChessDataDict[id];
   assert.equal(shop.sees,true,id+' 要有「只在 S.E.E.S. 局放行」标记');
   assert.equal(shop.isHidden,true,id+' 平时仍是隐藏档（不进 112 名册与默认池）');
   assert.equal(chess.bondIds.length,1);assert.equal(chess.bondIds[0],SEES_BOND_ID);
-  assert.deepEqual(chess.garrisonIds,[]);
+  // 四人的 garrisonIds 指向 sees-content 登记的 garrison_sees_* 说明项（用户 2026-09-27 口径），
+  // 实际规则仍由 native-sees／native-collab-* 执行，不走通用 garrison 事件。
+  assert.deepEqual(chess.garrisonIds,[SEES_GARRISON[id]],id+' 挂 sees-content 登记的卫戍说明项');
  }
  const armband=data.items.find(i=>i.id===ARMBAND);
  assert.ok(armband,'臂章要进 catalog.items');

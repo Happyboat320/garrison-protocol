@@ -2,9 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {NATIVE_DATA} from '../dist/runtime-data.js';
 import {NativeSession} from '../dist/native-session.js';
-import {buildPhasePlan} from '../dist/protocol.js';
+import {buildPhasePlan,enemySprite} from '../dist/protocol.js';
 import {dealDamage} from '../dist/native-effects.js';
-import {AVAILABLE_FINAL_BOSS_IDS,finalBossConfig,rollFinalBoss} from '../dist/native-final-boss.js';
+import {AVAILABLE_FINAL_BOSS_IDS,finalBossConfig,finalBossSpawnPoint,rollFinalBoss} from '../dist/native-final-boss.js';
 
 function finalRound(g){g.s.round=buildPhasePlan(NATIVE_DATA,g.s.modeId).filter(t=>t.isBossTurn&&!t.isConditional).at(-1).round;}
 function game({mapId=NATIVE_DATA.maps[0].stageId,operator=false,seed=42}={}){
@@ -14,11 +14,39 @@ function game({mapId=NATIVE_DATA.maps[0].stageId,operator=false,seed=42}={}){
  finalRound(g);assert.ok(g.startBattle(),g.lastError||'Boss battle failed to start');return g;
 }
 
-test('only implemented final bosses enter the weighted run roll and boss_5 hp follows the selected difficulty',()=>{
- assert.deepEqual(AVAILABLE_FINAL_BOSS_IDS,['boss_5']);
- assert.equal(rollFinalBoss(NATIVE_DATA,'mode_single_normal',123),'boss_5');
+test('implemented final bosses 4/5/7 enter the weighted run roll and hp follows the selected difficulty',()=>{
+ assert.deepEqual(AVAILABLE_FINAL_BOSS_IDS,['boss_4','boss_5','boss_7']);
+ assert.equal(rollFinalBoss(NATIVE_DATA,'mode_single_normal',123),rollFinalBoss(NATIVE_DATA,'mode_single_normal',123));
+ assert.ok(AVAILABLE_FINAL_BOSS_IDS.includes(rollFinalBoss(NATIVE_DATA,'mode_single_normal',123)));
  assert.equal(finalBossConfig(NATIVE_DATA,'boss_5','mode_single_normal').hp,390000);
  assert.equal(finalBossConfig(NATIVE_DATA,'boss_5','mode_single_hard').hp,780000);
+ assert.equal(finalBossConfig(NATIVE_DATA,'boss_4','mode_single_normal').hp,708750);
+ assert.equal(finalBossConfig(NATIVE_DATA,'boss_4','mode_single_abyss').hp,4200000);
+ assert.equal(finalBossConfig(NATIVE_DATA,'boss_7','mode_single_normal').hp,787500);
+ assert.equal(finalBossConfig(NATIVE_DATA,'boss_7','mode_single_abyss').hp,4000000);
+});
+
+test('static bosses spawn self-bound, unblockable, with the season giant hit rect and closed generic attacks',()=>{
+ for(const bossId of ['boss_4','boss_7']){
+  const g=new NativeSession(NATIVE_DATA,{modeId:'mode_single_normal',bandId:'band_amiya',mapId:NATIVE_DATA.maps[0].stageId,seed:42,bondBan:{bonds:[]},finalBossId:bossId});
+  g.s.round=buildPhasePlan(NATIVE_DATA,g.s.modeId).filter(t=>t.isBossTurn&&!t.isConditional).at(-1).round;
+  assert.ok(g.startBattle());
+  const b=g.battle,boss=b.s.enemies.find(e=>e.finalBoss);
+  assert.equal(boss.finalBossHp,boss.maxHp);
+  assert.equal(boss.formHold,true,bossId+' 自缚站桩');
+  assert.equal(boss.unblockable,true,bossId+' 不可阻挡');
+  assert.equal(boss.canAttack,false,bossId+' 通用普攻关闭，攻击全部走逐名 tick');
+  assert.deepEqual(boss.hitRect,{length:4.95,width:2.95,offsetY:1},bossId+' 本期巨型受击矩形');
+  assert.equal(boss.spriteScale>2,true,bossId+' 放大表现');
+  assert.equal(enemySprite(boss).key,finalBossConfig(NATIVE_DATA,bossId,'mode_single_normal').handbookEnemyId,bossId+' 使用本期图鉴头像映射');
+  assert.ok(NATIVE_DATA.assets[enemySprite(boss).key],bossId+' 战斗头像资源存在');
+  const point=finalBossSpawnPoint(g.map,boss.route,b.s.units);assert.equal(boss.x,point.x);assert.equal(boss.y,point.y);
+  assert.notDeepEqual([boss.x,boss.y],[boss.route[0].x,boss.route[0].y],bossId+' 不应站在红门出生点');
+  for(let i=0;i<90;i++)b.step();
+  assert.equal(boss.x,point.x);assert.equal(boss.y,point.y);
+  if(bossId==='boss_7')assert.ok(boss.madnessResist>0&&boss.madnessResist<1,bossId+' 半血减伤读本期黑板');
+  if(bossId==='boss_4')assert.equal(boss.dslilyForm,1);
+ }
 });
 
 test('every arena has two tile_start routes, a tile_end target, and a closed walkable boss patrol loop',()=>{
@@ -31,6 +59,16 @@ test('every arena has two tile_start routes, a tile_end target, and a closed wal
   const route=map.bossPatrolRoute;assert.ok(route.length>=8,map.stageId);
   assert.deepEqual([route[0].x,route[0].y],[route.at(-1).x,route.at(-1).y],map.stageId);
   for(const p of route)assert.ok(map.grid[p.y]?.[p.x]&&map.grid[p.y][p.x].passableMask!=='NONE'&&map.grid[p.y][p.x].passableMask!=='FLY_ONLY',map.stageId+' patrol '+p.x+','+p.y);
+ }
+});
+
+test('static bosses use a central road tile instead of remaining on the red spawn door',()=>{
+ for(const map of NATIVE_DATA.maps){
+  const point=finalBossSpawnPoint(map,map.bossPatrolRoute);
+  assert.equal(map.grid[point.y]?.[point.x]?.tileKey,'tile_road',map.stageId+' static Boss road anchor');
+  assert.ok(Math.hypot(point.x-(map.cols-1)/2,point.y-(map.rows-1)/2)<=2.01,map.stageId+' anchor stays near arena center');
+  const occupied=finalBossSpawnPoint(map,map.bossPatrolRoute,[{x:point.x,y:point.y,hp:1,deployed:true}]);
+  assert.notDeepEqual(occupied,point,map.stageId+' prefer an unoccupied anchor');
  }
 });
 

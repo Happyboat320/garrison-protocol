@@ -90,9 +90,11 @@ test('初始状态＝当前默认配置：没设置过的干员跟随档案默�
  withStorage(()=>{
   assert.deepEqual(loadPrepSkills(data),{},'没配置过就是空表');
   const html=render();
-  assert.match(html,/<option value="" selected>跟随档案默认（/,'下拉默认选中「跟随档案默认」');
+  // 2026-09-28 重设计后技能默认改用 S 档按钮：没有配置时卡片备注显示「跟随档案默认」，
+  // 没有任何卡片被标记为自定义（档案默认档位的按钮照常高亮，那是显示而非配置）。
+  assert.match(html,/跟随档案默认/,'没配置过的干员卡片显示「跟随档案默认」');
+  assert.ok(!html.includes('自定义默认'),'刚打开时没有卡片被标记为自定义');
   assert.ok(!html.includes('未保存的改动'),'刚打开时没有未保存改动');
-  assert.match(html,/与已保存配置一致/);
   // 没有配置时 applyPrepSkills 不写 skillIndex（＝行为和以前完全一致）。
   const row=prepOperatorRows(data).find(r=>r.choices.length>=2);
   const unit={uid:1,chessId:row.chessId,charId:row.charId};
@@ -184,16 +186,17 @@ test('页面：两个页签、六个阶级选项、两个盟约下拉、保存�
   const html=render({tier:row.tier,skills:{[row.charId]:index},saved:{}});
   assert.match(html,/data-act="prep-tab" data-tab="operator"/,'全干员页签');
   assert.match(html,/data-act="prep-tab" data-tab="equipment"/,'全装备效果页签');
-  assert.equal((html.match(/data-act="prep-tier" data-tier="\d"/g)||[]).length,6,'阶级就是 1–6 六个数字按钮');
+  assert.equal((html.match(/data-act="prep-tier" data-tier="[1-6]"/g)||[]).length,6,'阶级就是 1–6 六个数字按钮');
+  assert.match(html,/data-act="prep-tier" data-tier="0"[^>]*>全部</,'另有「全部」一键清除阶级筛选');
   assert.match(html,new RegExp(`data-act="prep-tier" data-tier="${row.tier}" class="chosen"`),'当前阶级要高亮');
   assert.match(html,/id="prep-core"/,'核心盟约下拉');
-  assert.match(html,/id="prep-extra"/,'附加盟约下拉');
-  assert.match(html,/data-act="prep-save"/,'保存按钮');
-  assert.match(html,/data-act="prep-clear"/,'一键改回档案默认');
-  assert.match(html,/未保存的改动 1 项/,'未保存改动要计数');
+  assert.match(html,/id="prep-extra"/,'附加上盟约下拉');
+  // 2026-09-28 重设计：点 S 档立即保存（不再有保存按钮与未保存计数），「全体恢复档案默认」负责一键清除。
+  assert.match(html,/data-act="prep-reset-all"/,'全体恢复档案默认按钮');
+  assert.match(html,/data-act="prep-skill-preview"/,'◈ 预览技能效果按钮');
   assert.match(html,/class="native-prep-list" id="prep-list"/,'列表容器');
-  assert.match(html,new RegExp(`data-act="prep-skill" data-char="${row.charId}"`),'每名干员一个默认技能下拉');
-  assert.equal((html.match(/data-act="prep-skill"/g)||[]).length,filterPrepOperators(prepOperatorRows(data),{tier:row.tier}).length,'列表按筛选结果渲染');
+  assert.match(html,new RegExp(`data-act="prep-skill" data-char="${row.charId}"`),'每名干员一排默认技能档位按钮');
+  assert.equal((html.match(/data-act="prep-skill" data-char=/g)||[]).length,filterPrepOperators(prepOperatorRows(data),{tier:row.tier}).reduce((n,row2)=>n+row2.choices.length,0),'每个档位一个按钮');
   // 两个盟约下拉的选中项要跟着筛选状态走。
   const filtered=render({core:'victoriaShip',extra:'investShip'});
   assert.match(filtered,/<option value="victoriaShip" selected>/,'核心盟约下拉要回显当前筛选');
@@ -219,18 +222,18 @@ test('页面：两个页签、六个阶级选项、两个盟约下拉、保存�
 test('接线：大厅入口、独立页面、动作与筛选下拉都接上，模块登记进构建脚本',async()=>{
  const [lobby,play,session,css,build]=await Promise.all([read('dist/native-lobby.js'),read('dist/native-play.js'),read('dist/native-session.js'),read('dist/native.css'),read('scripts/build-browser.mjs')]);
  assert.match(lobby,/native-loadout-actions"><button class="native-prep-entry" data-act="prepare">/,'「战前准备」入口要挪进任务配置（带图标的主入口）');
- assert.match(play,/if\(state\.view==='prepare'\)\{const p=prepState\(\);root\.innerHTML=renderPreparePage\(data,p,\{esc,avatar\}\)/,'独立页面走 renderPreparePage');
- for(const [act,label] of [['prepare','打开页面'],['prep-tab','切页签'],['prep-tier','阶级筛选'],['prep-save','保存'],['prep-clear','改回档案默认']])assert.match(play,new RegExp(`a==='${act}'`),`动作 ${act}（${label}）要接上`);
+ assert.match(play,/if\(state\.view==='prepare'\)\{const p=prepState\(\)/,'独立页面走 renderPreparePage');
+ for(const [act,label] of [['prepare','打开页面'],['prep-tab','切页签'],['prep-tier','阶级筛选'],['prep-skill','点档位即保存'],['prep-skill-preview','预览技能效果'],['prep-reset-all','全体恢复档案默认']])assert.match(play,new RegExp(`a==='${act}'`),`动作 ${act}（${label}）要接上`);
  assert.match(play,/if\(e\.target\.id==='prep-core'\)\{p\.core=e\.target\.value/,'核心盟约下拉要重筛');
  assert.match(play,/if\(e\.target\.id==='prep-extra'\)\{p\.extra=e\.target\.value/,'附加盟约下拉要重筛');
- assert.match(play,/e\.target\.dataset\.act==='prep-skill'\)\{const charId=e\.target\.dataset\.char/,'技能下拉改的是草稿');
- assert.match(play,/if\(!p\.skills\)\{p\.saved=loadPrepSkills\(data\);p\.skills=\{[^}]*\.\.\.p\.saved\}/,'打开页面时草稿从已保存配置复制（初始状态＝当前默认）');
- assert.match(play,/p\.saved=savePrepSkills\(p\.skills,data\)/,'保存按钮才写 localStorage');
+ assert.match(play,/a==='prep-skill'\)\{const p=prepState\(\),charId=button\.dataset\.char/,'技能档位改的就是默认配置');
+ assert.match(play,/if\(!p\.skills\)p\.skills=\{\.\.\.loadPrepSkills\(data\)\}/,'打开页面时草稿从已保存配置复制（初始状态＝当前默认）');
+ assert.match(play,/p\.skills=savePrepSkills\(skills,data\)/,'点档位立即写 localStorage');
  assert.match(play,/state\.view==='editor'\|\|state\.view==='briefing'\|\|state\.view==='prepare'/,'「回到大厅」要把 prepare 一起处理');
  assert.match(session,/applyPrepSkills\(this\.data,this\.s\.units\.filter\(v=>v\.charId===u\.charId\)\)/,'购买时按配置给新干员定默认技能（只对齐同名副本）');
  assert.match(session,/applyPrepSkills\(data,c\.s\.units\)/,'读档时补齐／对齐同名干员的技能');
  assert.match(build,/'native-prep\.js'/,'新模块必须登记进构建脚本');
- assert.match(css,/\.native-prep-filters\{position:sticky;bottom:0/,'筛选条放在界面下方并吸底');
+ assert.match(css,/\.native-prep-filters\{position:fixed/,'筛选条放在界面下方并吸底');
  assert.match(css,/\.native-prep-tier-row button\.chosen\{/,'选中的阶级要有高亮');
  assert.match(css,/\.native-prep-card\.is-custom\{/,'改过默认技能的干员卡片要能看出来');
 });

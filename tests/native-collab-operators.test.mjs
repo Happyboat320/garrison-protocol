@@ -97,9 +97,10 @@ test('隐藏档不挂盟约与卫戍，商店抽取与战前准备名册都看�
   assert.equal(shop.isHidden,true,`${row.name} 必须是隐藏档`);
   assert.equal(shop.shopLevelSortId,seesTier[row.charId],`${row.name} 的商店排序也按 S.E.E.S. 分层`);
   assert.deepEqual(NATIVE_DATA.season.charChessDataDict[row.chessId].bondIds,['seesShip'],`${row.name} 只挂 S.E.E.S. 策略的专属盟约`);
-  assert.deepEqual(NATIVE_DATA.season.charChessDataDict[row.chessId].garrisonIds,[],`${row.name} 没有卫戍`);
+  // 四人挂 sees-content 登记的 garrison_sees_* 说明项（用户 2026-09-27 口径），实际规则不走通用 garrison 事件。
+  assert.deepEqual(NATIVE_DATA.season.charChessDataDict[row.chessId].garrisonIds,['garrison_sees_'+row.charId.split('_').at(-1)],`${row.name} 挂自己的卫戍说明项`);
   assert.deepEqual(NATIVE_DATA.profiles[row.chessId].bonds,['seesShip']);
-  assert.deepEqual(NATIVE_DATA.profiles[row.chessId].garrisons,[]);
+  assert.equal(NATIVE_DATA.profiles[row.chessId].garrisons?.[0]?.id,'garrison_sees_'+row.charId.split('_').at(-1),`${row.name} 的档案说明项`);
   assert.ok(!eligible.some(o=>o.chessId===row.chessId),`${row.name} 不该进调配池`);
  }
  g.s.funds=99999;g.s.phase='prep';

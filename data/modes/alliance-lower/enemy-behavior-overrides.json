@@ -484,7 +484,11 @@
     },
     "enemy_1521_dslily": {
       "staticRigid": true,
-      "staticRigidSource": "https://prts.wiki/index.php?oldid=415294"
+      "staticRigidSource": "https://prts.wiki/index.php?oldid=415294",
+      "randomPoolEligible": false,
+      "ignoredSkillPrefabs": ["SummonTentac", "SummonTentacG1", "SummonTentacG2", "Doom"],
+      "reason": "最终 Boss 逐名实装：三形态/大潮/崩坍/高防双目标延迟普攻，见 tests/native-dslily.test.mjs。用户明确要求本场忽略断裂生殖（SummonTentac 三档）及其子代；这是此技能的逐名范围例外，不泛化到其它敌人或召唤物。Doom 初始CD为200秒；本期所有策略起始生命最高45，最终战时限至多145秒且生命只会因漏怪下降，因此过滤此不可达技能以免错放",
+      "ignoredSkillPrefabsSource": "https://prts.wiki/w/盐风主教昆图斯 · 断裂生殖/子代"
     },
     "enemy_1525_blkswb": {
       "randomPoolEligible": false,
