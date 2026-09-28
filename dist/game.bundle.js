@@ -1593,7 +1593,7 @@ const {BOND_TEXT_CONSTANTS} = load("native-bond-keys.js");
 const {runGarrison} = load("garrison.js");
 const {bannedOperators,bondBanBlockers,bondBanSummary,bondMembers,isOperatorBanned} = load("native-bond-ban.js");
 // S.E.E.S. 策略：`bonds()` 里把【塔尔塔罗斯】的计数换成层数（纯读，不改判定）。
-const {seesRun,tartarusLayers} = load("native-sees.js");
+const {SEES_BOND_ID,seesRun,tartarusLayers} = load("native-sees.js");
 // Preparation controller for the historical mode. Random pools remain an explicit
 // controller input until their selection rules are verified; absent draws fail atomically.
 class NativeEconomy extends PreparationState {
@@ -1640,7 +1640,21 @@ class NativeEconomy extends PreparationState {
  // 把整个动作回滚——卫戍发放挂在 prep 上，抛错会连「进入下一回合」一起打回，等于卡死。
  // 注意判定要用「该盟约还有没有能出场的成员」，不能只看「是否被禁」：被禁盟约里名单上的干员照常能发。
  bondBannedIds(){return new Set(this.s?.bondBan?.bonds||[]);}
- bondCandidates(id,maxTier){const tier=Number(maxTier)||6;return bondMembers(this.data,id).filter(row=>row.tier<=tier&&!this.bondBanned(row.chessIds[0]));}
+ bondCandidates(id,maxTier){
+  const tier=Number(maxTier)||6,candidates=bondMembers(this.data,id).filter(row=>row.tier<=tier);
+  // The shared roster intentionally omits hidden operators. In a S.E.E.S. run, add its hidden records
+  // from the session-aware eligible pool so same-bond rewards such as the paging module can offer them.
+  if(id===SEES_BOND_ID&&seesRun(this)){
+   const known=new Set(candidates.map(row=>row.charId));
+   for(const shop of this.eligible()){
+    if(shop.chessLevel>tier||known.has(shop.charId))continue;
+    const profile=this.data.profiles?.[shop.chessId],bonds=profile?.bonds||this.data.season.charChessDataDict[shop.chessId]?.bondIds||[];
+    if(!bonds.includes(id))continue;
+    candidates.push({charId:shop.charId,name:profile?.name||shop.charId,tier:Number(shop.chessLevel)||1,bonds:[...bonds],chessIds:[shop.chessId]});known.add(shop.charId);
+   }
+  }
+  return candidates.filter(row=>!this.bondBanned(row.chessIds[0]));
+ }
  bondHasCandidates(id,maxTier){return !!id&&this.bondCandidates(id,maxTier).length>0;}
  gainableBonds(u,maxTier){return (this.ownBonds(u)||[]).filter(id=>this.bondHasCandidates(id,maxTier));}
  ownBonds(u){return u.bondIds||this.data.season.charChessDataDict[u.chessId].bondIds;}
