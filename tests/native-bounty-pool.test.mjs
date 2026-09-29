@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {NATIVE_DATA as data} from '../dist/runtime-data.js';
-import {NativeSession} from '../dist/native-session.js';
 import {bountyOffers,bountyOption,BOUNTY_SLUG} from '../dist/native-bounty.js';
 import {ENEMY_KILL_COINS,DEFAULT_WAVE_TABLE} from '../dist/native-wave-defaults.js';
 import {enemyCost,defaultWaveTable,TRAINING_TYPES} from '../dist/native-wave-fill.js';
@@ -67,16 +66,6 @@ test('编制台：领袖有成本来源，不再回落到 defaultCost=1',()=>{
  assert.match(String(defaultWaveTable().costSources?.enemy_1500_skulsr||rawTable().costSources?.enemy_1500_skulsr||''),/领袖赏金表/,'成本依据要留档');
 });
 
-test('新悬赏记录能通过存档校验',()=>{
- const g=new NativeSession(data,{seed:42});
- g.s.round=2;g.s.lastPrepRound=null;g.s.rewardPending=null;
- const row=g.ensureRoundBounty();
- assert.ok(row);assert.equal(row.offers.length,4);
- assert.ok(row.offers.every(id=>bountyOption(data,id)));
- const restored=NativeSession.restore(data,JSON.parse(JSON.stringify(g.snapshot())));
- assert.ok(restored);assert.deepEqual(restored.s.roundBounty,row);
-});
-
 test('赏金条目按原表词条组登记：词条组奖金只到 3 档，4 档以上只能是具名/领袖',()=>{
  let tagged=0,named=0;
  for(const [id,entry] of Object.entries(ENEMY_KILL_COINS)){
@@ -114,19 +103,5 @@ test('按回合词条抽候选：同词条优先，4 档锚点固定来自具名
   const usable=Object.keys(ENEMY_KILL_COINS).filter(id=>ENEMY_KILL_COINS[id].groups.includes(type)&&data.enemies[id].enemyBehavior.randomPoolEligible===true);
   const missing=usable.filter(id=>!seen.has(id));
   assert.deepEqual(missing,[],type+' 词条组里有没被抽到过的候选: '+missing.join('、'));
- }
-});
-
-test('回合悬赏交给会话时带上该回合的特训词条',()=>{
- const g=new NativeSession(data,{seed:42});
- for(const round of [2,4,6]){
-  g.s.round=round;g.s.lastPrepRound=null;g.s.rewardPending=null;g.s.roundBounty=null;
-  const roster=g.s.waveRoster?.rounds?.[round],row=g.ensureRoundBounty();
-  assert.ok(roster?.type,`第 ${round} 回合应有词条`);
-  assert.ok(row);
-  const offers=row.offers.map(id=>bountyOption(data,id));
-  // 会话按 roster 的词条抽：至少一个候选属于该词条（或用例种子下确实退化到具名组时也必须有 1/4 锚点）
-  assert.ok(offers.some(o=>o.coin===1)&&offers.some(o=>o.coin===4));
-  assert.ok(offers.some(o=>o.groups.includes(roster.type)),`第 ${round} 回合(${roster.type})应有同词条候选`);
  }
 });

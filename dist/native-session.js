@@ -1,7 +1,7 @@
-import {bountyOffers,bountyOption,bountyRoundActive} from './native-bounty.js';
+import {bountyOffers,bountyOption,bountyDecisionOffers} from './native-bounty.js';
 import {NativeEconomy} from './native-economy.js';
 import {NativeBattle} from './native-battle.js';
-import {buildPhasePlan,blackboard,ensureStock,restoreStock,stockOf,INFINITE_FUNDS,ROUND_LEAK_CAP} from './protocol.js';
+import {buildPhasePlan,singleDecisionRounds,blackboard,ensureStock,restoreStock,stockOf,INFINITE_FUNDS,ROUND_LEAK_CAP} from './protocol.js';
 import {allowsHighlandPlacement} from './native-branches.js';
 import {AVAILABLE_FINAL_BOSS_IDS,finalBossConfig,rollFinalBoss} from './native-final-boss.js';
 import {runStrategyEvent} from './strategy.js';
@@ -73,24 +73,7 @@ export class NativeSession extends NativeEconomy {
   this.s.bondBan=banOption
    ?{bonds:[...new Set((banOption.bonds||[]).filter(id=>this.data.season.bondInfoDict[id]))],always:normalized.always,never:normalized.never}
    :{bonds:bondBanIds(this.data,seed,normalized),always:normalized.always,never:normalized.never};
-  this.poolDraw=request=>this.drawFromPool(request);this.s.offers=this.rollOffers();this.fillItems();this.startPreparation();this.ensureRewards();this.s.waveRoster=waveRoster||createWaveRoster({random:()=>this.random(),data:this.data,modeId:this.s.modeId});if(egg325)this.s.egg325=true;this.ensureRoundBounty();
- }
- ensureRoundBounty(){
-  const turn=buildPhasePlan(this.data,this.s.modeId).find(t=>t.round===this.s.round);
-  if(!turn||turn.isBossTurn||!['prep','decision'].includes(this.s.phase))return null;
-  // 悬赏每两回合一次（第 2、4、6… 回合）：非悬赏回合不生成，也不改写上一轮的记录。
-  if(!bountyRoundActive(this.s.round))return null;
-  if(this.s.roundBounty?.round===this.s.round)return this.s.roundBounty;
-  const assignment=this.s.waveRoster?.rounds?.[this.s.round]||null;
-  const seed=assignment?.waveSeed??this.s.round;
-  // 悬赏候选按本回合的特训词条抽取（原表把悬赏登记在词条组里，领袖/具名悬赏单独一组）。
-  this.s.roundBounty={round:this.s.round,offers:bountyOffers(this.data,seed,{type:assignment?.type??null}),selected:null};return this.s.roundBounty;
- }
- chooseRoundBounty(id){
-  const r=this.s.roundBounty;
-  if(this.s.phase!=='prep'||!r||r.round!==this.s.round||r.selected||!r.offers.includes(id))return false;
-  const option=bountyOption(this.data,id);if(!option)return false;
-  r.selected=id;return true;
+  this.poolDraw=request=>this.drawFromPool(request);this.s.offers=this.rollOffers();this.fillItems();this.startPreparation();this.ensureRewards();this.s.waveRoster=waveRoster||createWaveRoster({random:()=>this.random(),data:this.data,modeId:this.s.modeId});if(egg325)this.s.egg325=true;
  }
  summonCardSpecs(u){const p=this.data.profiles[u?.chessId],skillIndex=u?.skillIndex??p?.skillIndex??0,out=[];if(p?.branch==='tactician'){if(u.charId==='char_427_vigil')out.push({type:'vigil-wolf',name:'狼群',count:1,mode:'manual'});if(u.charId==='char_249_mlyss')out.push({type:'mlyss-fluid',name:'流形',count:1,mode:'manual'});}
   // 凯瑟琳「定向支援信号」：携带数量取天赋黑板 `cnt`（精英0 = 2，精英1/2 = 3），同时部署上限取 token 的 `maxDeployCount`（2）。
@@ -220,7 +203,6 @@ export class NativeSession extends NativeEconomy {
    else if(type==='buyItem')result=this.buyItem(args[0]);
    else if(type==='equip')result=this.equip(args[0],args[1],args[2]);
    else if(type==='bounty')result=this.chooseBounty(args[0]);
-   else if(type==='roundBounty')result=this.chooseRoundBounty(args[0]);
    else if(type==='discard'){if(this.s.phase!=='prep')return false;this.s.items=this.s.items.filter(i=>i.uid!==args[0]);result=true;}
    else if(type==='destroy')result=this.destroyItem(args[0]);
    else if(type==='destroyEquip')result=this.destroyEquipment(args[0],args[1]);
@@ -351,10 +333,37 @@ export class NativeSession extends NativeEconomy {
  advanceRound(){if(this.s.phase!=='intermission')return false;const locked=this.s.locked,oldOffers=locked?this.s.offers.slice():null,oldItems=locked?this.s.itemOffers.slice():null;this.s.prepApplied=false;const ok=this.nextRound(locked?[]:this.rollOffers());if(!ok)return false;if(locked){const refillOffers=this.rollOffers();this.s.offers=Array.from({length:this.terms().operatorSlots},(_,i)=>oldOffers[i]??refillOffers[i]);const refillItems=Array.from({length:this.terms().itemSlots},()=>this.drawFromPool({kind:'item'}));this.s.itemOffers=Array.from({length:this.terms().itemSlots},(_,i)=>oldItems[i]??refillItems[i]);}else this.fillItems();this.addFunds(this.s.passiveIncome);this.applyProjectionUpgrades();
   // 进入新回合只做「按持有者/类型对账」，**不重置已放置的召唤物卡**：召唤物留在原位跨回合存在，
   // 只有持有者撤走（syncSummonCards 会把卡删掉）或主动撤回整备区（withdrawSummonCard）才会离场。
-  if(this.s.phase==='prep')this.syncSummonCards();if(this.s.phase==='decision'){const pool=Object.values(this.data.season.effectInfoDataDict).filter(e=>e.effectType==='BUFF_GAIN'&&this.data.season.effectBuffInfoDataDict[e.effectId]?.every(x=>['global_special_choice_gain_coin','global_special_choice_refresh_free','global_special_choice_bond_addlayer','enemy_attribute_add','enemy_attribute_mul','char_attribute_mul'].includes(x.key)));this.s.roundDecisions=[];while(this.s.roundDecisions.length<3&&pool.length){const i=Math.floor(this.random()*pool.length);this.s.roundDecisions.push(pool.splice(i,1)[0].effectId);}}
-  this.ensureRoundBounty();return true;
+  if(this.s.phase==='prep')this.syncSummonCards();if(this.s.phase==='decision')this.prepareRoundDecision();return true;
  }
- chooseDecision(id){if(this.s.phase!=='decision'||!this.s.roundDecisions.includes(id))return false;for(const e of this.data.season.effectBuffInfoDataDict[id]){const p=blackboard(e.blackboard);if(e.key==='global_special_choice_gain_coin')this.addFunds(p.count);if(e.key==='global_special_choice_refresh_free')this.s.freeRefresh+=p.count;if(e.key==='global_special_choice_bond_addlayer')for(const b of p.bond_list.split(','))this.addLayers(b,p.count,false);if(e.key.startsWith('enemy_attribute'))this.s.enemyModifiers.push(e);if(e.key==='char_attribute_mul')this.s.operatorModifiers.push(e);}this.s.roundDecisions=[];this.s.phase='prep';this.startPreparation();this.ensureRoundBounty();return true;}
+ prepareRoundDecision(){const schedule=singleDecisionRounds(this.data.season.modeDataDict[this.s.modeId]),index=schedule?.indexOf(this.s.round-1)??0;this.s.roundDecisionPool=index<=0?'early':'late';this.s.roundDecisionType=schedule===null?'tactical':['bounty','equipment','tactical'][Math.floor(this.random()*3)];this.s.roundDecisionStage='reward';this.s.roundDecisions=this.decisionRewardOffers(this.s.roundDecisionType);if(this.s.roundDecisions.length<3){this.s.roundDecisionType='tactical';this.s.roundDecisions=this.decisionRewardOffers('tactical');}}
+ decisionRewardOffers(type){
+  const early=this.s.roundDecisionPool!=='late',assignment=this.s.waveRoster?.rounds?.[this.s.round]||null,seed=assignment?.waveSeed??this.s.round;
+  if(type==='bounty')return bountyDecisionOffers(this.data,seed,{late:!early}).map(o=>({id:`bounty:${o.enemyId}`,kind:'bounty',enemyId:o.enemyId,name:o.name,count:o.count,coin:o.coin}));
+  if(type==='equipment'){
+   const tiers=early?[1,2,3]:[5,6],pool=this.data.items.filter(item=>itemAllowed(item,this)&&tiers.includes(Number(item.rank))),offers=[];
+   while(offers.length<3&&pool.length){const i=Math.floor(this.random()*pool.length),item=pool.splice(i,1)[0];offers.push({id:`equipment:${item.id}`,kind:'equipment',itemId:item.id});}
+   return offers;
+  }
+  if(type==='tactical'){
+   const allowed=['global_special_choice_gain_coin','global_special_choice_refresh_free','global_special_choice_bond_addlayer','enemy_attribute_add','enemy_attribute_mul','char_attribute_mul'],pool=Object.values(this.data.season.effectInfoDataDict).filter(e=>e.effectType==='BUFF_GAIN'&&this.data.season.effectBuffInfoDataDict[e.effectId]?.every(x=>allowed.includes(x.key))),offers=[];
+   while(offers.length<3&&pool.length){const i=Math.floor(this.random()*pool.length),effect=pool.splice(i,1)[0];offers.push({id:`tactical:${effect.effectId}`,kind:'tactical',effectId:effect.effectId});}
+   return offers;
+  }
+  return [];
+ }
+ chooseDecision(id){
+  if(this.s.phase!=='decision'||!Array.isArray(this.s.roundDecisions))return false;
+  if(this.s.roundDecisionStage!=='reward')return false;
+  const offer=this.s.roundDecisions.find(x=>typeof x==='string'?x===id:x?.id===id);if(!offer)return false;
+  const kind=typeof offer==='string'?'tactical':offer.kind;
+  if(kind==='bounty'){this.s.pendingBounties??=[];this.s.pendingBounties.push({enemyId:offer.enemyId,coin:offer.coin,count:offer.count});}
+  else if(kind==='equipment')this.gainItem(offer.itemId);
+  else if(kind==='tactical'){
+   const effectId=typeof offer==='string'?offer:offer.effectId;
+   for(const e of this.data.season.effectBuffInfoDataDict[effectId]||[]){const p=blackboard(e.blackboard);if(e.key==='global_special_choice_gain_coin')this.addFunds(p.count);if(e.key==='global_special_choice_refresh_free')this.s.freeRefresh+=p.count;if(e.key==='global_special_choice_bond_addlayer')for(const b of p.bond_list.split(','))this.addLayers(b,p.count,false);if(e.key.startsWith('enemy_attribute'))this.s.enemyModifiers.push(e);if(e.key==='char_attribute_mul')this.s.operatorModifiers.push(e);}
+  }else return false;
+  this.s.roundDecisions=[];this.s.roundDecisionStage=null;this.s.roundDecisionType=null;this.s.roundDecisionPool=null;this.s.phase='prep';this.startPreparation();return true;
+ }
   // 导入的旧存档可能留着本局已禁盟约的候选（商店槽／晋升奖励候选）：读档时按禁用规则清一遍，
   // 否则玩家能从这些残留槽位买到、领到禁用干员。奖励候选被清空时按原口径补抽，抽不出来就丢掉这项奖励
   // （不能让玩家卡在「必须选一个」的奖励上）。
@@ -378,11 +387,15 @@ export class NativeSession extends NativeEconomy {
   record=structuredClone(record);
  const s=record?.s,n=v=>typeof v==='number'&&Number.isFinite(v),integer=(v,min,max)=>Number.isInteger(v)&&v>=min&&v<=max;
   if(!s||record.version!==data.version||!data.season.modeDataDict[s.modeId]||!data.season.bandDataListDict[s.bandId]||!data.maps.some(m=>m.stageId===s.mapId)||!integer(s.level,1,6)||!integer(s.round,1,15)||!n(s.funds)||s.funds<0||!n(s.hp)||!n(s.maxHp)||s.hp<0||s.hp>s.maxHp||!['prep','battle','decision','intermission','finished'].includes(s.phase)||![undefined,true].includes(s.cat)||![undefined,true].includes(s.egg325)||!n(record.savedAt)||Date.now()>=(record.expiresAt??record.savedAt+86400000))return null;
+  if(s.phase==='decision'&&s.roundDecisionStage===undefined){if(!Array.isArray(s.roundDecisions))return null;s.roundDecisionStage='reward';s.roundDecisionType='tactical';s.roundDecisionPool='early';s.roundDecisions=s.roundDecisions.map(id=>typeof id==='string'?{id:`tactical:${id}`,kind:'tactical',effectId:id}:id);}
+  if(s.phase==='decision'&&(s.roundDecisionStage!=='reward'||!['early','late'].includes(s.roundDecisionPool)||!Array.isArray(s.roundDecisions)||!['bounty','equipment','tactical'].includes(s.roundDecisionType)))return null;
+  if(s.phase==='decision'&&s.roundDecisionStage==='reward'&&(s.roundDecisions.length!==3||s.roundDecisions.some(o=>s.roundDecisionType==='bounty'?o?.kind!=='bounty'||!bountyOption(data,o.enemyId)||!integer(o.count,1,99)||!n(o.coin)||o.coin<0:s.roundDecisionType==='equipment'?o?.kind!=='equipment'||!data.season.trapChessDataDict[o.itemId]:o?.kind!=='tactical'||!data.season.effectBuffInfoDataDict[o.effectId])))return null;
   if(s.finalBossId!==undefined&&!AVAILABLE_FINAL_BOSS_IDS.includes(s.finalBossId))return null;
   // 盟约禁用：必须是已知盟约、无重复、至多 23 个；缺省（旧存档）在下面按「本局不额外禁用」补齐。
   // `fixed`／`never`（禁用方案）只做类型校验，旧存档缺字段时读档时按当前方案补齐。
   if(s.bondBan!==undefined){const b=s.bondBan;if(typeof b!=='object'||b===null||!Array.isArray(b.bonds)||b.bonds.length>23||new Set(b.bonds).size!==b.bonds.length||b.bonds.some(id=>typeof id!=='string'||!data.season.bondInfoDict[id])||(b.always!==undefined&&!Array.isArray(b.always))||(b.never!==undefined&&!Array.isArray(b.never)))return null;}
-  if(s.roundBounty){const r=s.roundBounty;if(!integer(r.round,1,s.round)||!Array.isArray(r.offers)||r.offers.length!==4||new Set(r.offers).size!==4||r.offers.some(id=>typeof id!=='string'||!data.enemies[id]||!bountyOption(data,id))||r.selected!==null&&!r.offers.includes(r.selected))return null;const coins=r.offers.map(id=>bountyOption(data,id).coin);if(!coins.includes(1)||!coins.includes(4))return null;}
+  if(s.pendingBounties!==undefined&&(!Array.isArray(s.pendingBounties)||s.pendingBounties.some(b=>!data.enemies[b?.enemyId]||!integer(b.count,1,99)||!n(b.coin)||b.coin<0)))return null;
+  if(s.roundBounty){const r=s.roundBounty;if(!integer(r.round,1,s.round)||!Array.isArray(r.offers)||r.offers.length!==4||new Set(r.offers).size!==4||r.offers.some(id=>typeof id!=='string'||!data.enemies[id]||!bountyOption(data,id))||r.selected!==null&&!r.offers.includes(r.selected))return null;const coins=r.offers.map(id=>bountyOption(data,id).coin);if(!coins.includes(1)||!coins.includes(4))return null;if(s.phase==='prep'&&r.round===s.round&&r.selected){const option=bountyOption(data,r.selected);s.pendingBounties??=[];s.pendingBounties.push({enemyId:option.enemyId,coin:option.coin,count:option.count});}delete s.roundBounty;}
   const item=i=>i&&integer(i.uid,1,Number.MAX_SAFE_INTEGER)&&!!data.season.trapChessDataDict[i.chessId];
   if(!Array.isArray(s.units)||s.units.length>500||!Array.isArray(s.items)||s.items.length>1000||s.items.some(i=>!item(i))||(s.stock!==undefined&&(typeof s.stock!=='object'||s.stock===null||Object.values(s.stock).some(v=>!integer(v,0,99999))))||s.units.some(u=>!integer(u.uid,1,Number.MAX_SAFE_INTEGER)||!data.profiles[u.chessId]||u.charId!==data.profiles[u.chessId].charId||!integer(u.dir,0,3)||!Array.isArray(u.equipment)||u.equipment.length>2||u.equipment.some(i=>!item(i))||(u.purchases!==undefined&&(typeof u.purchases!=='object'||u.purchases===null||Object.values(u.purchases).some(v=>!integer(v,1,9999))))||(u.position!==null&&(!integer(u.position?.x,0,10)||!integer(u.position?.y,0,6)))))return null;
   if(!Array.isArray(s.offers)||s.offers.some(id=>id!==null&&!data.profiles[id])||!Array.isArray(s.itemOffers)||s.itemOffers.some(id=>id!==null&&!data.season.trapChessDataDict[id])||!Array.isArray(s.history))return null;
@@ -399,6 +412,6 @@ export class NativeSession extends NativeEconomy {
   for(const u of c.s.units)c.refreshEquipmentBonds(u);
   // 读档时按「战前准备」的默认技能补齐没写过档位的副本、并把同名干员对齐到同一个技能
   // （存档里显式写下的档位优先，不会被配置覆盖）。
-  applyPrepSkills(data,c.s.units);if(migrated&&record.battle){const deployed=new Set(c.s.units.filter(u=>u.position).map(u=>u.uid));record.battle.units=record.battle.units.filter(u=>deployed.has(u.uid));}if(record.battle){const turn=c.resolveTurn(buildPhasePlan(data,c.s.modeId).find(t=>t.round===c.s.round));if(turn.finalBossId&&record.battle.benchmark)c.battle=new NativeBattle(data,c,c.map,turn);else{c.battle=NativeBattle.restore(data,c,c.map,turn,record.battle);if(!c.battle)return null;}}c.ensureRoundBounty();return c;
+  applyPrepSkills(data,c.s.units);if(migrated&&record.battle){const deployed=new Set(c.s.units.filter(u=>u.position).map(u=>u.uid));record.battle.units=record.battle.units.filter(u=>deployed.has(u.uid));}if(record.battle){const turn=c.resolveTurn(buildPhasePlan(data,c.s.modeId).find(t=>t.round===c.s.round));if(turn.finalBossId&&record.battle.benchmark)c.battle=new NativeBattle(data,c,c.map,turn);else{c.battle=NativeBattle.restore(data,c,c.map,turn,record.battle);if(!c.battle)return null;}}return c;
  }
 }

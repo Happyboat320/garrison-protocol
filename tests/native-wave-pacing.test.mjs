@@ -42,7 +42,8 @@ test('all modes use lower entrance in early rounds and balanced upper/lower ther
    if(turn.round<=3)assert.deepEqual([...counts.keys()],[9]);
    else assert.ok(Math.abs((counts.get(9)||0)-(counts.get(12)||0))<=1);
    const base=enemyCombatScale(data.season.modeDataDict[modeId],turn.round,{hidden:!!turn.isConditional});
-   assert.equal(plan.scale.hp,base.hp*(turn.round===1?.8:1));assert.equal(plan.scale.atk,base.atk);
+   const firstRoundHp=(modeId==='mode_training_1'||data.season.modeDataDict[modeId].modeType==='MULTI') ? 0.8 : 1;
+   assert.equal(plan.scale.hp,base.hp*(turn.round===1?firstRoundHp:1));assert.equal(plan.scale.atk,base.atk);
   }
  }
 });
@@ -56,7 +57,7 @@ test('real map spawn coordinates, first-round HP and bounty pacing use the same 
   assert.equal(battle.s.queue.filter(q=>q.bountyReward===2).length,3);
   for(const q of battle.s.queue){const route=battle.level.routes[q.route],p=battle.path(route,route.motionMode==='FLY')[0];assert.equal(p.x,10);assert.ok(round===1?p.y===3:p.y===0||p.y===3);assert.equal(map.grid[p.y][p.x].tileKey,'tile_start');}
   const id='enemy_1000_gopro_2';battle.spawn({id,route:0});
-  const raw=battle.enemyRaw(id);assert.equal(battle.s.enemies.at(-1).maxHp,raw.attributes.maxHp*(enemyCombatScale(data.season.modeDataDict.mode_single_normal,round).hp*(round===1?.8:1)));
+  const raw=battle.enemyRaw(id);assert.equal(battle.s.enemies.at(-1).maxHp,raw.attributes.maxHp*enemyCombatScale(data.season.modeDataDict.mode_single_normal,round).hp);
   const countEnemy=Object.entries(data.enemies).find(([,e])=>e.enemyBehavior?.hitCountHp);
   battle.spawn({id:countEnemy[0],route:0});assert.equal(battle.s.enemies.at(-1).maxHp,battle.enemyRaw(countEnemy[0]).attributes.maxHp);
  }
@@ -72,10 +73,9 @@ test('real battle steps consume the entire wave by 40 seconds',()=>{
  assert.equal(spawned[0].at,2);assert.equal(spawned.at(-1).at,40);
 });
 
-test('difficulty attack and HP reach real spawns, stacking the first-round HP modifier once',()=>{
+test('difficulty attack and HP reach real spawns without a single-player first-round HP modifier',()=>{
  const id='enemy_1000_gopro_2';
  for(const round of [1,4,10]){
-  const stats={};
   for(const difficulty of ['hard','normal','funny']){
    const modeId=`mode_single_${difficulty}`,session=new NativeSession(data,{modeId,seed:42});
    const turn=buildPhasePlan(data,modeId).find(t=>t.round===round&&!t.isBossTurn);
@@ -83,12 +83,7 @@ test('difficulty attack and HP reach real spawns, stacking the first-round HP mo
    const battle=new NativeBattle(data,session,session.map,turn);battle.spawn({id,route:0});
    const enemy=battle.s.enemies.at(-1),raw=battle.enemyRaw(id),scale=enemyCombatScale(data.season.modeDataDict[modeId],round);
    assert.equal(enemy.atk,raw.attributes.atk*scale.atk);
-   assert.equal(enemy.maxHp,raw.attributes.maxHp*(scale.hp*(round===1?.8:1)));
-   stats[difficulty]=enemy;
-  }
-  for(const [difficulty,factor] of [['normal',.8],['funny',.6]])if(stats[difficulty]){
-   assert.ok(Math.abs(stats[difficulty].atk-stats.hard.atk*factor)<1e-8);
-   assert.ok(Math.abs(stats[difficulty].maxHp-stats.hard.maxHp*factor)<1e-8);
+   assert.equal(enemy.maxHp,raw.attributes.maxHp*scale.hp);
   }
  }
 });

@@ -160,25 +160,25 @@ test('装备池门控：臂章只在 S.E.E.S. 局出现',()=>{
 test('回合结算：资金换层数、每 25 层发一名、封顶 264',()=>{
  const run=seesSession();
  run.s.level=1;run.setFunds(7);
- assert.equal(run.perform('start'),true,run.lastError||'');
+ run.settleTartarusRound();
  assert.equal(run.s.funds,0,'资金全部消耗');
  assert.equal(tartarusLayers(run),35,'基础每资金 5 层 → 7×5');
  assert.equal(run.s.seesGrants,1,'跨过 25 层发一名');
  assert.equal(run.s.units.length,1);
  assert.equal(run.s.units[0].charId,'char_4220_kormr','1 级商店只能发 1 阶的虎狼丸');
  run.s.round=2;run.s.phase='prep';run.s.level=3;run.setFunds(3);
- assert.equal(run.perform('start'),true);
+ run.settleTartarusRound();
  assert.equal(tartarusLayers(run),50);
  assert.equal(run.s.seesGrants,2,'50 层跨过了第二档');
  run.s.round=3;run.s.phase='prep';run.setFunds(1);
- assert.equal(run.perform('start'),true);
+ run.settleTartarusRound();
  assert.equal(tartarusLayers(run),55);
  assert.equal(run.s.seesGrants,2,'没到 75 层不发新的');
  run.s.round=4;run.s.phase='prep';run.setFunds(1e6);
- assert.equal(run.perform('start'),true);
+ run.settleTartarusRound();
  assert.equal(tartarusLayers(run),264);
  run.s.round=5;run.s.phase='prep';run.setFunds(1000);
- assert.equal(run.perform('start'),true);
+ run.settleTartarusRound();
  assert.equal(tartarusLayers(run),264,'满层不再增长');
  assert.equal(tartarusCap(data),264);
  assert.equal(tartarusCap(patchedNumbers({tartarusLayerCap:100})),100,'上限读数据');
@@ -341,7 +341,7 @@ test('结城理：击倒敌人与自身被击倒各加初始/精锐层数',()=>{
 test('海猫模式下的 S.E.E.S. 局：资金保持哨兵值，层数按封顶算',()=>{
  const run=seesSession({cat:true});
  run.s.level=1;
- assert.equal(run.perform('start'),true,run.lastError||'');
+ run.settleTartarusRound();
  assert.equal(run.s.funds,Number.MAX_SAFE_INTEGER,'cat 模式下 `setFunds(0)` 不该把哨兵值打回普通数（AGENTS 红线）');
  assert.equal(tartarusLayers(run),264,'无限资金一次封顶，不会算成 Infinity／NaN');
 });

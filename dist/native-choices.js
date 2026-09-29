@@ -9,19 +9,32 @@ function choiceFrame({kind,title,kicker,round,note,cards,footer}){
  <footer class="native-choice-footer">${footer}</footer></div>`;
 }
 
-export function renderBountyChoice(data,offers,round,{item=false}={}){
+export function renderBountyChoice(data,offers,round){
  const options=offers.map(id=>bountyOption(data,id)).filter(Boolean);
- const cards=options.map((o,i)=>`<button class="native-choice-card native-bounty-card" data-act="${item?'reward':'round-bounty'}" data-id="${esc(o.id)}" style="--choice-order:${i}">
+ const cards=options.map((o,i)=>`<button class="native-choice-card native-bounty-card" data-act="reward" data-id="${esc(o.id)}" style="--choice-order:${i}">
   <span class="native-choice-index">0${i+1} / ${o.coin===0?'特殊演练':'难度 '+o.difficulty}</span>
   <div class="native-bounty-portrait">${data.assets?.[o.enemyId]?`<img src="./${esc(data.assets[o.enemyId])}" alt="">`:'<span>◇</span>'}</div>
   <strong>${esc(o.name)}</strong><span class="native-bounty-target">额外出现 ${o.count} 只</span>
   <span class="native-bounty-prize"><b>${o.coin}</b><span>◆ / 只<br>整备奖金</span></span>
   <span class="native-choice-card-footer">${o.coin===0?'无奖金 · 轻量演练':'击倒后，下轮到账'} <b>接取 →</b></span>
  </button>`);
- return choiceFrame({kind:'bounty',title:item?'追加悬赏':'本轮悬赏',kicker:'BOUNTY / CONTRACT',round,note:'四选一 · 目标加入本轮战斗，漏失目标不获奖金。',cards,footer:`<span>奖金取原表 0–6 档 · 每次至少包含 1 与 4 奖金档 · 源石虫为 0</span>${item?'':'<button data-act="bounty-later">稍后选择</button>'}`});
+ return choiceFrame({kind:'bounty',title:'追加悬赏',kicker:'BOUNTY / ITEM',round,note:'四选一 · 目标加入下一场战斗，漏失目标不获奖金。',cards,footer:'<span>奖金取原表 0–6 档 · 至少包含 1 与 4 奖金档 · 源石虫为 0</span>'});
 }
 
-export function renderDecisionChoice(data,offers,round){
- const cards=offers.map((id,i)=>{const e=data.season.effectInfoDataDict[id];return `<button class="native-choice-card native-decision-card" data-act="decision" data-id="${esc(id)}" style="--choice-order:${i}"><span class="native-choice-index">0${i+1} / 机变方案</span><span class="native-decision-mark" aria-hidden="true">${['Ⅰ','Ⅱ','Ⅲ'][i]||'◇'}</span><strong>${esc(e?.effectName||id)}</strong><p>${esc(richText(e?.effectDesc||''))}</p><span class="native-choice-card-footer">选择本项 <b>→</b></span></button>`;});
- return choiceFrame({kind:'decision',title:'机变决策',kicker:'TACTICAL / DECISION',round,note:'选择一项增益，继续本轮整备。',cards,footer:'<span>三选一 · 选择后立即生效</span>'});
+export function renderDecisionChoice(data,offers,round,{type='tactical'}={}){
+ const labels={bounty:'悬赏',equipment:'道具补给',tactical:'战术运营'},cards=offers.map((offer,i)=>{
+  const value=typeof offer==='string'?{id:offer,kind:'tactical',effectId:offer}:offer;
+  if(value.kind==='bounty'){
+   const image=data.assets?.[value.enemyId]?`<img src="./${esc(data.assets[value.enemyId])}" alt="">`:'<span>◇</span>';
+   return `<button class="native-choice-card native-decision-card native-bounty-card" data-act="decision" data-id="${esc(value.id)}" style="--choice-order:${i}"><span class="native-choice-index">0${i+1} / 悬赏目标</span><div class="native-bounty-portrait">${image}</div><strong>${esc(value.name||data.enemies?.[value.enemyId]?.name||value.enemyId)}</strong><p>额外加入本轮 ${value.count} 名；击倒后下轮获得 ${value.coin} ◆。</p><span class="native-choice-card-footer">选择目标 <b>→</b></span></button>`;
+  }
+  if(value.kind==='equipment'){
+   const item=data.items?.find(row=>row.id===value.itemId),name=item?.name||value.itemId,desc=richText(item?.effect?.effectDesc||'');
+   return `<button class="native-choice-card native-decision-card" data-act="decision" data-id="${esc(value.id)}" style="--choice-order:${i}"><span class="native-choice-index">0${i+1} / 道具补给 · ${item?.rank||''} 阶</span><span class="native-decision-mark" aria-hidden="true">◇</span><strong>${esc(name)}</strong><p>${esc(desc)}</p><span class="native-choice-card-footer">免费获得 <b>→</b></span></button>`;
+  }
+  const e=data.season.effectInfoDataDict[value.effectId];
+  return `<button class="native-choice-card native-decision-card" data-act="decision" data-id="${esc(value.id)}" style="--choice-order:${i}"><span class="native-choice-index">0${i+1} / 战术方案</span><span class="native-decision-mark" aria-hidden="true">${['Ⅰ','Ⅱ','Ⅲ'][i]||'◇'}</span><strong>${esc(e?.effectName||value.effectId)}</strong><p>${esc(richText(e?.effectDesc||''))}</p><span class="native-choice-card-footer">选择本项 <b>→</b></span></button>`;
+ });
+ const label=labels[type]||labels.tactical,note=type==='bounty'?'本次随机抽取悬赏类型，从目标中选一项加入下一场战斗。':type==='equipment'?'本次随机抽取道具补给，选择一件装备免费获得。':'本次随机抽取战术运营，选择一项增益继续整备。';
+ return choiceFrame({kind:'decision',title:`${label}决策`,kicker:'TACTICAL / DECISION',round,note,cards,footer:'<span>三选一 · 选择后立即生效</span>'});
 }

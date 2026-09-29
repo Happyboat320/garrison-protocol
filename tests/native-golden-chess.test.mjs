@@ -6,8 +6,8 @@ import { NATIVE_DATA } from '../dist/runtime-data.js';
 import { deployNow } from './effects-harness.mjs';
 import {NO_BOND_BAN} from './no-bond-ban.mjs';
 
-// 三合一精锐的养成口径：应取「精英二 + 7 级技能 + 模组」。
-// 数据来自固定历史活动表的 charChessDataDict，这里同时校验原始 source.json 与运行时一致。
+// PRTS 棋子表里的三合一精锐应取「精英二 + 7 级技能 + 模组」。
+// 联动棋子不在这份 source.json 里，状态按各自数据源处理。
 const SKILL_TABLE = JSON.parse(fs.readFileSync('data/gamedata/allianceLower/skill_table.json', 'utf8'));
 
 test('精锐棋子状态取自原始表且为精英二 + 7 级技能 + 模组', () => {
@@ -27,8 +27,8 @@ test('精锐棋子状态取自原始表且为精英二 + 7 级技能 + 模组', 
   assert.ok(compared > 200, '应对比全部棋子');
   assert.deepEqual(diffs, [], '运行时状态必须与原始表逐字段一致');
   assert.ok(golden > 100, '精锐样本量应足够');
-  for (const chess of Object.values(NATIVE_DATA.season.charChessDataDict)) {
-    if (!chess?.isGolden) continue;
+  for (const [id,chess] of Object.entries(NATIVE_DATA.season.charChessDataDict)) {
+    if (!chess?.isGolden||!raw[id]) continue;
     assert.equal(chess.status.evolvePhase, 'PHASE_2', '精锐应为精英二');
     assert.equal(chess.status.skillLevel, 7, '精锐技能等级应为 7');
     assert.ok(chess.status.equipLevel > 0, '精锐应带模组等级');

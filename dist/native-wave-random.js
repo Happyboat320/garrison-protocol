@@ -9,7 +9,7 @@ const ATK={
  single:{
   FUNNY:{1:.7,2:.7,3:.7,4:.7,5:.7,6:.7,7:.7,8:.7,9:.7},
   NORMAL:{1:.7,2:.7,3:.7,4:A(1,.7),5:A(1,.7),6:A(1,.7),7:A(1,.7),8:A(2,.7),9:A(2,.7),10:A(2,.7),11:A(3,.7),12:A(4,.7),13:A(5,.7),14:A(5,.7)},
-  HARD:{1:.8,2:.8,3:.8,4:.8,5:A(1,.8),6:A(1,.8),7:A(1,.8),8:A(1,.8),9:A(2,.8),10:A(2,.8),11:A(3,.8),12:A(3,.8),13:A(4,.8),14:A(4,.8),hidden:A(4,.8)},
+  HARD:{1:.8,2:.8,3:.8,4:.8,5:A(1,.8),6:A(1,.8),7:A(1,.8),8:A(1,.8),9:A(1,.8),10:A(2,.8),11:A(3,.8),12:A(3,.8),13:A(4,.8),14:A(4,.8),hidden:A(4,.8)},
   ABYSS:{1:A(1),2:A(2),3:A(2),4:A(2),5:A(2),6:A(3),7:A(3),8:A(3),9:A(3),10:A(4),11:A(5),12:A(5),13:A(6),14:A(7),hidden:A(7)}
  },
  multi:{
@@ -46,7 +46,13 @@ function tableValue(table,round,hidden){
 }
 export function enemyCombatScale(mode,round,{hidden=false}={}){
  const side=scaleSide(mode.modeType),col=difficultyColumn(mode.modeDifficulty);
- // 项目难度：绝境为共同基准，险境80%，标准/入门60%；终极保留原表。
+ // 单人模式直接读取截图中的逐轮攻击倍率；生命倍率只按难度分档，不随回合增长。
+ if(side==='single'&&mode.modeDifficulty!=='TRAINING'){
+  const atk=tableValue(ATK.single[col],round,hidden),hp={FUNNY:.7,NORMAL:.7,HARD:.8,ABYSS:1}[col]??.7;
+  const moveSpeed=col==='ABYSS'&&(hidden||round>=3)?1.15:1;
+  return {atk,hp,moveSpeed,side,column:col};
+ }
+ // 多人和入门训练仍沿用原有倍率口径。
  const baseColumn=col==='ABYSS'?'ABYSS':'HARD',factor=col==='NORMAL'?.8:col==='FUNNY'?.6:1;
  const atkTable=ATK[side][baseColumn],hpTable=HP[side][baseColumn];
  const atk=tableValue(atkTable,round,hidden)*factor,hp=tableValue(hpTable,round,hidden)*factor;
@@ -137,7 +143,7 @@ export function buildWavePlan(data,turn,roster=null,table=null){
  if(!assignment||assignment.boss)return {round:turn.round,benchmark:false,total:0,targets:0,queue:[],level,levelId,assignment:assignment||null};
  const ground=visibleRoutes(level,false),air=visibleRoutes(level,true),queue=[],mode=data.season.modeDataDict[roster.modeId];
  const scale=mode?enemyCombatScale(mode,turn.round,{hidden:!!turn.isConditional}):{atk:1,hp:1,moveSpeed:1};
- if(turn.round===1)scale.hp*=.8;
+ if(turn.round===1&&(scale.side==='multi'||mode?.modeDifficulty==='TRAINING'))scale.hp*=.8;
  const sourceTable=table||loadWaveTable(),waveTable=filterRandomPoolTable(sourceTable,data),pack=fillBudgetWave(waveRng(assignment.waveSeed||turn.round),waveTable,assignment.type,assignment.tier);
  pack.ids.forEach((id,i)=>{
   const fly=(data.enemies?.[id]||level.enemyProfiles?.[id])?.motion==='FLY';

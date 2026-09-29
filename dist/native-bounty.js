@@ -58,12 +58,13 @@ export function bountyOffers(data,seed,{type=null}={}){
  return unique;
 }
 
-// 回合悬赏的出现节奏（用户 2026-09-22 口径）：从第 2 回合开始每隔一个回合出现一次（2 / 4 / 6 …），
-// 不是每回合都弹。第 1 回合与最终木桩阶段没有回合悬赏；道具悬赏（教鞭／神秘顾客的 pendingBounty）
-// 是另一条路径，不受这个节奏限制。
-export const BOUNTY_FIRST_ROUND=2;
-export const BOUNTY_INTERVAL=2;
-export function bountyRoundActive(round){
- const n=Number(round);
- return Number.isInteger(n)&&n>=BOUNTY_FIRST_ROUND&&(n-BOUNTY_FIRST_ROUND)%BOUNTY_INTERVAL===0;
+// 机变决策中的悬赏候选：前段 = 最高奖金精英 + 两只低成本普通敌人；
+// 后段 = 两只 BOSS 级敌人 + 0 奖金源石虫。每个决策用波次种子的独立随机流定池。
+export function bountyDecisionOffers(data,seed,{late=false}={}){
+ const pool=Object.keys(ENEMY_KILL_COINS).map(id=>bountyOption(data,id)).filter(Boolean),rng=waveRng(((Number(seed)||1)^0x4b7d21)>>>0);
+ const take=(rows,count)=>{const left=rows.slice(),out=[];while(out.length<count&&left.length)out.push(left.splice(Math.floor(rng()*left.length),1)[0]);return out;};
+ if(late){const bosses=take(pool.filter(o=>data.enemies[o.enemyId]?.levelType==='BOSS'),2),slug=bountyOption(data,BOUNTY_SLUG);return bosses.length===2&&slug?[...bosses,slug]:[];}
+ const elites=pool.filter(o=>data.enemies[o.enemyId]?.levelType==='ELITE'),value=Math.max(-1,...elites.map(o=>o.coin)),high=take(elites.filter(o=>o.coin===value),1);
+ const normal=pool.filter(o=>o.enemyId!==BOUNTY_SLUG&&data.enemies[o.enemyId]?.levelType==='NORMAL'),easy=normal.filter(o=>o.cost<=3),low=take(easy.length>=2?easy:normal,2);
+ return high.length&&low.length===2?[...high,...low]:[];
 }
