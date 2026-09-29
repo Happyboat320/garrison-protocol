@@ -63,7 +63,7 @@ test('岳羽由加莉 S1：追加伤害是按 1.1 半径的圆判定，单体三
  assert.ok(b.targets(u).includes(far),'第三个敌人本身在攻击范围内，只是吃不到这次溅射');
  const before=[primary,near,far].map(e=>e.hp);
  cast(b,u,0);
- assert.equal(before[0]-primary.hp,atk*(3*0.8+final),'主目标吃三发＋追加');
+ assert.ok(Math.abs(before[0]-primary.hp-atk*(3*0.8+final))<1e-6,'主目标吃三发＋追加');
  assert.ok(Math.abs(before[1]-near.hp-atk*final)<1e-6,'相邻敌人只吃追加的范围伤害');
  assert.equal(before[2]-far.hp,0,'1.1 半径外的敌人不吃追加伤害');
  assert.equal((near.statuses||[]).some(s=>s.kind==='levitate'),true,'追加伤害命中的目标一起被浮空');

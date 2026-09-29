@@ -303,7 +303,7 @@ test('凛御银灰的「风雪之眼」在待部署区、不生成场上召唤�
 
 test('野鬃 S1 与砾 S1 的部署增益按生命周期衰减',()=>{
  const wild=openBattle({chessId:'chess_char_1_19_b',skillIndex:0}).b;deployNow(wild);const w=byId(wild,'char_496_wildmn'),wildBase=wild.profile(w).attributes.attackSpeed;assert.equal(wild.stats(w).attackSpeed,wildBase+100);wild.s.time=26;assert.equal(wild.stats(w).attackSpeed,wildBase);
- const gravel=openBattle({chessId:'chess_char_2_12_b',skillIndex:0}).b;deployNow(gravel);const g=byId(gravel,'char_237_gravel'),base=gravel.profile(g).attributes.def;assert.equal(gravel.stats(g).def,base*(1+3.4+.06));gravel.s.time=4;assert.ok(gravel.stats(g).def<base*(1+3.4+.06)&&gravel.stats(g).def>base*(1+.06));gravel.s.time=9;assert.equal(gravel.stats(g).def,base*(1+.06));
+ const gravel=openBattle({chessId:'chess_char_2_12_b',skillIndex:0}).b;deployNow(gravel);const g=byId(gravel,'char_237_gravel'),base=gravel.profile(g).attributes.def*(1+(gravel.data.cultivationBonus?.def||0));assert.equal(gravel.stats(g).def,base*(1+3.4+.06));gravel.s.time=4;assert.ok(gravel.stats(g).def<base*(1+3.4+.06)&&gravel.stats(g).def>base*(1+.06));gravel.s.time=9;assert.equal(gravel.stats(g).def,base*(1+.06));
 });
 
 test('忍冬 S2 先停顿后眩晕并造成法术伤害，S3 击杀后进入迷彩',()=>{
@@ -454,7 +454,7 @@ test('洛洛浮游过载在技能结束按实际持续时间眩晕自身',()=>{
 });
 
 test('缪尔赛思技能复制待部署干员属性并保存 copyOf 关系',()=>{
- const {b}=openBattle([{chessId:'chess_char_6_11_b',skillIndex:2},reps.operators.yak]);deployNow(b);const mlyss=b.s.units.find(u=>u.id==='char_249_mlyss'),copy=b.s.units.find(u=>u.id==='char_199_yak');copy.deployed=false;mlyss.sp=b.spCost(mlyss);b.activate(mlyss);const token=b.s.summons.find(s=>s.type==='mlyss-fluid');assert.ok(token);assert.equal(token.copyOf,copy.uid);assert.equal(token.maxHp,b.profile(copy).attributes.maxHp);assert.equal(token.atk,b.profile(copy).attributes.atk);assert.equal(token.blockCnt,b.profile(copy).attributes.blockCnt);
+ const {b}=openBattle([{chessId:'chess_char_6_11_b',skillIndex:2},reps.operators.yak]);deployNow(b);const mlyss=b.s.units.find(u=>u.id==='char_249_mlyss'),copy=b.s.units.find(u=>u.id==='char_199_yak');copy.deployed=false;mlyss.sp=b.spCost(mlyss);b.activate(mlyss);const token=b.s.summons.find(s=>s.type==='mlyss-fluid'),profile=b.profile(copy),bonus=b.data.cultivationBonus;assert.ok(token);assert.equal(token.copyOf,copy.uid);assert.equal(token.maxHp,profile.attributes.maxHp*(1+bonus.maxHp));assert.equal(token.atk,profile.attributes.atk*(1+bonus.atk));assert.equal(token.blockCnt,profile.attributes.blockCnt);
 });
 
 test('归溟幽灵鲨只在替身形态提供范围减速与周期法伤，真实step到时恢复本体',()=>{
@@ -918,7 +918,7 @@ test('歌蕾蒂娅 S3 龙卷区域牵引，深海猎人获得最大生命回复�
 });
 
 test('史尔特尔 S3 的生命上限字段按平值增加',()=>{
- const {b}=openBattle({chessId:'chess_char_5_07_b',skillIndex:2});deployNow(b);const u=b.s.units[0],base=b.profile(u).attributes.maxHp;u.sp=b.spCost(u);b.activate(u);assert.equal(b.stats(u).maxHp,base+5000);
+ const {b}=openBattle({chessId:'chess_char_5_07_b',skillIndex:2});deployNow(b);const u=b.s.units[0],base=b.profile(u).attributes.maxHp*(1+(b.data.cultivationBonus?.maxHp||0));u.sp=b.spCost(u);b.activate(u);assert.equal(b.stats(u).maxHp,base+5000);
 });
 
 test('华法琳 S2 为自身与随机友方施加攻击和持续生命流失',()=>{

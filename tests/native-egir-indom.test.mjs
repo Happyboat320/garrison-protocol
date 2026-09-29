@@ -16,14 +16,14 @@ function arena(bond='egirShip',n=4){
 function mark(b){dispatch(b,'battle-start',{target:null});}
 
 test('阿戈尔直线贪吃蛇：每名获得右方整条链的基础属性，攻击力最终加算',()=>{
- const b=arena();mark(b);assert.deepEqual(b.s.units.map(u=>u.egirBorrowAtk),[300,200,100,0]);
+ const b=arena();mark(b);assert.deepEqual(b.s.units.map(u=>Math.round(u.egirBorrowAtk)),[330,220,110,0]);
  assert.deepEqual(b.s.units.map(u=>b.stats(u).blockCnt),[4,3,2,1]);
- const u=b.s.units[0];u.sandAttackRatio=1;assert.equal(b.stats(u).atk,500,'本体100×2+吞噬300，不能(100+300)×2');
+ const u=b.s.units[0];u.sandAttackRatio=1;assert.ok(Math.abs(b.stats(u).atk-550)<1e-8,'本体100×1.1×2+吞噬300×1.1，不能(100+300)×2');
  assert.equal(b.s.egirPendingMarks.length,6);
 });
 test('阿戈尔转弯链跟随中间干员朝向，环路不反向重复继承',()=>{
  const b=arena(),[a,c,d,e]=b.s.units;c.dir=1;d.x=1;d.y=2;d.dir=2;e.x=0;e.y=2;e.dir=3;
- mark(b);assert.deepEqual(b.s.units.map(u=>u.egirBorrowAtk),[300,200,100,0]);
+ mark(b);assert.deepEqual(b.s.units.map(u=>Math.round(u.egirBorrowAtk)),[330,220,110,0]);
  assert.deepEqual(a.egirConsumedUids,[c.uid,d.uid,e.uid]);
  assert.equal(b.s.egirPendingMarks.length,6);
 });
@@ -87,7 +87,7 @@ test('不屈概率按层数计算，非本盟约地面干员也可受益',()=>{
 test('阿戈尔与不屈状态存读后保留，免费部署标记仅消耗一次',()=>{
  const b=arena('egirShip',5),u=b.s.units[0];b.on=id=>['egirShip','indomShip'].includes(id);b.rows.indomShip={count:3};b.economy.random=()=>0;mark(b);
  applyLoss(b,{target:u,amount:u.hp});b.s=JSON.parse(JSON.stringify(b.s));const restored=b.s.units[0];
- assert.equal(restored.egirBorrowAtk,400);assert.equal(restored.egirRevived,true);assert.equal(b.deploymentCost(restored),0);
+ assert.ok(Math.abs(restored.egirBorrowAtk-440)<1e-8);assert.equal(restored.egirRevived,true);assert.equal(b.deploymentCost(restored),0);
  b.deploy(restored,{reentry:true});assert.equal(restored.indomFreeDeploy,false);assert.ok(b.deploymentCost(restored)>0);assert.equal(b.s.bondEgirReviveCount,1);
 });
 test('替身周期攻击遇到反伤致死时终止补拍，不读取已清理的形态',()=>{

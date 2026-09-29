@@ -162,7 +162,7 @@ test('数值只从 activeTalents 黑板读：改黑板后伤害与恐惧时长�
  const atk=b.stats(u).atk,e=enemy(b,{x:u.x+1,y:u.y,hp:100000});
  deploy(b,u);
  near(100000-e.hp,atk*(5*.5+3),'总伤害应跟着黑板走（不是写死的 1／2）');
- assert.deepEqual(slashDamages(b,e),[121,121,121,121,121,726],'逐次伤害也按新黑板走');
+ assert.deepEqual(slashDamages(b,e),[atk*.5,atk*.5,atk*.5,atk*.5,atk*.5,atk*3],'逐次伤害也按新黑板走');
  const fear=(e.statuses||[]).find(s=>s.kind==='fear');
  near((fear||{}).remaining,7,'恐惧时长应跟着黑板走（不是写死的 4）');
 });

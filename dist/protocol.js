@@ -331,6 +331,7 @@ export function nativeAttributes(entity,status){
  let left=frames[0],right=frames.at(-1);for(let i=1;i<frames.length;i++)if(level<=frames[i].level){left=frames[i-1];right=frames[i];break;}
  const t=right.level===left.level?0:(level-left.level)/(right.level-left.level),data={};for(const[k,v]of Object.entries(left.data)){const other=right.data[k];data[k]=typeof v==='number'&&typeof other==='number'?v+(other-v)*t:v;if(['maxHp','atk','def'].includes(k))data[k]=Math.round(data[k]);}return {phase:phaseIndex,level,rangeId:phase.rangeId,attributes:data};
 }
+export function applyOwnedBonus(attributes,ownedBonus){if(ownedBonus)for(const[k,v]of Object.entries(ownedBonus))if(['maxHp','atk','def'].includes(k))attributes[k]*=1+v;return attributes;}
 export function resolveChess(data,base,chessId,{skillIndex,ownedBonus=null,potentialRank=0}={}){
  const chess=data.season.charChessDataDict[chessId];if(!chess)throw Error('Unknown chess '+chessId);
  const normalId=chess.isGolden?data.season.chessNormalIdLookupDict[chessId]||Object.keys(data.season.charChessDataDict).find(id=>data.season.charChessDataDict[id].upgradeChessId===chessId):chessId;
@@ -340,7 +341,7 @@ export function resolveChess(data,base,chessId,{skillIndex,ownedBonus=null,poten
  const attributes={...state.attributes},moduleStats=blackboard(modulePhase?.attributeBlackboard);for(const[from,to]of Object.entries({max_hp:'maxHp',atk:'atk',def:'def',magic_resistance:'magicResistance',attack_speed:'attackSpeed',respawn_time:'respawnTime',cost:'cost',block_cnt:'blockCnt'}))attributes[to]+=(moduleStats[from]||0);
  // Only native additive potential modifiers are handled here; other effects stay in their descriptors.
  for(const p of (entity.potentials||[]).slice(0,potentialRank))for(const m of p.buff?.attributes?.attributeModifiers||[]){const key={MAX_HP:'maxHp',ATK:'atk',DEF:'def',MAGIC_RESISTANCE:'magicResistance',COST:'cost',RESPAWN_TIME:'respawnTime'}[m.attributeType];if(key&&m.formulaItem==='ADDITION')attributes[key]+=m.value;}
- if(ownedBonus)for(const[k,v]of Object.entries(ownedBonus))if(['maxHp','atk','def'].includes(k))attributes[k]*=1+v;
+ applyOwnedBonus(attributes,ownedBonus);
  return {chessId,normalId,charId:shop.charId,name:entity.name,rank:shop.chessLevel,isGolden:chess.isGolden,status:chess.status,...state,attributes,range:base.ranges[state.rangeId],skillId:ref?.skillId||null,skillIndex:index,skill,moduleId:modulePhase?shop.defaultUniEquipId:null,modulePhase,bonds:chess.bondIds,garrisons:chess.garrisonIds.map(id=>({id,...data.season.garrisonDataDict[id]})),talents:entity.talents,activeTalents:resolveActiveTalents(entity,chess.status,{potentialRank,modulePhase}),trait:entity.trait,sourceCommit:data.source.commit};
 }
 export function skillPolicy(common,entity,skillIndex){const matches=common.skillTriggerDataList.filter(p=>(p.charId? p.charId===entity.id&&p.skillIndex===skillIndex:p.subProfessionId?p.subProfessionId===entity.branch:p.profession===entity.profession));return matches.find(p=>p.charId)||matches.find(p=>p.subProfessionId)||matches[0]||{skillTriggerType:'DEFAULT'};}

@@ -198,7 +198,7 @@ test('源石流发生装置：干员同向 +30%／逆向 -30%／垂直 0，敌�
   assert.ok(u,'气流格要能部署');
   const b=battleOn(g);seconds(b)(1/FPS+1e-6);
   const unit=b.s.units.find(v=>v.uid===u.uid);
-  return {relation:unit.windMove,ratio:unit.windAtkRatio,atk:b.stats(unit).atk,base:b.profile(unit).attributes.atk,b};
+  return {relation:unit.windMove,ratio:unit.windAtkRatio,atk:b.stats(unit).atk,base:b.profile(unit).attributes.atk*(1+(b.data.cultivationBonus?.atk||0)),b};
  };
  const same=windAtk(1),against=windAtk(3),vertical=windAtk(0);
  assert.equal(same.relation,1);assert.ok(Math.abs(same.ratio-.3)<1e-6);

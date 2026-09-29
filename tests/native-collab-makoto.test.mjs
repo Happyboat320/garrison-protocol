@@ -157,26 +157,26 @@ test('天赋一①：停顿时长跟着黑板走（改成 3 秒就停 3 秒）',
 
 test('天赋一②：非替身形态不吃不羁之力的 +atk（通用通道那份常驻加成被抵消）',()=>{
  const {b,u}=scene(0);
- const base=Number(b.profile(u).attributes.atk);
+ const base=Number(b.profile(u).attributes.atk)*(1+(b.data.cultivationBonus?.atk||0));
  near(b.stats(u).atk,base,`基础形态攻击力应当就是面板值 ${base}`);
  assert.equal(talentValue(b,u,'atk'),.8,'无潜能档的 atk 是 0.8');
 });
 
 test('天赋一②：替身形态 攻击力×(1+atk)、生命上限×(1+max_hp_t1)',()=>{
  const {b,u}=scene(0);
- const base=Number(b.profile(u).attributes.atk),maxHp=Number(b.profile(u).attributes.maxHp);
+ const base=Number(b.profile(u).attributes.atk)*(1+(b.data.cultivationBonus?.atk||0)),maxHp=Number(b.profile(u).attributes.maxHp)*(1+(b.data.cultivationBonus?.maxHp||0));
  const atkRatio=talentValue(b,u,'atk'),hpRatio=talentValue(b,u,'max_hp_t1');
  assert.equal(atkRatio,.8);assert.equal(hpRatio,.35);
  enterDoll(b,u);
  near(b.stats(u).atk,base*(1+atkRatio),'替身形态攻击力');
  near(b.stats(u).maxHp,maxHp*(1+hpRatio),'替身形态生命上限');
  near(u.maxHp,b.stats(u).maxHp,'进入替身时应当把生命上限同步成替身形态的值');
- near(u.hp,u.maxHp,'傀儡师进入替身形态时回满生命');
+ near(u.hp,Math.floor(u.maxHp),'傀儡师进入替身形态时回满生命（当前生命按整数记账）');
 });
 
 test('天赋一②：替身形态的攻击力／生命上限跟着黑板走',()=>{
  const {b,u}=scene(0);
- const base=Number(b.profile(u).attributes.atk),maxHp=Number(b.profile(u).attributes.maxHp);
+ const base=Number(b.profile(u).attributes.atk)*(1+(b.data.cultivationBonus?.atk||0)),maxHp=Number(b.profile(u).attributes.maxHp)*(1+(b.data.cultivationBonus?.maxHp||0));
  patchProfile(b,u,{talentKey:'atk',talentValue:.2});
  patchProfile(b,u,{talentKey:'max_hp_t1',talentValue:1});
  enterDoll(b,u);

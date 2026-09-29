@@ -19,7 +19,7 @@ import {finalBossMechanics,finalBossSpawnPoint} from './native-final-boss.js';
 import {enemyCombatScale} from './native-wave-random.js';
 import {damage,applyDamage,recoverHP,attackTiming,FPS} from './combat.js';
 import {applyStatus,tickStatuses,permissions,statusAttributeChanges,isIsolated,yinYangAttackScale} from './status.js';
-import {blackboard,skillPolicy,shouldAutoSkill,ROUND_LEAK_CAP,bondBlackboard,bondLayerValue,bondValue,bondPityChance,bondPityStep} from './protocol.js';
+import {blackboard,skillPolicy,shouldAutoSkill,ROUND_LEAK_CAP,bondBlackboard,bondLayerValue,bondValue,bondPityChance,bondPityStep,applyOwnedBonus} from './protocol.js';
 import {usesSp,spTypeOf,skillKind,ammoCount,initSpOf,gainSp,tickTimeSp} from './native-sp.js';
 import {containsTarget} from './targeting.js';
 import {remainingDistance,compareOperatorTargets,compareEnemyTargets,resolveBlocks,compileRoute,advanceEnemy,skillFlow,combineStat,emitEvent,pruneEvents,scheduleStrikes,dueStrikes,windupSeconds,TENTATIVE_PROJECTILE_SPEED,enemyBehaviorProfile,enemyTargetValid,enemyTargetInRange,enemyShouldHoldPosition,enemySpecialTraitId,enemyBleedingTraitId,ENEMY_MOVEMENT_POLICIES} from './native-combat.js';
@@ -268,7 +268,7 @@ export class NativeBattle {
  stats(u){
   const mouseSandScale=(u.statuses||[]).filter(s=>s.kind==='mouseSandWeak').reduce((v,s)=>Math.min(v,s.value),1);
   if(u.kind==='summon')return {...u,atk:u.atk*(1+(u.sandAttackRatio||0)+(u.envAtkRatio||0))*mouseSandScale,attackSpeed:Math.max(10,Math.min(600,(u.attackSpeed+this.dominionAttackSpeed(u)+(u.envAttackSpeed||0))*(u.envAttackSpeedScale??1))),magicResistance:u.res||0,tauntLevel:u.neutral?u.taunt||0:0,parts:[]};
-  const p=this.profile(u),base={...p.attributes},l=this.layers,has=id=>this.on(id)&&this.owns(u,id),parts=[];
+  const p=this.profile(u),base=applyOwnedBonus({...p.attributes},this.data.cultivationBonus),l=this.layers,has=id=>this.on(id)&&this.owns(u,id),parts=[];
   let atk=(u.sandAttackRatio||0)+(u.envAtkRatio||0),hp=0,def=0,as=0;const muls={atk:[],maxHp:[],def:[]};
   const note=(stat,layer,v,src)=>{if(v)parts.push({stat,layer,v,src});};
   const ratio=(stat,v,src)=>{if(!v)return;if(src.startsWith('盟约')||src.startsWith('策略')||src==='装备'||src==='部署加攻'||src==='击倒加攻'){muls[stat].push(1+v);note(stat,'mul',1+v,src);return;}if(stat==='atk')atk+=v;else if(stat==='maxHp')hp+=v;else def+=v;note(stat,'ratio',v,src);};

@@ -46,7 +46,7 @@ test('S1「度算浪波」：投到生命比例最低的友方，落点 3×3 的
  // 效果可叠加：再补一个盖住同一格的同款单元 → +120
  b.s.logicEffects.push({id:'probe-thorn2-s1',startedAt:b.s.time,kind:'zone',sourceUid:u.uid,sourceDeployGen:u.deployGen,talentOrSkillId:'thorn2-s1:probe',x:a2.x,y:a2.y,radius:1,interval:1,nextAt:b.s.time+.01,endsAt:b.s.time+9,trackArea:true,trackSide:'ally',shape:'square',refKind:'live',values:{defBuff:60,regen:0},snapshot:{}});
  runTo(b,2.4);
- assert.equal(b.stats(a2).def-base,120,'两个单元盖住同一名干员时防御力加成叠加');
+ assert.ok(Math.abs(b.stats(a2).def-base-120)<1e-6,'两个单元盖住同一名干员时防御力加成叠加');
  runTo(b,9.4);
  assert.equal(fxOf(b,'s1').includes(fx),false,'持续时间到就消失');
  bounds: { const solo=battleWith(0);activate(solo.b,solo.u);
