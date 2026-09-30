@@ -6858,6 +6858,7 @@ return {ENEMY_ACTIVITY_GROUPS,ENEMY_KILL_COINS,DEFAULT_WAVE_TABLE};
 "native-wave-fill.js": function(load) {
 // 词条波次表：每词条 × 压力档可有多套模板。开战时先随机一套，再按该套预算抽怪。
 const {DEFAULT_WAVE_TABLE,ENEMY_ACTIVITY_GROUPS} = load("native-wave-defaults.js");
+const {DEFAULT_FINAL_BOSS_HP_MULTIPLIER,normalizeFinalBossHpMultiplier} = load("native-final-boss.js");
 function enemyActivity(id){return ENEMY_ACTIVITY_GROUPS[id]?.activity||'未归类';}
 function enemyActivitySource(id){return ENEMY_ACTIVITY_GROUPS[id]?.url||'';}
 function enemyPoolEligible(id,data){return (data?.enemies?.[id]?.enemyBehavior?.randomPoolEligible??ENEMY_ACTIVITY_GROUPS[id]?.eligible)!==false;}
@@ -6904,7 +6905,7 @@ function templatesOf(slot,tier=1){
 
 function emptyWaveTable(){
  const types=Object.fromEntries(TRAINING_TYPES.map(t=>[t.id,{1:{templates:[emptyTemplate(1)]},2:{templates:[emptyTemplate(2)]},3:{templates:[emptyTemplate(3)]}}]));
- return {version:2,defaultCost:1,costs:{},types};
+ return {version:2,defaultCost:1,costs:{},types,finalBossHpMultiplier:DEFAULT_FINAL_BOSS_HP_MULTIPLIER};
 }
 
 function defaultWaveTable(){return normalizeWaveTable(DEFAULT_WAVE_TABLE);}
@@ -6912,6 +6913,7 @@ function defaultWaveTable(){return normalizeWaveTable(DEFAULT_WAVE_TABLE);}
 function normalizeWaveTable(raw){
  const base=emptyWaveTable();if(!raw||typeof raw!=='object')return base;
  base.defaultCost=Math.max(1,Number(raw.defaultCost)||1);
+ base.finalBossHpMultiplier=normalizeFinalBossHpMultiplier(raw.finalBossHpMultiplier);
  if(raw.costs&&typeof raw.costs==='object')for(const [id,value] of Object.entries(raw.costs)){const n=Number(value);if(Number.isFinite(n)&&n>0)base.costs[id]=n;}
  for(const type of TRAINING_TYPES){
   const src=raw.types?.[type.id]||raw[type.id]||{};
@@ -7143,6 +7145,7 @@ return {nativeWavePlan};
 },
 "native-wave-editor.js": function(load) {
 const {TRAINING_TYPES,saveWaveTable,emptyWaveTable,defaultWaveTable,enemyCost,tierPack,currentTemplate,emptyTemplate,templateLabel,enemyActivity,enemyActivitySource,enemyPoolEligible} = load("native-wave-fill.js");
+const {normalizeFinalBossHpMultiplier} = load("native-final-boss.js");
 const {fillBudgetWave,waveRng,filterRandomPoolTable} = load("native-wave-random.js");
 const {BAN_CORE_COUNT,BAN_EXTRA_COUNT,BAN_MODES,bondIds,bondIsCore,bondName,bondMembers,banRules,banModeOf,defaultBanRules,loadBondBan,saveBondBan,bondIsLockedNever} = load("native-bond-ban.js");
 const KIND_LABEL={ 'random-pool':'常规池','mode-effect':'策略／悬赏','template':'生成模板' };
@@ -7222,6 +7225,7 @@ function renderWaveEditor(data,table,ui){
  return `<main class="wave-ed">
   <header class="wave-ed-top"><button data-act="home">‹ 大厅</button><div><small>PROTOCOL CUSTOM</small><h1>${title}</h1></div><span class="wave-ed-autosave">编辑自动保存</span><nav class="wave-ed-pages" aria-label="协议自定义页面"><button data-act="ed-page" data-page="enemies" aria-pressed="${page==='enemies'}" class="${page==='enemies'?'chosen':''}">敌人波次</button><button data-act="ed-page" data-page="rules" aria-pressed="${page==='rules'}" class="${page==='rules'?'chosen':''}">禁用方案</button></nav>${page==='enemies'?`<button data-act="ed-tools" aria-expanded="${!!ui.tools}">配置管理</button>`:''}</header>
   ${page==='enemies'&&ui.tools?`<section class="wave-ed-management" aria-label="配置管理"><p>活动仅作为初始主题，可自由混编已准入敌人。默认中高压模板至少包含4种敌人。实战随机选模板；抽取测试仅使用当前模板。恢复默认或清空会覆盖整张表。</p><div><button data-act="ed-export">导出 JSON</button><button data-act="ed-import">导入 JSON</button><button data-act="ed-defaults">恢复默认配置</button><button data-act="ed-reset">清空本表</button><label>缺省难度 <input data-act="ed-default" type="number" min="1" value="${table.defaultCost}"></label></div></section>`:''}
+  ${page==='enemies'?`<section class="wave-ed-boss-setting" aria-label="最终 Boss 血量设置"><div><small>FINAL BOSS</small><b>最终 BOSS 血量倍率</b><p>以原表四人联机血量为基准；仅对新开的对局生效。默认 75%。</p></div><label><input data-act="ed-final-boss-hp" aria-label="最终 Boss 血量倍率百分比" type="number" min="1" max="1000" step="1" value="${Math.round(table.finalBossHpMultiplier*100)}"><span>%</span></label></section>`:''}
   ${page==='rules'?renderBondRulePage(data,ui):`<div class="wave-ed-layout">
    <aside class="wave-ed-sidebar">
     <label class="wave-ed-field">特训词条<select data-act="ed-type-select" aria-label="选择特训词条">${options(TRAINING_TYPES.map(t=>[t.id,t.name]),type.id)}</select></label>
@@ -7359,6 +7363,7 @@ function applyEditorAction(act,dataset,table,ui,data){
 
 function applyEditorField(act,id,value,table,ui){
  if(act==='ed-budget'){currentTemplate(table,ui.type,ui.tier,ui.template).budget=Math.max(0,Number(value)||0);ui.sample=null;saveWaveTable(table);}
+ else if(act==='ed-final-boss-hp'){const percent=Number(value);table.finalBossHpMultiplier=normalizeFinalBossHpMultiplier((Number.isFinite(percent)&&percent>0?percent:75)/100);saveWaveTable(table);}
  else if(act==='ed-temp-name'){currentTemplate(table,ui.type,ui.tier,ui.template).name=String(value||'').slice(0,60);ui.sample=null;saveWaveTable(table);}
  else if(act==='ed-default'){table.defaultCost=Math.max(1,Number(value)||1);ui.sample=null;saveWaveTable(table);}
  else if(act==='ed-cost'&&id){table.costs[id]=Math.max(1,Number(value)||1);ui.sample=null;saveWaveTable(table);}
@@ -7403,7 +7408,8 @@ function finalBossSpawnPoint(map,enemyId){
 }
 
 const HP_FIELD={FUNNY:'bloodPoint',NORMAL:'bloodPointNormal',HARD:'bloodPointHard',ABYSS:'bloodPointAbyss'};
-const FINAL_BOSS_HP_MULTIPLIER=0.75;
+const DEFAULT_FINAL_BOSS_HP_MULTIPLIER=0.75;
+function normalizeFinalBossHpMultiplier(value){const n=Number(value);return Number.isFinite(n)?Math.round(Math.min(10,Math.max(.01,n))*100)/100:DEFAULT_FINAL_BOSS_HP_MULTIPLIER;}
 function roll(seed){let x=(Number(seed)||1)>>>0;x^=x<<13;x^=x>>>17;x^=x<<5;return (x>>>0)/4294967296;}
 
 function rollFinalBoss(data,modeId,seed){
@@ -7413,16 +7419,16 @@ function rollFinalBoss(data,modeId,seed){
  return (rows.find(x=>(pick-=x.config.weight)<0)||rows.at(-1)).id;
 }
 
-function finalBossConfig(data,bossId,modeId){
+function finalBossConfig(data,bossId,modeId,hpMultiplier=DEFAULT_FINAL_BOSS_HP_MULTIPLIER){
  const source=data.common.bossInfoDict[bossId],settings=data.season.bossInfoDict[bossId],boss=data.finalBosses[bossId],difficulty=data.season.modeDataDict[modeId]?.modeDifficulty,profile=boss?.profiles?.[modeId]||boss?.profiles?.[difficulty==='TRAINING'?'mode_single_funny':null];
  if(!source||!settings||!profile)throw Error('最终 Boss 资料不完整：'+bossId);
- // 原表最终 Boss 生命按四人联机数据配置；本地模拟默认使用原值的 75%。
- const hp=Number(settings[HP_FIELD[difficulty]]??settings.bloodPoint)*FINAL_BOSS_HP_MULTIPLIER;
+ // 原表最终 Boss 生命按四人联机数据配置；本地模拟倍率默认 75%，由敌人编制配置并按每局固定。
+ const multiplier=normalizeFinalBossHpMultiplier(hpMultiplier),hp=Number(settings[HP_FIELD[difficulty]]??settings.bloodPoint)*multiplier;
  if(!(hp>0))throw Error('最终 Boss 血量无效：'+bossId);
- return {...boss,enemyProfile:profile,bossId,hp,weight:settings.weight,difficulty};
+ return {...boss,enemyProfile:profile,bossId,hp,hpMultiplier:multiplier,weight:settings.weight,difficulty};
 }
 
-return {AVAILABLE_FINAL_BOSS_IDS,FINAL_BOSS_MECHANICS,finalBossMechanics,finalBossPlacementArea,finalBossPlacementContains,finalBossSpawnPoint,rollFinalBoss,finalBossConfig};
+return {AVAILABLE_FINAL_BOSS_IDS,FINAL_BOSS_MECHANICS,finalBossMechanics,finalBossPlacementArea,finalBossPlacementContains,finalBossSpawnPoint,DEFAULT_FINAL_BOSS_HP_MULTIPLIER,normalizeFinalBossHpMultiplier,rollFinalBoss,finalBossConfig};
 },
 "native-sp.js": function(load) {
 function spTypeOf(skill){
@@ -13790,7 +13796,7 @@ const {NativeEconomy} = load("native-economy.js");
 const {NativeBattle} = load("native-battle.js");
 const {buildPhasePlan,singleDecisionRounds,blackboard,ensureStock,restoreStock,stockOf,INFINITE_FUNDS,ROUND_LEAK_CAP} = load("protocol.js");
 const {allowsHighlandPlacement} = load("native-branches.js");
-const {AVAILABLE_FINAL_BOSS_IDS,finalBossConfig,finalBossPlacementArea,finalBossPlacementContains,rollFinalBoss} = load("native-final-boss.js");
+const {AVAILABLE_FINAL_BOSS_IDS,DEFAULT_FINAL_BOSS_HP_MULTIPLIER,finalBossConfig,finalBossPlacementArea,finalBossPlacementContains,normalizeFinalBossHpMultiplier,rollFinalBoss} = load("native-final-boss.js");
 const {runStrategyEvent} = load("strategy.js");
 const {createWaveRoster} = load("native-wave-random.js");
 const {bondBanIds,loadBondBan,normalizeBondBan} = load("native-bond-ban.js");
@@ -13849,14 +13855,14 @@ const namedPickList=(rows,weights,keyOf)=>rows.flatMap(row=>Array(Math.max(1,Mat
 
 
 class NativeSession extends NativeEconomy {
- constructor(data,{modeId='mode_single_normal',bandId='band_bldsk',mapId,seed=Date.now(),waveRoster=null,bondBan=null,egg325=false,cat=false,playerId='local',teamPeers=[],teamTransport=null,finalBossId=null}={}){
+ constructor(data,{modeId='mode_single_normal',bandId='band_bldsk',mapId,seed=Date.now(),waveRoster=null,bondBan=null,egg325=false,cat=false,playerId='local',teamPeers=[],teamTransport=null,finalBossId=null,finalBossHpMultiplier=DEFAULT_FINAL_BOSS_HP_MULTIPLIER}={}){
   const map=data.maps.find(m=>m.stageId===mapId)||data.maps.find(m=>m.weight>0);super(data,modeId,{bandId,board:map,seed,manualPreview:true,playerId,teamPeers,cat});this.map=map;this.teamTransport=teamTransport;this.battle=null;this.s.mapId=map.stageId;this.s.itemOffers=[];this.s.summonCards=[];this.s.capacity=8;this.s.passiveIncome=0;this.s.history=[];this.s.runResult=null;this.s.frozenSlots=[];this.s.roundDecisions=[];this.s.enemyModifiers=[];this.s.operatorModifiers=[];this.s.commands=[];
   // 本局禁用的盟约（固定禁用的全部 + 随机抽中的 3 核心 + 4 附加）在开局定死，随存档保存；
   // 干员只有在「所属盟约全部被禁」时才被禁用。
   // 禁用方案默认取协议自定义「禁用方案」页配置的那份（localStorage；未配置时是默认方案：投资人固定不被随机禁用）；
   // 简报／沙盒／测试可以显式传 bondBan 覆盖。v3 起配置里不再有逐盟约的「不禁用名单」。
   // 必须在 rollOffers() 之前设好——商店第一次抽卡就读 this.s.bondBan。
-  this.s.finalBossId=finalBossId||rollFinalBoss(data,modeId,seed);this.s.finalBossAddSeed=((Number(seed)^0x5eeda11)>>>0);
+  this.s.finalBossId=finalBossId||rollFinalBoss(data,modeId,seed);this.s.finalBossHpMultiplier=normalizeFinalBossHpMultiplier(finalBossHpMultiplier);this.s.finalBossAddSeed=((Number(seed)^0x5eeda11)>>>0);
   const banOption=bondBan;
   const normalized=normalizeBondBan(banOption||loadBondBan(this.data),this.data);
   this.s.bondBan=banOption
@@ -14119,7 +14125,7 @@ class NativeSession extends NativeEconomy {
   this.s.seesGrants=have+issued;
   return gained;
  }
- resolveTurn(turn){if(!turn?.isBossTurn||turn.isConditional)return turn;const finals=buildPhasePlan(this.data,this.s.modeId).filter(t=>t.isBossTurn&&!t.isConditional);if(turn.round!==finals.at(-1)?.round)return turn;const config=finalBossConfig(this.data,this.s.finalBossId,this.s.modeId);return {...turn,finalBossId:this.s.finalBossId,finalBoss:config,finalBossHp:config.hp};}
+ resolveTurn(turn){if(!turn?.isBossTurn||turn.isConditional)return turn;const finals=buildPhasePlan(this.data,this.s.modeId).filter(t=>t.isBossTurn&&!t.isConditional);if(turn.round!==finals.at(-1)?.round)return turn;const config=finalBossConfig(this.data,this.s.finalBossId,this.s.modeId,this.s.finalBossHpMultiplier);return {...turn,finalBossId:this.s.finalBossId,finalBoss:config,finalBossHp:config.hp};}
  startBattle(){if(this.s.phase!=='prep'||this.s.rewardPending)return false;const area=this.finalBossPrepArea();if(area&&[...this.s.units.filter(u=>u.position),...(this.s.summonCards||[]).filter(c=>c.position)].some(actor=>finalBossPlacementContains(area,actor.position.x,actor.position.y)))throw Error('昆图斯／萨米的意志将占据右上角 2 列 × 3 行，请先移开该区域的干员和召唤物。');this.applyTouchReplacement();this.settleTartarusRound();const ok=this.beginBattle();if(!ok)return false;if(this.s.phase==='prep')return true;const turn=this.resolveTurn(buildPhasePlan(this.data,this.s.modeId).find(t=>t.round===this.s.round));this.battle=new NativeBattle(this.data,this,this.map,turn);return true;}
  finishCurrentBattle(){if(!this.battle?.s.finished||this.s.phase!=='battle')return;const r=this.battle.s.result;this.s.history.push(r);if(r.kind==='final-boss'){this.s.runResult=r;if(r.reason!=='boss-killed')this.s.hp=0;this.s.phase='finished';}else{const loss=Math.min(ROUND_LEAK_CAP,r.leaks);this.s.hp=Math.max(0,this.s.hp-loss);this.finishBattle({success:this.s.hp>0,leaks:r.leaks});this.s.lastBattle.loss=loss;if(!this.s.hp)this.s.runResult=r;}this.applyPostBattleTransforms();}
  tick(){if(this.s.phase==='battle'&&this.battle){this.battle.step();this.finishCurrentBattle();}}
@@ -14184,6 +14190,7 @@ class NativeSession extends NativeEconomy {
   if(s.phase==='decision'&&(s.roundDecisionStage!=='reward'||!['early','late'].includes(s.roundDecisionPool)||!Array.isArray(s.roundDecisions)||!['bounty','equipment','tactical'].includes(s.roundDecisionType)))return null;
   if(s.phase==='decision'&&s.roundDecisionStage==='reward'&&(s.roundDecisions.length!==3||s.roundDecisions.some(o=>s.roundDecisionType==='bounty'?o?.kind!=='bounty'||!bountyOption(data,o.enemyId)||!integer(o.count,1,99)||!n(o.coin)||o.coin<0:s.roundDecisionType==='equipment'?o?.kind!=='equipment'||!data.season.trapChessDataDict[o.itemId]:o?.kind!=='tactical'||!data.season.effectBuffInfoDataDict[o.effectId])))return null;
   if(s.finalBossId!==undefined&&!AVAILABLE_FINAL_BOSS_IDS.includes(s.finalBossId))return null;
+  if(s.finalBossHpMultiplier!==undefined&&(!n(s.finalBossHpMultiplier)||s.finalBossHpMultiplier<.01||s.finalBossHpMultiplier>10))return null;
   // 盟约禁用：必须是已知盟约、无重复、至多 23 个；缺省（旧存档）在下面按「本局不额外禁用」补齐。
   // `fixed`／`never`（禁用方案）只做类型校验，旧存档缺字段时读档时按当前方案补齐。
   if(s.bondBan!==undefined){const b=s.bondBan;if(typeof b!=='object'||b===null||!Array.isArray(b.bonds)||b.bonds.length>23||new Set(b.bonds).size!==b.bonds.length||b.bonds.some(id=>typeof id!=='string'||!data.season.bondInfoDict[id])||(b.always!==undefined&&!Array.isArray(b.always))||(b.never!==undefined&&!Array.isArray(b.never)))return null;}
@@ -14193,7 +14200,7 @@ class NativeSession extends NativeEconomy {
   if(!Array.isArray(s.units)||s.units.length>500||!Array.isArray(s.items)||s.items.length>1000||s.items.some(i=>!item(i))||(s.stock!==undefined&&(typeof s.stock!=='object'||s.stock===null||Object.values(s.stock).some(v=>!integer(v,0,99999))))||s.units.some(u=>!integer(u.uid,1,Number.MAX_SAFE_INTEGER)||!data.profiles[u.chessId]||u.charId!==data.profiles[u.chessId].charId||!integer(u.dir,0,3)||!Array.isArray(u.equipment)||u.equipment.length>2||u.equipment.some(i=>!item(i))||(u.purchases!==undefined&&(typeof u.purchases!=='object'||u.purchases===null||Object.values(u.purchases).some(v=>!integer(v,1,9999))))||(u.position!==null&&(!integer(u.position?.x,0,10)||!integer(u.position?.y,0,6)))))return null;
   if(!Array.isArray(s.offers)||s.offers.some(id=>id!==null&&!data.profiles[id])||!Array.isArray(s.itemOffers)||s.itemOffers.some(id=>id!==null&&!data.season.trapChessDataDict[id])||!Array.isArray(s.history))return null;
   if(record.battle&&(!Array.isArray(record.battle.units)||!Array.isArray(record.battle.enemies)||!n(record.battle.frame)||!n(record.battle.time)))return null;
-  const c=Object.create(NativeSession.prototype);c.data=data;c.map=data.maps.find(m=>m.stageId===s.mapId);c.board=c.map;c.manualPreview=true;c.triggerChain=[];c.poolDraw=request=>c.drawFromPool(request);c.battle=null;c.s=s;c.s.finalBossId??=rollFinalBoss(data,s.modeId,s.randomState);if(c.s.cat)c.s.funds=INFINITE_FUNDS;ensureStock(data,c.s);c.s.playerId??='local';c.s.teamPeers??=[];c.s.transferInbox??=[];c.s.transferOutbox??=[];
+  const c=Object.create(NativeSession.prototype);c.data=data;c.map=data.maps.find(m=>m.stageId===s.mapId);c.board=c.map;c.manualPreview=true;c.triggerChain=[];c.poolDraw=request=>c.drawFromPool(request);c.battle=null;c.s=s;c.s.finalBossId??=rollFinalBoss(data,s.modeId,s.randomState);c.s.finalBossHpMultiplier=normalizeFinalBossHpMultiplier(c.s.finalBossHpMultiplier??DEFAULT_FINAL_BOSS_HP_MULTIPLIER);if(c.s.cat)c.s.funds=INFINITE_FUNDS;ensureStock(data,c.s);c.s.playerId??='local';c.s.teamPeers??=[];c.s.transferInbox??=[];c.s.transferOutbox??=[];
   // 旧存档没有盟约禁用记录：按「本局不额外禁用」补齐（`bonds:[]`），不动玩家已经买到的干员。
   // 禁用方案（fixed／never）不参与判定，只用于简报／弹窗标注「固定禁用还是随机抽中」，缺字段时补当前方案。
   // 旧存档里的 `exempt`（v2 的不禁用名单）直接忽略：判定只看 bonds 与干员自己的盟约。
@@ -16399,7 +16406,7 @@ const {renderBountyChoice,renderDecisionChoice} = load("native-choices.js");
 const {nativeWavePlan} = load("native-waves.js");
 const {TRAINING_TYPES,loadWaveTable,normalizeWaveTable,saveWaveTable,defaultWaveTable,waveTableIsDefault} = load("native-wave-fill.js");
 const {createWaveRoster,trainingType,waveRng} = load("native-wave-random.js");
-const {finalBossConfig,rollFinalBoss} = load("native-final-boss.js");
+const {DEFAULT_FINAL_BOSS_HP_MULTIPLIER,finalBossConfig,rollFinalBoss} = load("native-final-boss.js");
 const {applyEditorAction,applyEditorField,editorState,renderWaveEditor} = load("native-wave-editor.js");
 const {activeBondBan,banConfigIsDefault,bannedOperatorsHtml,bondBanBriefingHtml,bondBanIds,loadBondBan,resetBondBan,saveBondBan} = load("native-bond-ban.js");
 const {loadPrepSkills,prepOperatorRow,renderArchiveWindow,renderPreparePage,renderPrepSkillInfo,savePrepSkills} = load("native-prep.js");
@@ -16623,13 +16630,13 @@ function updatePrepCard(charId){
  for(const button of card.querySelectorAll('[data-act="prep-skill"]')){const chosen=Number(button.dataset.index)===current;button.classList.toggle('chosen',chosen);button.setAttribute('aria-pressed',String(chosen));}
 }
 function renderBriefingScreen(){
- const d=state.draft,mode=data.season.modeDataDict[d.modeId],mapIndex=data.maps.filter(m=>m.weight>0).findIndex(m=>m.stageId===d.mapId),map=data.maps.find(m=>m.stageId===d.mapId),tags=(d.roster.types||[]).map(id=>trainingType(id)).filter(Boolean),boss=finalBossConfig(data,d.finalBossId,d.modeId),strategy=strategyInfo(guardedBandId());
+ const d=state.draft,mode=data.season.modeDataDict[d.modeId],mapIndex=data.maps.filter(m=>m.weight>0).findIndex(m=>m.stageId===d.mapId),map=data.maps.find(m=>m.stageId===d.mapId),tags=(d.roster.types||[]).map(id=>trainingType(id)).filter(Boolean),boss=finalBossConfig(data,d.finalBossId,d.modeId,state.waveTable?.finalBossHpMultiplier??DEFAULT_FINAL_BOSS_HP_MULTIPLIER),strategy=strategyInfo(guardedBandId());
  const modeName=d.cat?'海猫模式':d.egg325?'325模式':mode?.name||'模拟模式',mapLabel=mapIndex>=0?`阵地 ${mapIndex+1}`:'阵地待定',bossName=boss.enemyProfile.name||boss.bossId,bondMarkup=bondBanBriefing(d);
  const mapThumb=mapThumbnailHtml(map,{esc,label:`本局战场：${mapLabel}${map?' · '+map.stageId:''}`});
  return `<main class="native-lobby native-briefing native-briefing-v2">
 <header class="briefing-topbar"><button class="briefing-back" data-act="home"><span aria-hidden="true">‹</span> 大厅</button><span class="briefing-topmark"><span class="native-eyebrow">TACTICAL DOSSIER</span><b>SIMULATION / 01</b></span><span class="briefing-mode">${esc(modeName)} <i></i> ${esc(mapLabel)}</span></header>
 <div class="briefing-content">
-<section class="briefing-title"><div><span class="native-eyebrow">MISSION SUMMARY</span><h1>模拟简报</h1><p>确认本局特训、初始策略与盟约限制后，进入模拟。</p></div><aside class="briefing-final-boss"><span class="native-eyebrow">FINAL ENCOUNTER</span><div class="briefing-final-main">${avatar(boss.handbookEnemyId)}<div><small>最终 BOSS</small><b>${esc(bossName)}</b></div></div></aside></section>
+<section class="briefing-title"><div><span class="native-eyebrow">MISSION SUMMARY</span><h1>模拟简报</h1><p>确认本局特训、初始策略与盟约限制后，进入模拟。</p></div><aside class="briefing-final-boss"><span class="native-eyebrow">FINAL ENCOUNTER</span><div class="briefing-final-main">${avatar(boss.handbookEnemyId)}<div><small>最终 BOSS · 血量 ${Math.round(boss.hpMultiplier*100)}%</small><b>${esc(bossName)}</b></div></div></aside></section>
 <section class="briefing-overview"><section class="briefing-training"><header class="briefing-section-head"><div><span>01 / BATTLE CONDITIONS</span><h2>本局特训</h2></div><small>${tags.length} 项生效</small></header><div class="briefing-training-grid">${tags.length?tags.map((tag,index)=>`<article class="briefing-training-card"><span class="briefing-training-index">${String(index+1).padStart(2,'0')}</span><div><h3>${esc(tag.name)}</h3><small>${esc(tag.id)}</small><p>${esc(tag.desc)}</p></div></article>`).join(''):'<p class="briefing-empty">本局没有额外特训。</p>'}</div></section><aside class="briefing-map-card"><div class="briefing-map-copy"><span class="native-eyebrow">BATTLEFIELD</span><h2>本局战场</h2><b>${esc(mapLabel)}</b><small>${map?esc(map.stageId):'地图数据缺失'}</small></div><div class="briefing-map-preview">${mapThumb}</div></aside></section>
 <section class="briefing-strategy-section"><header class="briefing-section-head"><div><span>02 / STARTING PLAN</span><h2>初始策略</h2></div><button class="briefing-choose-strategy" data-act="strategy-select">更换策略 <span aria-hidden="true">→</span></button></header><article class="briefing-selected-strategy"><div class="briefing-strategy-art">${avatar(strategy.id)||'<span class="native-strategy-placeholder" aria-hidden="true">◈</span>'}</div><div class="briefing-strategy-copy"><span class="native-eyebrow">SELECTED STRATEGY</span><h3>${esc(strategy.name)}</h3><p>${esc(strategy.desc)}</p><small>初始生命 <b>${strategy.hp}</b></small></div></article></section>
 ${bondMarkup?`<section class="briefing-bond-section"><span class="native-eyebrow">03 / COVENANT STATUS</span>${bondMarkup}</section>`:''}
@@ -16652,7 +16659,7 @@ function render(){
   const bannedNames=(blocked?.bonds||[]).map(id=>data.season.bondInfoDict[id]?.name||id).join('／');
   notice(`${data.profiles[blocked?.chessId]?.name||'该干员'}属于本局被禁用的【${bannedNames||'盟约'}】，本次无法获得。`);
  }
- if(state.view==='lobby'){root.innerHTML=renderLobby({data,state,avatar});root.querySelector('.native-tool-grid')?.insertAdjacentHTML('afterbegin',poolDirty()?'<div class="native-pool-update"><div><span>CONFIGURATION UPDATE</span><b>敌人池／禁用配置已改动</b><small>与默认配置不一致，点击右侧按钮把两者一起恢复默认</small></div><button class="native-pool-update-action" data-act="pool-defaults">恢复默认配置</button></div>':'');/* 主界面的「导出存档」（用户 2026-09-27 需求）：插在动作行末尾，和「导入存档」成对。 */root.querySelector('.native-loadout-actions')?.insertAdjacentHTML('beforeend','<button data-act="export">导出存档</button>');gateLockedModes();renderModal();return;}
+ if(state.view==='lobby'){root.innerHTML=renderLobby({data,state,avatar});root.querySelector('.native-tool-grid')?.insertAdjacentHTML('afterbegin',poolDirty()?'<div class="native-pool-update"><div><span>CONFIGURATION UPDATE</span><b>敌人编制／Boss 倍率／禁用配置已改动</b><small>与默认配置不一致，点击右侧按钮可一起恢复默认</small></div><button class="native-pool-update-action" data-act="pool-defaults">恢复默认配置</button></div>':'');/* 主界面的「导出存档」（用户 2026-09-27 需求）：插在动作行末尾，和「导入存档」成对。 */root.querySelector('.native-loadout-actions')?.insertAdjacentHTML('beforeend','<button data-act="export">导出存档</button>');gateLockedModes();renderModal();return;}
   if(state.view==='strategy-select'){root.innerHTML=renderStrategySelectScreen();decorateStrategyCatalog();renderModal();return;}
  if(state.view==='briefing'){root.innerHTML=renderBriefingScreen();renderModal();return;}
   if(state.view==='prepare'){const p=prepState(),listScroll=root.querySelector('#prep-list')?.scrollLeft??p.listScrollLeft??0;root.innerHTML=renderPreparePage(data,p,{esc,avatar});const list=root.querySelector('#prep-list');if(list)list.scrollLeft=listScroll;if(p.scroll)window.scrollTo(0,p.scroll);renderModal();return;}
@@ -16666,8 +16673,8 @@ function waveIntel(){
  const tags=(g.s.waveRoster?.types||[]).map(id=>trainingType(id)||TRAINING_TYPES.find(t=>t.id===id)).filter(Boolean);
  const contracts=[...(g.s.pendingBounties||[]),g.s.pendingBounty].filter(Boolean),faces=[...(p.pack?.ids||[]),...contracts.map(x=>x.enemyId)].map(id=>avatar(id)||'<span class="native-wave-miss">?</span>').join('');
  const bountyNote=contracts.length?`<p class="native-wave-bounty-note">决策悬赏：${contracts.map(x=>`${esc(data.enemies[x.enemyId]?.name||x.enemyId)} · ${x.coin}◆`).join(' / ')}</p>`:'';
- const bossRound=Boolean(turn?.isBossTurn&&!turn.isConditional),boss=bossRound?finalBossConfig(data,g.s.finalBossId,g.s.modeId):null;
- const body=boss?`<p>最终 Boss · ${esc(boss.enemyProfile.name||boss.bossId)}</p><div class="native-wave-faces">${avatar(boss.handbookEnemyId)}<span>普通敌人 30 名 · 每 3 秒从上下红门出现</span></div>`:`<p>${esc(trainingType(p.assignment?.type)?.name||'未指定')} ${roman(p.assignment?.tier)}</p><div class="native-wave-faces">${faces}</div>${bountyNote}`;
+ const bossRound=Boolean(turn?.isBossTurn&&!turn.isConditional),boss=bossRound?finalBossConfig(data,g.s.finalBossId,g.s.modeId,g.s.finalBossHpMultiplier):null;
+ const body=boss?`<p>最终 Boss · ${esc(boss.enemyProfile.name||boss.bossId)}</p><div class="native-wave-faces">${avatar(boss.handbookEnemyId)}<span>血量 ${Math.round(boss.hpMultiplier*100)}% · 普通敌人 30 名 · 每 3 秒从上下红门出现</span></div>`:`<p>${esc(trainingType(p.assignment?.type)?.name||'未指定')} ${roman(p.assignment?.tier)}</p><div class="native-wave-faces">${faces}</div>${bountyNote}`;
  return `<section class="native-wave-preview"><h3>本波敌情</h3><p class="native-wave-tags">本局特训 ${tags.map(t=>esc(t.name)).join(' / ')||'尚未抽取'}</p>${body}</section>`;
 }
 function fitWaveFaces(){
@@ -16791,7 +16798,7 @@ function action(button){const a=button.dataset.act,g=state.game,uid=Number(butto
  }
   if(a==='strategy-select'&&state.view==='briefing'){state.strategyDraft=null;state.view='strategy-select';render();return;}if(a==='strategy-pick'&&state.view==='strategy-select'){const catalog=document.querySelector('.native-strategy-catalog'),scrollHost=catalog?.scrollHeight>catalog?.clientHeight?catalog:catalog?.closest('.native-lobby'),scroll=scrollHost?.scrollTop||0,id=button.dataset.id;if(state.strategyDraft===id){state.band=id;state.strategyDraft=null;state.view='briefing';render();return;}state.strategyDraft=id;render();const next=document.querySelector('.native-strategy-catalog'),nextHost=next?.scrollHeight>next?.clientHeight?next:next?.closest('.native-lobby');if(nextHost)nextHost.scrollTop=scroll;return;}if(a==='strategy-cancel'&&state.view==='strategy-select'){state.strategyDraft=null;state.view='briefing';render();return;}
  if(a==='new'){const egg=state.mode===EGG_MODE_ID,cat=state.mode===CAT_MODE_ID,modeId=egg?EGG_BASE_MODE:cat?CAT_BASE_MODE:state.mode,seed=(Date.now()&0xffffffff)>>>0;const banConfig=loadBondBan(data),mapId=resolveMapId(data,state.map,waveRng((seed^0x9e3779b9)>>>0));state.draft={modeId,mapId,seed,finalBossId:rollFinalBoss(data,modeId,seed),roster:createWaveRoster({random:waveRng(seed),data,modeId}),bondBan:{bonds:bondBanIds(data,seed,banConfig),always:banConfig.always,never:banConfig.never},egg325:egg,cat};state.bondBanBlocks=0;state.view='briefing';state.strategyDraft=null;state.modal=null;render();return;}
- if(a==='begin'){state.lastChoiceContent=null;enterPlayChrome();state.supplyCollapsed=false;if(!state.draft){state.view='lobby';leavePlayChrome();render();return;}try{state.game=new NativeSession(data,{modeId:state.draft.modeId,bandId:guardedBandId(),mapId:state.draft.mapId,seed:state.draft.seed,waveRoster:state.draft.roster,bondBan:state.draft.bondBan,egg325:!!state.draft.egg325,cat:!!state.draft.cat,finalBossId:state.draft.finalBossId});state.view='game';state.draft=null;state.paused=false;state.expiresAt=null;state.resultUnitUid=null;state.selected=state.summonSelected=state.item=state.inspect=state.preview=state.modal=null;save();saveCheckpoint();render();}catch(e){notice(e.message);}return;}
+ if(a==='begin'){state.lastChoiceContent=null;enterPlayChrome();state.supplyCollapsed=false;if(!state.draft){state.view='lobby';leavePlayChrome();render();return;}try{state.game=new NativeSession(data,{modeId:state.draft.modeId,bandId:guardedBandId(),mapId:state.draft.mapId,seed:state.draft.seed,waveRoster:state.draft.roster,bondBan:state.draft.bondBan,egg325:!!state.draft.egg325,cat:!!state.draft.cat,finalBossId:state.draft.finalBossId,finalBossHpMultiplier:state.waveTable?.finalBossHpMultiplier??DEFAULT_FINAL_BOSS_HP_MULTIPLIER});state.view='game';state.draft=null;state.paused=false;state.expiresAt=null;state.resultUnitUid=null;state.selected=state.summonSelected=state.item=state.inspect=state.preview=state.modal=null;save();saveCheckpoint();render();}catch(e){notice(e.message);}return;}
  if(a==='resume'){if(state.expiresAt&&Date.now()>=state.expiresAt){notice('暂离已超过24小时，请开始新模拟');return;}enterPlayChrome();state.expiresAt=null;state.view='game';render();return;}if(a==='home'){dismissRoundEnd();if(state.view==='editor'||state.view==='briefing'||state.view==='prepare'){state.view='lobby';leavePlayChrome();render();return;}state.view='lobby';state.paused=true;state.expiresAt??=Date.now()+86400000;state.modal=null;save();leavePlayChrome();render();return;}if(a==='result'){showResult();return;}
  // 导出存档（用户 2026-09-27 需求）：大厅与对局顶栏共用一个入口。
  // 有对局时导出的是**原来的对局存档**（多带一份战绩档案，NativeSession.restore 会忽略额外字段），

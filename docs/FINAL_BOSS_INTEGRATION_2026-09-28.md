@@ -14,7 +14,7 @@
 
 ## 权威资料与差异
 
-1. 本期实际 Boss 名单、权重、独立/同盟/隐秘核心档与血量以仓库 `data/modes/alliance-lower/source.json` 的 `common.bossInfoDict`、`season.bossInfoDict` 为数据源。前者给战斗敌人 ID，后者给权重、血量和 `isHidingBoss`。PRTS [下半期盟约记录·领袖](https://prts.wiki/w/卫戍协议：盟约_下半/PRTS盟约记录#领袖)用于交叉核对本期改值；敌人单页的普通关卡数值不能直接覆盖本期。最终 Boss 原表血量按四人联机配置，native 模拟默认取原值的 75%（×0.75）。
+1. 本期实际 Boss 名单、权重、独立/同盟/隐秘核心档与血量以仓库 `data/modes/alliance-lower/source.json` 的 `common.bossInfoDict`、`season.bossInfoDict` 为数据源。前者给战斗敌人 ID，后者给权重、血量和 `isHidingBoss`。PRTS [下半期盟约记录·领袖](https://prts.wiki/w/卫戍协议：盟约_下半/PRTS盟约记录#领袖)用于交叉核对本期改值；敌人单页的普通关卡数值不能直接覆盖本期。最终 Boss 原表血量按四人联机配置，native 模拟默认取原值的 75%（×0.75），在「协议自定义 → 敌人波次」可调整；对局开始时固定倍率并随存档保存。
 2. `source.json` 的 `turnInfoDataDict[*].bossTurnHpReduceTime` 历史字段仍是 **150**；native 最终 Boss 战明确覆盖为用户指定的 `100 + hpAtStart`，UI、测试和 readiness 不得再把 150 当最终战时限。当前 30/25 HP 示例局因此为 130/125 秒。
 3. PRTS 敌人页给出攻击、技能 CD、SP、阶段与召唤物说明；本期修正优先看上述盟约记录和本地关卡覆盖。PRTS 自己提示敌人页为通常数据；每个 Boss 上线前需把原表 `enemyDbRefs`、本期黑板、Wiki 技能表逐项对照。
 4. 原项目对「缺席特殊地块/装置」的豁免仍适用于 Boss 独特机制筛选，详见 `docs/ENEMY_SCOPE_FILTER_2026-09-21.md`。Boss 自身召唤的武器、弹体和敌人不能仅因地图未预置而豁免；昆图斯的 `SummonTentac*` 是用户明确指定忽略的逐名例外。

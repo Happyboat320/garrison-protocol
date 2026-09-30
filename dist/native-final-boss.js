@@ -24,7 +24,8 @@ export function finalBossSpawnPoint(map,enemyId){
 }
 
 const HP_FIELD={FUNNY:'bloodPoint',NORMAL:'bloodPointNormal',HARD:'bloodPointHard',ABYSS:'bloodPointAbyss'};
-const FINAL_BOSS_HP_MULTIPLIER=0.75;
+export const DEFAULT_FINAL_BOSS_HP_MULTIPLIER=0.75;
+export function normalizeFinalBossHpMultiplier(value){const n=Number(value);return Number.isFinite(n)?Math.round(Math.min(10,Math.max(.01,n))*100)/100:DEFAULT_FINAL_BOSS_HP_MULTIPLIER;}
 function roll(seed){let x=(Number(seed)||1)>>>0;x^=x<<13;x^=x>>>17;x^=x<<5;return (x>>>0)/4294967296;}
 
 export function rollFinalBoss(data,modeId,seed){
@@ -34,11 +35,11 @@ export function rollFinalBoss(data,modeId,seed){
  return (rows.find(x=>(pick-=x.config.weight)<0)||rows.at(-1)).id;
 }
 
-export function finalBossConfig(data,bossId,modeId){
+export function finalBossConfig(data,bossId,modeId,hpMultiplier=DEFAULT_FINAL_BOSS_HP_MULTIPLIER){
  const source=data.common.bossInfoDict[bossId],settings=data.season.bossInfoDict[bossId],boss=data.finalBosses[bossId],difficulty=data.season.modeDataDict[modeId]?.modeDifficulty,profile=boss?.profiles?.[modeId]||boss?.profiles?.[difficulty==='TRAINING'?'mode_single_funny':null];
  if(!source||!settings||!profile)throw Error('最终 Boss 资料不完整：'+bossId);
- // 原表最终 Boss 生命按四人联机数据配置；本地模拟默认使用原值的 75%。
- const hp=Number(settings[HP_FIELD[difficulty]]??settings.bloodPoint)*FINAL_BOSS_HP_MULTIPLIER;
+ // 原表最终 Boss 生命按四人联机数据配置；本地模拟倍率默认 75%，由敌人编制配置并按每局固定。
+ const multiplier=normalizeFinalBossHpMultiplier(hpMultiplier),hp=Number(settings[HP_FIELD[difficulty]]??settings.bloodPoint)*multiplier;
  if(!(hp>0))throw Error('最终 Boss 血量无效：'+bossId);
- return {...boss,enemyProfile:profile,bossId,hp,weight:settings.weight,difficulty};
+ return {...boss,enemyProfile:profile,bossId,hp,hpMultiplier:multiplier,weight:settings.weight,difficulty};
 }

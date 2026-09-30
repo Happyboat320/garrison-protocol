@@ -523,6 +523,13 @@ html.native-landscape-ui .native-strategy-select-actions button{padding:7px 13px
 .wave-ed-management>div{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .wave-ed-management label{display:flex;gap:8px;align-items:center}
 .wave-ed-management input{width:64px}
+.wave-ed-boss-setting{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:16px 0;padding:14px 16px;background:var(--we-panel);border:1px solid var(--we-line)}
+.wave-ed-boss-setting>div{display:grid;gap:4px;min-width:0;flex:1}
+.wave-ed-boss-setting small{color:var(--we-accent);font-size:10px;letter-spacing:.15em}
+.wave-ed-boss-setting b{font-size:14px}
+.wave-ed-boss-setting p{margin:0;color:var(--we-muted);font-size:12px;line-height:1.5}
+.wave-ed-boss-setting label{display:flex;align-items:center;gap:7px;color:var(--we-accent);font-weight:700;flex:0 0 auto}
+.wave-ed-boss-setting input{width:82px;text-align:right;font-size:16px}
 .wave-ed-layout{display:grid;grid-template-columns:208px minmax(0,1fr);gap:28px;margin-top:24px;align-items:start}
 .wave-ed-sidebar{min-width:0;position:sticky;top:20px}
 .wave-ed-field{display:flex;flex-direction:column;gap:8px;color:var(--we-muted);font-size:12px;min-width:0}
@@ -609,7 +616,7 @@ html.native-landscape-ui .native-strategy-select-actions button{padding:7px 13px
 .wave-ed-test footer span{font-size:11px;color:var(--we-muted)}
 .wave-ed-test-warning{font-size:12px;line-height:1.7;color:var(--we-warning)}
 @media(max-width:1200px){.wave-ed-layout{grid-template-columns:176px minmax(0,1fr);gap:20px}.wave-ed-body{grid-template-columns:minmax(0,1fr)}.wave-ed-cards{max-height:200px}.wave-ed-temps{max-height:60vh}}
-@media(max-width:700px){.wave-ed{padding:16px}.wave-ed-top{gap:10px;flex-wrap:wrap}.wave-ed-top h1{font-size:20px}.wave-ed-top .wave-ed-autosave{display:none}.wave-ed-top>button:last-child{margin-left:auto}.wave-ed-layout{grid-template-columns:minmax(0,1fr);gap:24px}.wave-ed-sidebar{position:static;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.wave-ed-tiers{margin:0;align-self:end}.wave-ed-section-label{display:none}.wave-ed-temps{grid-column:1/-1;flex-direction:row;max-width:100%;max-height:none;overflow:auto}.wave-ed-temps button{width:160px;flex:0 0 160px;padding:10px}.wave-ed-new{grid-column:1/-1;margin-top:0}.wave-ed-current h2{font-size:20px}.wave-ed-current{gap:10px}.wave-ed-current>button{font-size:12px;padding:10px}.wave-ed-settings{grid-template-columns:minmax(0,1fr) 80px;gap:12px}.wave-ed-settings>label:first-child{grid-column:1/-1}.wave-ed-pool,.wave-ed-db{padding:14px}.wave-ed-body{gap:16px}.wave-ed-table td,.wave-ed-table th{padding:10px 3px}.wave-ed-enemy img{width:28px;height:32px}.wave-ed .wave-ed-enemy{gap:6px}.wave-ed-table td:last-child{width:62px}.wave-ed-table td:nth-child(2){width:30px}.wave-ed-test{padding:18px}.wave-ed-test-stats{gap:10px}.wave-ed-test-stats strong{font-size:23px}}
+@media(max-width:700px){.wave-ed{padding:16px}.wave-ed-top{gap:10px;flex-wrap:wrap}.wave-ed-top h1{font-size:20px}.wave-ed-top .wave-ed-autosave{display:none}.wave-ed-top>button:last-child{margin-left:auto}.wave-ed-boss-setting{align-items:flex-start}.wave-ed-boss-setting label{margin-left:auto}.wave-ed-layout{grid-template-columns:minmax(0,1fr);gap:24px}.wave-ed-sidebar{position:static;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.wave-ed-tiers{margin:0;align-self:end}.wave-ed-section-label{display:none}.wave-ed-temps{grid-column:1/-1;flex-direction:row;max-width:100%;max-height:none;overflow:auto}.wave-ed-temps button{width:160px;flex:0 0 160px;padding:10px}.wave-ed-new{grid-column:1/-1;margin-top:0}.wave-ed-current h2{font-size:20px}.wave-ed-current{gap:10px}.wave-ed-current>button{font-size:12px;padding:10px}.wave-ed-settings{grid-template-columns:minmax(0,1fr) 80px;gap:12px}.wave-ed-settings>label:first-child{grid-column:1/-1}.wave-ed-pool,.wave-ed-db{padding:14px}.wave-ed-body{gap:16px}.wave-ed-table td,.wave-ed-table th{padding:10px 3px}.wave-ed-enemy img{width:28px;height:32px}.wave-ed .wave-ed-enemy{gap:6px}.wave-ed-table td:last-child{width:62px}.wave-ed-table td:nth-child(2){width:30px}.wave-ed-test{padding:18px}.wave-ed-test-stats{gap:10px}.wave-ed-test-stats strong{font-size:23px}}
 /* 悬赏与机变决策共享回合结算的横幅、扫光和入场动画。 */
 .native-choice-overlay{z-index:100;background:transparent;--round-accent:#77e8d0;text-align:left;padding:24px}
 .native-choice-content{width:100%;min-width:0}

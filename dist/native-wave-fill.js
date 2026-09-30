@@ -1,5 +1,6 @@
 // 词条波次表：每词条 × 压力档可有多套模板。开战时先随机一套，再按该套预算抽怪。
 import {DEFAULT_WAVE_TABLE,ENEMY_ACTIVITY_GROUPS} from './native-wave-defaults.js';
+import {DEFAULT_FINAL_BOSS_HP_MULTIPLIER,normalizeFinalBossHpMultiplier} from './native-final-boss.js';
 export function enemyActivity(id){return ENEMY_ACTIVITY_GROUPS[id]?.activity||'未归类';}
 export function enemyActivitySource(id){return ENEMY_ACTIVITY_GROUPS[id]?.url||'';}
 export function enemyPoolEligible(id,data){return (data?.enemies?.[id]?.enemyBehavior?.randomPoolEligible??ENEMY_ACTIVITY_GROUPS[id]?.eligible)!==false;}
@@ -46,7 +47,7 @@ export function templatesOf(slot,tier=1){
 
 export function emptyWaveTable(){
  const types=Object.fromEntries(TRAINING_TYPES.map(t=>[t.id,{1:{templates:[emptyTemplate(1)]},2:{templates:[emptyTemplate(2)]},3:{templates:[emptyTemplate(3)]}}]));
- return {version:2,defaultCost:1,costs:{},types};
+ return {version:2,defaultCost:1,costs:{},types,finalBossHpMultiplier:DEFAULT_FINAL_BOSS_HP_MULTIPLIER};
 }
 
 export function defaultWaveTable(){return normalizeWaveTable(DEFAULT_WAVE_TABLE);}
@@ -54,6 +55,7 @@ export function defaultWaveTable(){return normalizeWaveTable(DEFAULT_WAVE_TABLE)
 export function normalizeWaveTable(raw){
  const base=emptyWaveTable();if(!raw||typeof raw!=='object')return base;
  base.defaultCost=Math.max(1,Number(raw.defaultCost)||1);
+ base.finalBossHpMultiplier=normalizeFinalBossHpMultiplier(raw.finalBossHpMultiplier);
  if(raw.costs&&typeof raw.costs==='object')for(const [id,value] of Object.entries(raw.costs)){const n=Number(value);if(Number.isFinite(n)&&n>0)base.costs[id]=n;}
  for(const type of TRAINING_TYPES){
   const src=raw.types?.[type.id]||raw[type.id]||{};

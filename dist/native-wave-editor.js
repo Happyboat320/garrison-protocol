@@ -1,4 +1,5 @@
 import {TRAINING_TYPES,saveWaveTable,emptyWaveTable,defaultWaveTable,enemyCost,tierPack,currentTemplate,emptyTemplate,templateLabel,enemyActivity,enemyActivitySource,enemyPoolEligible} from './native-wave-fill.js';
+import {normalizeFinalBossHpMultiplier} from './native-final-boss.js';
 import {fillBudgetWave,waveRng,filterRandomPoolTable} from './native-wave-random.js';
 import {BAN_CORE_COUNT,BAN_EXTRA_COUNT,BAN_MODES,bondIds,bondIsCore,bondName,bondMembers,banRules,banModeOf,defaultBanRules,loadBondBan,saveBondBan,bondIsLockedNever} from './native-bond-ban.js';
 
@@ -79,6 +80,7 @@ export function renderWaveEditor(data,table,ui){
  return `<main class="wave-ed">
   <header class="wave-ed-top"><button data-act="home">‹ 大厅</button><div><small>PROTOCOL CUSTOM</small><h1>${title}</h1></div><span class="wave-ed-autosave">编辑自动保存</span><nav class="wave-ed-pages" aria-label="协议自定义页面"><button data-act="ed-page" data-page="enemies" aria-pressed="${page==='enemies'}" class="${page==='enemies'?'chosen':''}">敌人波次</button><button data-act="ed-page" data-page="rules" aria-pressed="${page==='rules'}" class="${page==='rules'?'chosen':''}">禁用方案</button></nav>${page==='enemies'?`<button data-act="ed-tools" aria-expanded="${!!ui.tools}">配置管理</button>`:''}</header>
   ${page==='enemies'&&ui.tools?`<section class="wave-ed-management" aria-label="配置管理"><p>活动仅作为初始主题，可自由混编已准入敌人。默认中高压模板至少包含4种敌人。实战随机选模板；抽取测试仅使用当前模板。恢复默认或清空会覆盖整张表。</p><div><button data-act="ed-export">导出 JSON</button><button data-act="ed-import">导入 JSON</button><button data-act="ed-defaults">恢复默认配置</button><button data-act="ed-reset">清空本表</button><label>缺省难度 <input data-act="ed-default" type="number" min="1" value="${table.defaultCost}"></label></div></section>`:''}
+  ${page==='enemies'?`<section class="wave-ed-boss-setting" aria-label="最终 Boss 血量设置"><div><small>FINAL BOSS</small><b>最终 BOSS 血量倍率</b><p>以原表四人联机血量为基准；仅对新开的对局生效。默认 75%。</p></div><label><input data-act="ed-final-boss-hp" aria-label="最终 Boss 血量倍率百分比" type="number" min="1" max="1000" step="1" value="${Math.round(table.finalBossHpMultiplier*100)}"><span>%</span></label></section>`:''}
   ${page==='rules'?renderBondRulePage(data,ui):`<div class="wave-ed-layout">
    <aside class="wave-ed-sidebar">
     <label class="wave-ed-field">特训词条<select data-act="ed-type-select" aria-label="选择特训词条">${options(TRAINING_TYPES.map(t=>[t.id,t.name]),type.id)}</select></label>
@@ -216,6 +218,7 @@ export function applyEditorAction(act,dataset,table,ui,data){
 
 export function applyEditorField(act,id,value,table,ui){
  if(act==='ed-budget'){currentTemplate(table,ui.type,ui.tier,ui.template).budget=Math.max(0,Number(value)||0);ui.sample=null;saveWaveTable(table);}
+ else if(act==='ed-final-boss-hp'){const percent=Number(value);table.finalBossHpMultiplier=normalizeFinalBossHpMultiplier((Number.isFinite(percent)&&percent>0?percent:75)/100);saveWaveTable(table);}
  else if(act==='ed-temp-name'){currentTemplate(table,ui.type,ui.tier,ui.template).name=String(value||'').slice(0,60);ui.sample=null;saveWaveTable(table);}
  else if(act==='ed-default'){table.defaultCost=Math.max(1,Number(value)||1);ui.sample=null;saveWaveTable(table);}
  else if(act==='ed-cost'&&id){table.costs[id]=Math.max(1,Number(value)||1);ui.sample=null;saveWaveTable(table);}
