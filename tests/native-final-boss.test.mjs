@@ -14,16 +14,16 @@ function game({mapId=NATIVE_DATA.maps[0].stageId,operator=false,seed=42}={}){
  finalRound(g);assert.ok(g.startBattle(),g.lastError||'Boss battle failed to start');return g;
 }
 
-test('implemented final bosses 4/5/7 enter the weighted run roll and simulated hp is 25% of coop hp',()=>{
+test('implemented final bosses 4/5/7 enter the weighted run roll and simulated hp defaults to 75% of coop hp',()=>{
  assert.deepEqual(AVAILABLE_FINAL_BOSS_IDS,['boss_4','boss_5','boss_7']);
  assert.equal(rollFinalBoss(NATIVE_DATA,'mode_single_normal',123),rollFinalBoss(NATIVE_DATA,'mode_single_normal',123));
  assert.ok(AVAILABLE_FINAL_BOSS_IDS.includes(rollFinalBoss(NATIVE_DATA,'mode_single_normal',123)));
- assert.equal(finalBossConfig(NATIVE_DATA,'boss_5','mode_single_normal').hp,97500);
- assert.equal(finalBossConfig(NATIVE_DATA,'boss_5','mode_single_hard').hp,195000);
- assert.equal(finalBossConfig(NATIVE_DATA,'boss_4','mode_single_normal').hp,177187.5);
- assert.equal(finalBossConfig(NATIVE_DATA,'boss_4','mode_single_abyss').hp,1050000);
- assert.equal(finalBossConfig(NATIVE_DATA,'boss_7','mode_single_normal').hp,196875);
- assert.equal(finalBossConfig(NATIVE_DATA,'boss_7','mode_single_abyss').hp,1000000);
+ assert.equal(finalBossConfig(NATIVE_DATA,'boss_5','mode_single_normal').hp,292500);
+ assert.equal(finalBossConfig(NATIVE_DATA,'boss_5','mode_single_hard').hp,585000);
+ assert.equal(finalBossConfig(NATIVE_DATA,'boss_4','mode_single_normal').hp,531562.5);
+ assert.equal(finalBossConfig(NATIVE_DATA,'boss_4','mode_single_abyss').hp,3150000);
+ assert.equal(finalBossConfig(NATIVE_DATA,'boss_7','mode_single_normal').hp,590625);
+ assert.equal(finalBossConfig(NATIVE_DATA,'boss_7','mode_single_abyss').hp,3000000);
 });
 
 test('static bosses spawn in the reserved 3x2 upper-right area and keep generic attacks closed',()=>{
@@ -73,7 +73,7 @@ test('static bosses reserve and target the upper-right 2-column by 3-row area',(
 
 test('final battle has one looping boss and 30 tag-pool reinforcements scheduled every three seconds',()=>{
  const g=game(),b=g.battle,boss=b.s.enemies.find(e=>e.finalBoss);
- assert.equal(boss.id,'enemy_2016_csphtm');assert.equal(boss.hp,97500);
+ assert.equal(boss.id,'enemy_2016_csphtm');assert.equal(boss.hp,292500);
  assert.equal(b.s.limit,100+g.s.hp);assert.equal(b.s.total,31);assert.equal(b.s.queue.length,30);
  assert.deepEqual(b.s.queue.map(q=>q.at),Array.from({length:30},(_,i)=>(i+1)*3));
  assert.ok(b.s.queue.every(q=>(q.route===0||q.route===1)&&NATIVE_DATA.enemies[q.id]));
