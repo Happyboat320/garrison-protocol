@@ -203,6 +203,8 @@ export function commitExit(battle,{target,reason='knockdown',killer=null,event=n
   return true;
  }
  if(target.exitLife===lifeKey(target))return false;
+ // 乌尔比安船锚拉移期间阵亡，位置回到技能前的落点；否则 redeploy 会从锚点位置继续。
+ if(target.id==='char_4145_ulpia'&&target.hp<=0&&target.returnPosition){const pos=target.returnPosition,fromX=target.x,fromY=target.y;target.returnPosition=null;target.x=pos.x;target.y=pos.y;target.block=null;target.action=null;battle.onActorMoved?.(target);battle.emit('move',{uid:target.uid,x:pos.x,y:pos.y,fromX,fromY,mode:'anchor-death-return'});log(battle,'move',{uid:target.uid,sourceUid:target.uid,x:pos.x,y:pos.y,mode:'anchor-death-return'});}
  if(reason==='knockdown')notifyKnockdown(battle,target,event,killer);
  else triggerIndom(battle,target);
  target.exitLife=lifeKey(target);
@@ -1133,10 +1135,13 @@ function validMoveTile(battle,target,x,y,{allowOccupied=false,allowFlyOnly=false
  const alliedTarget=battle.s.units.includes(target)||(battle.s.summons||[]).includes(target);
  // 只有「占格子」的单位挡落点：干员与占格子的召唤物。**敌人不占格子**——被阻挡时它本来就和
  // 干员同格，所以敌人站着的位置不算被占，换位置（盟约突袭的再部署、乌尔比安 S3 船锚）不用避开它。
- const occupied=new Set(alliedActors(battle.s).filter(a=>a!==target&&a.deployed!==false&&a.occupiesTile!==false).map(a=>a.x+','+a.y));
- // 乌尔比安船锚位移期间，他让出的原格对友方换位置视为被占据：技能结束要返航，别被抢了。
- // 只挡友方——敌人站在那儿不影响他回来（两者可以同格）。
- if(alliedTarget)for(const a of battle.s.units)if(a!==target&&a.returnPosition&&a.deployed&&a.hp>0)occupied.add(Math.round(a.returnPosition.x)+','+Math.round(a.returnPosition.y));
+ const occupied=new Set(alliedActors(battle.s).filter(a=>a!==target&&a.deployed!==false&&a.occupiesTile!==false).map(a=>Math.round(a.x)+','+Math.round(a.y)));
+ if(alliedTarget)for(const a of battle.s.units){
+  // 击倒后尚在再部署计时的干员保留原格占位，避免盟约突袭传到空出的幽灵格。
+  if(a!==target&&!a.deployed&&a.hp<=0&&a.exitLife!=null&&a.occupiesTile!==false)occupied.add(Math.round(a.x)+','+Math.round(a.y));
+  // 乌尔比安船锚位移期间，原格与当前位置都占位；本人按 return 模式可回到自己的保留格。
+  if(a.returnPosition&&a.deployed&&a.hp>0)occupied.add(Math.round(a.returnPosition.x)+','+Math.round(a.returnPosition.y));
+ }
  return !occupied.has(x+','+y);
 }
 export function teleportActor(battle,target,{x,y,source=null,mode='teleport',allowOccupied=false,exactCoordinates=false,allowFlyOnly=true}={}){

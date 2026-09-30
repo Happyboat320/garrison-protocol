@@ -101,7 +101,7 @@ test('缩略图的每个分类都有 .terrain-* 配色（与战场图例共用�
  for(const kind of kinds)assert.match(css,new RegExp(`\\.terrain-${kind}\\{`),`CSS 缺 .terrain-${kind} 配色`);
 });
 
-test('简报接线：词条右侧挂地图卡，只有一条简报分支',async()=>{
+test('模拟简报接线：特训与地图各渲染一次，缩略图引用本局阵地',async()=>{
  const play=await read('native-play.js'),protocol=await read('protocol.js');
  // 缩略图的装置表只能等于战场真正画出来的那 5 件，别在这里偷偷多认或漏认装置。
  for(const id of DRAWN_DEVICES){
@@ -111,10 +111,10 @@ test('简报接线：词条右侧挂地图卡，只有一条简报分支',async(
  assert.match(protocol,/const THUMB_DEVICE=\{trap_040_canoe:'platform',trap_032_mound:'mound',trap_1107_acblock:'sealed',trap_1106_achplat:'achplat',trap_218_fttree:'bush'\}/,'装置表顺序/内容要一眼可核对');
  assert.match(play,/import \{[^}]*mapThumbnailHtml[^}]*\} from '\.\/protocol\.js'/);
  assert.match(play,/data\.maps\.find\(m=>m\.stageId===d\.mapId\)/,'要用本局 draft.mapId 找地图');
- assert.equal((play.match(/native-tags with-map/g)||[]).length,1,'词条容器只有一处，别留旧分支');
- assert.equal((play.match(/native-tags/g)||[]).length,1);
- assert.match(play,/<article class="native-briefing-map">[\s\S]*?mapThumbnailHtml\(map,\{esc,/,'地图卡排在词条后面，缩略图用同一套 esc');
- assert.match(play,/label:`本局战场：阵地 \$\{mapName\+1\}/,'缩略图的无障碍标签要报出阵地号');
+ assert.equal((play.match(/class="briefing-training-grid"/g)||[]).length,1,'特训列表只有一处');
+ assert.equal((play.match(/class="briefing-map-card"/g)||[]).length,1,'地图卡只有一处');
+ assert.match(play,/mapThumb=mapThumbnailHtml\(map,\{esc,label:`本局战场：\$\{mapLabel\}/,'地图缩略图使用本局地图和同一套转义函数');
+ assert.match(play,/const modeName=.*?mapLabel=mapIndex>=0\?`阵地 \$\{mapIndex\+1\}`/,'简报显示本局模式和地图编号');
  // 「抽中三种词条，战斗按 … 轮换出怪。」这句已按用户要求删掉，连它专用的 `roster.order` 与
  // `:nth-of-type(2)` 规则一起清掉（留着会误伤下面「盟约缺席情况」那段说明）。
  assert.ok(!play.includes('轮换出怪'),'简报不再写轮换顺序那句话');
@@ -122,19 +122,14 @@ test('简报接线：词条右侧挂地图卡，只有一条简报分支',async(
  assert.ok(!/native-briefing>p:nth-of-type/.test(await read('native.css')),'针对那句 <p> 的 nth-of-type 规则要一起删');
 });
 
-test('布局：桌面挤到第 4 列，窄屏／竖屏／横屏各有规则',async()=>{
+test('简报布局：桌面双栏、手机单栏、短屏横屏压缩',async()=>{
  const css=await read('native.css');
- assert.match(css,/\.native-tags\.with-map\{grid-template-columns:repeat\(3,minmax\(0,1fr\)\) minmax\(170px,220px\);align-items:start\}/,'桌面：词条三列 + 地图一列');
+ assert.match(css,/\.native-briefing-v2 \.briefing-overview\{display:grid;grid-template-columns:minmax\(0,1fr\) minmax\(230px,27%\)/,'桌面：特训内容旁边显示地图卡');
  assert.match(css,/\.native-map-thumb\{display:grid;grid-template-columns:repeat\(var\(--cols\),1fr\);grid-template-rows:repeat\(var\(--rows\),1fr\)/,'缩略图按 --cols/--rows 排格子（两个变量都要被 CSS 用上）');
- // ≤1000px 单列；≤820px 地图整行落到词条下面；≤600px 再压紧。
- assert.match(css,/@media\(max-width:1000px\)\{[\s\S]*?\.native-tags\.with-map\{grid-template-columns:minmax\(0,1fr\)\}/);
- assert.match(css,/\.native-tags\.with-map\{grid-template-columns:repeat\(3,minmax\(0,1fr\)\)\}\.native-briefing-map\{grid-column:1\/-1/,'窄屏地图独占一行');
- assert.match(css,/\.native-briefing-map\{padding:8px\}\.native-briefing-map \.native-map-thumb\{max-width:none;gap:1px;padding:4px\}/,'手机竖屏缩略图跟着列宽');
- // 手机横屏（矮屏）不能再多占一行：挤进同一排第 4 列。
- assert.match(css,/html\.native-landscape-ui \.native-tags\.with-map\{grid-template-columns:repeat\(3,minmax\(0,1fr\)\) minmax\(112px,150px\)\}/);
- assert.match(css,/html\.native-landscape-ui \.native-briefing-map\{grid-column:auto;flex-direction:column/);
- assert.match(css,/html\.native-landscape-ui \.native-briefing-map \.native-map-thumb\{max-width:150px/);
- // 规则必须写在横屏媒体查询里，否则会漏掉真的手机。
- const landscape=css.slice(css.indexOf('@media (orientation:landscape) and (max-height:600px) and (max-width:1100px){',css.indexOf('.native-map-thumb')));
- assert.ok(landscape.indexOf('html.native-landscape-ui .native-tags.with-map')>-1,'横屏规则要在矮屏媒体查询内');
+ assert.match(css,/\.native-briefing-v2 \.briefing-training-grid\{display:grid;grid-template-columns:repeat\(auto-fit,minmax\(160px,1fr\)\)/,'桌面特训卡片自适应排布');
+ assert.match(css,/\.native-briefing-v2 \.briefing-overview\{grid-template-columns:minmax\(0,1fr\);gap:8px\}/,'手机简报改为纵向单栏');
+ assert.match(css,/\.native-briefing-v2 \.briefing-training-grid\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)\}/,'手机特训卡片两列显示');
+ assert.match(css,/\.native-briefing-v2 \.briefing-bond-section \.native-ban-bonds\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)\}/,'手机盟约卡片两列显示');
+ assert.match(css,/\.native-briefing-v2 \.briefing-actions \.native-begin\{display:flex;align-items:center;justify-content:center/,'开始模拟按钮始终在简报页底部操作栏');
+ assert.match(css,/\.native-briefing-v2 \.briefing-overview\{grid-template-columns:minmax\(0,1fr\) minmax\(180px,24%\);gap:7px\}/,'短屏横屏恢复紧凑双栏');
 });

@@ -86,6 +86,7 @@ export class NativeBattle {
    if(card.type==='vigil-wolf')token=spawnSummon(this,owner,{type:'vigil-wolf',name:'狼群',x:card.position.x,y:card.position.y,targetable:true,canBlock:true,canAttack:true,blockCnt:2,lives:2,nextLifeAt:this.s.time+25,occupiesTile:true,preparedCard:true});
    if(card.type==='mlyss-fluid')token=spawnSummon(this,owner,{type:'mlyss-fluid',name:'流形',x:card.position.x,y:card.position.y,synthetic:true,targetable:true,canBlock:true,canAttack:true,occupiesTile:true,persistAfterSourceGone:true,preparedCard:true});
    if(card.type==='silent-drone')token=spawnSummon(this,owner,{type:'silent-drone',name:'医疗无人机',x:card.position.x,y:card.position.y,targetable:false,healable:false,canBlock:false,canAttack:false,canHeal:true,device:true,maxHp:1,atk:this.stats(owner).atk,duration:10,persistAfterSourceGone:true,healScale:.5,preparedCard:true});
+   // 海嗣占据布局格做空间判定，但召唤物不计入干员部署位容量。
    if(card.type==='skadi2-seaborn')token=spawnSummon(this,owner,{type:'skadi2-seaborn',tokenId:'token_10017_skadi2_dedant',name:'海嗣',x:card.position.x,y:card.position.y,targetable:true,canBlock:true,canAttack:true,occupiesTile:true,duration:summonLifecycle(this,owner,'skadi2-seaborn').duration||25,persistAfterSourceGone:false,preparedCard:true});
    // 凯瑟琳的支援装置：PRTS 召唤物页写「部署位置：全部位」、部署占用数 0，落点完全由玩家摆的召唤卡决定；
    // 屏障目标由 tickCathyDevices 按**装置自己的攻击范围**（自身格＋身前格，朝向取放置时选的朝向）每秒复查。
