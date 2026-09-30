@@ -3,7 +3,7 @@ import {NativeEconomy} from './native-economy.js';
 import {NativeBattle} from './native-battle.js';
 import {buildPhasePlan,singleDecisionRounds,blackboard,ensureStock,restoreStock,stockOf,INFINITE_FUNDS,ROUND_LEAK_CAP} from './protocol.js';
 import {allowsHighlandPlacement} from './native-branches.js';
-import {AVAILABLE_FINAL_BOSS_IDS,finalBossConfig,rollFinalBoss} from './native-final-boss.js';
+import {AVAILABLE_FINAL_BOSS_IDS,finalBossConfig,finalBossPlacementArea,finalBossPlacementContains,rollFinalBoss} from './native-final-boss.js';
 import {runStrategyEvent} from './strategy.js';
 import {createWaveRoster} from './native-wave-random.js';
 import {bondBanIds,loadBondBan,normalizeBondBan} from './native-bond-ban.js';
@@ -15,6 +15,8 @@ import {itemAllowed,operatorAllowed,seesRun,freeDeploy,settleFundsToLayers,grant
 // 召唤物落点不受主人攻击范围限制的类型（见 summonCardRange 的注释）。
 const SUMMON_FREE_PLACEMENT=new Set(['cathy-device','skadi2-seaborn']);
 const SUMMON_ZERO_OCCUPANCY=new Set(['cathy-device']);
+const FINAL_BOSS_ROUND_CACHE=new WeakMap();
+function finalBossRound(data,modeId){let rounds=FINAL_BOSS_ROUND_CACHE.get(data);if(!rounds){rounds=new Map();FINAL_BOSS_ROUND_CACHE.set(data,rounds);}if(!rounds.has(modeId))rounds.set(modeId,buildPhasePlan(data,modeId).filter(t=>t.isBossTurn&&!t.isConditional).at(-1)?.round??null);return rounds.get(modeId);}
 // 召唤物的**同时部署上限**取它自己 token 的 `maxDeployCount`（爬行号·防护单元 = 2，正好对上天赋「最多部署2个」）。
 const summonDeployCap=(data,type)=>{const t=data?.tokens?.[TOKEN_IDS[type]];return Number(t?.phases?.[0]?.attributesKeyFrames?.[0]?.data?.maxDeployCount)||Infinity;};
 
@@ -90,7 +92,7 @@ export class NativeSession extends NativeEconomy {
  //    是与普通单位同级的装置，按格子选即可、**没有攻击范围限制**——此前统一套用战术家口径，
  //    导致凯瑟琳只能把装置放在自己脚下或身前那一格（用户 2026-09-22 报「召唤物依然不能正确放置在场上」）。
  summonCardRange(card,x,y){if(SUMMON_FREE_PLACEMENT.has(card.type))return true;const owner=this.s.units.find(u=>u.uid===card.ownerUid);if(!owner?.position)return false;const grids=this.data.profiles[owner.chessId]?.range?.grids||[];return grids.some(g=>{let dx=g.col,dy=-g.row;for(let i=0;i<(owner.dir||0);i++)[dx,dy]=[-dy,dx];return owner.position.x+dx===x&&owner.position.y+dy===y;});}
- canDeploySummonCard(cardUid,x,y){if(this.s.phase!=='prep')return false;const card=this.s.summonCards?.find(c=>c.uid===cardUid),cell=this.map.grid[y]?.[x];if(!card||!cell||cell.buildableType==='NONE'||cell.obstacle||!this.summonCardRange(card,x,y))return false;if(card.type==='cathy-device'&&this.s.summonCards.filter(c=>c.uid!==card.uid&&c.ownerUid===card.ownerUid&&c.type===card.type&&c.position).length>=summonDeployCap(this.data,card.type))return false;if(card.type==='vigil-wolf'&&cell.heightType==='HIGHLAND')return false;return SUMMON_ZERO_OCCUPANCY.has(card.type)||(!this.s.units.some(u=>u.position?.x===x&&u.position?.y===y)&&!this.s.summonCards.some(c=>c.uid!==card.uid&&c.position?.x===x&&c.position?.y===y));}
+ canDeploySummonCard(cardUid,x,y){if(this.s.phase!=='prep')return false;const card=this.s.summonCards?.find(c=>c.uid===cardUid),cell=this.map.grid[y]?.[x];if(!card||!cell||cell.buildableType==='NONE'||cell.obstacle||!this.summonCardRange(card,x,y)||finalBossPlacementContains(this.finalBossPrepArea(),x,y))return false;if(card.type==='cathy-device'&&this.s.summonCards.filter(c=>c.uid!==card.uid&&c.ownerUid===card.ownerUid&&c.type===card.type&&c.position).length>=summonDeployCap(this.data,card.type))return false;if(card.type==='vigil-wolf'&&cell.heightType==='HIGHLAND')return false;return SUMMON_ZERO_OCCUPANCY.has(card.type)||(!this.s.units.some(u=>u.position?.x===x&&u.position?.y===y)&&!this.s.summonCards.some(c=>c.uid!==card.uid&&c.position?.x===x&&c.position?.y===y));}
  deploySummonCard(cardUid,x,y,dir=0){if(!this.canDeploySummonCard(cardUid,x,y))return false;const card=this.s.summonCards.find(c=>c.uid===cardUid);card.position={x,y};card.dir=dir;return true;}
  withdrawSummonCard(cardUid){if(this.s.phase!=='prep')return false;const card=this.s.summonCards?.find(c=>c.uid===cardUid&&c.position);if(!card||this.handFull())return false;card.position=null;return true;}
  // 所属盟约全部被禁的干员不进调配池。判定只有这一条：
@@ -232,9 +234,10 @@ export class NativeSession extends NativeEconomy {
   this.s.items=this.s.items.filter(i=>i.uid!==itemUid);this.settleBondRewards();return true;
  }
  chooseBounty(id){const reward=this.s.rewardPending;if(this.s.phase!=='prep'||reward?.kind!=='bounty'||!reward.offers.includes(id))return false;const option=bountyOption(this.data,id);if(!option)return false;this.s.pendingBounty={enemyId:option.enemyId,coin:option.coin,count:option.count};this.s.rewardPending=this.s.rewardQueue.shift()||null;return true;}
+ finalBossPrepArea(){if(this.s.phase!=='prep'||this.s.round!==finalBossRound(this.data,this.s.modeId))return null;return finalBossPlacementArea(this.map,finalBossConfig(this.data,this.s.finalBossId,this.s.modeId).enemyId);}
  canDeploy(uid,x,y){
   if(!Number.isInteger(x)||!Number.isInteger(y))return false;
-  const u=this.s.units.find(u=>u.uid===uid),cell=this.map.grid[y]?.[x];if(!u||!cell||this.s.phase!=='prep'||cell.buildableType==='NONE')return false;
+  const u=this.s.units.find(u=>u.uid===uid),cell=this.map.grid[y]?.[x];if(!u||!cell||this.s.phase!=='prep'||cell.buildableType==='NONE'||finalBossPlacementContains(this.finalBossPrepArea(),x,y))return false;
   const valid=(unit,tile)=>{const p=this.data.profiles[unit.chessId];return tile.heightType!=='HIGHLAND'||p.position!=='MELEE'||allowsHighlandPlacement(p);};if(!valid(u,cell))return false;
   const other=this.s.units.find(v=>v.uid!==uid&&v.position?.x===x&&v.position?.y===y),old=u.position;
   // 已放置的召唤物卡也占格：干员不能压在**别人**的召唤物上（自己的那张在移动时会被清位）。
@@ -331,7 +334,7 @@ export class NativeSession extends NativeEconomy {
   return gained;
  }
  resolveTurn(turn){if(!turn?.isBossTurn||turn.isConditional)return turn;const finals=buildPhasePlan(this.data,this.s.modeId).filter(t=>t.isBossTurn&&!t.isConditional);if(turn.round!==finals.at(-1)?.round)return turn;const config=finalBossConfig(this.data,this.s.finalBossId,this.s.modeId);return {...turn,finalBossId:this.s.finalBossId,finalBoss:config,finalBossHp:config.hp};}
- startBattle(){if(this.s.phase!=='prep'||this.s.rewardPending)return false;this.applyTouchReplacement();this.settleTartarusRound();const ok=this.beginBattle();if(!ok)return false;if(this.s.phase==='prep')return true;const turn=this.resolveTurn(buildPhasePlan(this.data,this.s.modeId).find(t=>t.round===this.s.round));this.battle=new NativeBattle(this.data,this,this.map,turn);return true;}
+ startBattle(){if(this.s.phase!=='prep'||this.s.rewardPending)return false;const area=this.finalBossPrepArea();if(area&&[...this.s.units.filter(u=>u.position),...(this.s.summonCards||[]).filter(c=>c.position)].some(actor=>finalBossPlacementContains(area,actor.position.x,actor.position.y)))throw Error('昆图斯／萨米的意志将占据右上角 2 列 × 3 行，请先移开该区域的干员和召唤物。');this.applyTouchReplacement();this.settleTartarusRound();const ok=this.beginBattle();if(!ok)return false;if(this.s.phase==='prep')return true;const turn=this.resolveTurn(buildPhasePlan(this.data,this.s.modeId).find(t=>t.round===this.s.round));this.battle=new NativeBattle(this.data,this,this.map,turn);return true;}
  finishCurrentBattle(){if(!this.battle?.s.finished||this.s.phase!=='battle')return;const r=this.battle.s.result;this.s.history.push(r);if(r.kind==='final-boss'){this.s.runResult=r;if(r.reason!=='boss-killed')this.s.hp=0;this.s.phase='finished';}else{const loss=Math.min(ROUND_LEAK_CAP,r.leaks);this.s.hp=Math.max(0,this.s.hp-loss);this.finishBattle({success:this.s.hp>0,leaks:r.leaks});this.s.lastBattle.loss=loss;if(!this.s.hp)this.s.runResult=r;}this.applyPostBattleTransforms();}
  tick(){if(this.s.phase==='battle'&&this.battle){this.battle.step();this.finishCurrentBattle();}}
  advanceRound(){if(this.s.phase!=='intermission')return false;const locked=this.s.locked,oldOffers=locked?this.s.offers.slice():null,oldItems=locked?this.s.itemOffers.slice():null;this.s.prepApplied=false;const ok=this.nextRound(locked?[]:this.rollOffers());if(!ok)return false;if(locked){const refillOffers=this.rollOffers();this.s.offers=Array.from({length:this.terms().operatorSlots},(_,i)=>oldOffers[i]??refillOffers[i]);const refillItems=Array.from({length:this.terms().itemSlots},()=>this.drawFromPool({kind:'item'}));this.s.itemOffers=Array.from({length:this.terms().itemSlots},(_,i)=>oldItems[i]??refillItems[i]);}else this.fillItems();this.addFunds(this.s.passiveIncome);this.applyProjectionUpgrades();

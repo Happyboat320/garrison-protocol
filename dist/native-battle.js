@@ -63,9 +63,9 @@ export class NativeBattle {
   const addScale=enemyCombatScale(this.data.season.modeDataDict[this.economy.s.modeId],turn.round,{hidden:false});
   this.s.queue=buildFinalBossAddQueue(this.data,this.economy.s.waveRoster,this.economy.s.finalBossAddSeed||this.economy.s.randomState,doors);
   this.s.total=this.s.queue.length+1;
-  const mechanics=finalBossMechanics(boss.enemyId),start=mechanics?.static?finalBossSpawnPoint(this.map,patrol,[...this.s.units,...(this.s.summons||[])]):patrol[0];this.combatScale={atk:1,hp:1,moveSpeed:1};this.spawn({id:boss.enemyId,route:0},{x:start.x,y:start.y,route:patrol,routeDiagonal:false});
+  const mechanics=finalBossMechanics(boss.enemyId),start=mechanics?.static?finalBossSpawnPoint(this.map,boss.enemyId):patrol[0];this.combatScale={atk:1,hp:1,moveSpeed:1};this.spawn({id:boss.enemyId,route:0},{x:start.x,y:start.y,route:patrol,routeDiagonal:false});
   const actor=this.s.enemies.at(-1);if(addScale.side==='single'){actor.atk*=addScale.atk;actor.baseAtk*=addScale.atk;}actor.hp=actor.maxHp=actor.baseMaxHp=actor.finalBossHp=Number(boss.hp);actor.finalBoss=true;actor.finalBossPatrol=true;actor.spriteId=boss.handbookEnemyId||boss.enemyId;actor.leak=0;this.s.finalBossUid=actor.uid;this.combatScale=addScale;
-  // 逐名机制登记（native-final-boss.js FINAL_BOSS_MECHANICS）：受击矩形、自缚站桩、不可阻挡、失衡免疫与
+  // 逐名机制登记（native-final-boss.js FINAL_BOSS_MECHANICS）：右上角 2列×3行受击矩形、自缚站桩、不可阻挡、失衡免疫与
   // 表现缩放。两位站桩 Boss 的普攻由 native-enemy-skills 的逐名 tick 全权接管，通用普攻必须关掉，
   // 否则会出现「冰凌/延迟斩之外又多一次普通单发」的双算。
   actor.spriteScale=mechanics?.spriteScale??2.2;

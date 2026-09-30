@@ -7381,22 +7381,25 @@ return {editorState,enemyRows,originalTypeIds,filterRows,renderWaveEditor,applyE
 const AVAILABLE_FINAL_BOSS_IDS=Object.freeze(['boss_4','boss_5','boss_7']);
 
 // 逐名战斗机制登记（数值来源：docs/FINAL_BOSS_4_5_7_PLAN_2026-09-28.md 与 PRTS 敌人页）。
-// hitRect＝本期巨型受击矩形（长4.95 × 宽2.95、向上偏移1，PRTS「巨型单位」口径，通常图鉴的 2.95×2.95 不覆盖本期）；
+// hitRect＝固定站位的受击矩形；昆图斯与萨米各占地图右上角 2 列 × 3 行；
 // static＝自缚站桩（formHold，不沿环线移动）；unblockable＝不可阻挡；shiftImmune＝失衡免疫；
 // range 补齐档案缺省的攻击半径（两位 Boss 的攻击都是全场范围，PRTS 攻击半径 99）。
 // spriteScale 只管画布表现。
 const FINAL_BOSS_MECHANICS={
- 'enemy_1521_dslily':{hitRect:{length:4.95,width:2.95,offsetY:1},spriteScale:3,static:true,unblockable:true,range:99},
+ 'enemy_1521_dslily':{hitRect:{length:2,width:3,offsetY:0},spriteScale:3,static:true,unblockable:true,range:99},
  'enemy_2016_csphtm':{spriteScale:2.2},
- 'enemy_9033_acdeer':{hitRect:{length:4.95,width:2.95,offsetY:1},spriteScale:3,static:true,unblockable:true,shiftImmune:true,range:99},
+ 'enemy_9033_acdeer':{hitRect:{length:2,width:3,offsetY:0},spriteScale:3,static:true,unblockable:true,shiftImmune:true,range:99},
 };
 function finalBossMechanics(enemyId){return FINAL_BOSS_MECHANICS[enemyId]||null;}
-function finalBossSpawnPoint(map,route,occupants=[]){
- const roads=route.filter(p=>map.grid[p.y]?.[p.x]?.tileKey==='tile_road');
- const candidates=roads.length?roads:route.filter(p=>!['tile_start','tile_end','tile_deepsea'].includes(map.grid[p.y]?.[p.x]?.tileKey));
- const free=candidates.filter(p=>!occupants.some(u=>u.hp>0&&u.deployed!==false&&Math.round(u.x)===p.x&&Math.round(u.y)===p.y));
- const pool=free.length?free:candidates,cx=(map.cols-1)/2,cy=(map.rows-1)/2;
- return pool.reduce((best,p)=>!best||(p.x-cx)**2+(p.y-cy)**2<(best.x-cx)**2+(best.y-cy)**2?p:best,null)||route[0];
+function finalBossPlacementArea(map,enemyId){
+ if(!finalBossMechanics(enemyId)?.static)return null;
+ const columns=2,rows=3,firstColumn=map.cols-columns;
+ return {left:firstColumn-.5,right:map.cols-.5,top:-.5,bottom:rows-.5,firstColumn,firstRow:0,columns,rows,x:firstColumn+(columns-1)/2,y:(rows-1)/2};
+}
+function finalBossPlacementContains(area,x,y){return !!area&&x>=area.firstColumn&&x<area.firstColumn+area.columns&&y>=area.firstRow&&y<area.firstRow+area.rows;}
+function finalBossSpawnPoint(map,enemyId){
+ const area=finalBossPlacementArea(map,enemyId);
+ return area?{x:area.x,y:area.y}:null;
 }
 
 const HP_FIELD={FUNNY:'bloodPoint',NORMAL:'bloodPointNormal',HARD:'bloodPointHard',ABYSS:'bloodPointAbyss'};
@@ -7419,7 +7422,7 @@ function finalBossConfig(data,bossId,modeId){
  return {...boss,enemyProfile:profile,bossId,hp,weight:settings.weight,difficulty};
 }
 
-return {AVAILABLE_FINAL_BOSS_IDS,FINAL_BOSS_MECHANICS,finalBossMechanics,finalBossSpawnPoint,rollFinalBoss,finalBossConfig};
+return {AVAILABLE_FINAL_BOSS_IDS,FINAL_BOSS_MECHANICS,finalBossMechanics,finalBossPlacementArea,finalBossPlacementContains,finalBossSpawnPoint,rollFinalBoss,finalBossConfig};
 },
 "native-sp.js": function(load) {
 function spTypeOf(skill){
@@ -12879,9 +12882,9 @@ class NativeBattle {
   const addScale=enemyCombatScale(this.data.season.modeDataDict[this.economy.s.modeId],turn.round,{hidden:false});
   this.s.queue=buildFinalBossAddQueue(this.data,this.economy.s.waveRoster,this.economy.s.finalBossAddSeed||this.economy.s.randomState,doors);
   this.s.total=this.s.queue.length+1;
-  const mechanics=finalBossMechanics(boss.enemyId),start=mechanics?.static?finalBossSpawnPoint(this.map,patrol,[...this.s.units,...(this.s.summons||[])]):patrol[0];this.combatScale={atk:1,hp:1,moveSpeed:1};this.spawn({id:boss.enemyId,route:0},{x:start.x,y:start.y,route:patrol,routeDiagonal:false});
+  const mechanics=finalBossMechanics(boss.enemyId),start=mechanics?.static?finalBossSpawnPoint(this.map,boss.enemyId):patrol[0];this.combatScale={atk:1,hp:1,moveSpeed:1};this.spawn({id:boss.enemyId,route:0},{x:start.x,y:start.y,route:patrol,routeDiagonal:false});
   const actor=this.s.enemies.at(-1);if(addScale.side==='single'){actor.atk*=addScale.atk;actor.baseAtk*=addScale.atk;}actor.hp=actor.maxHp=actor.baseMaxHp=actor.finalBossHp=Number(boss.hp);actor.finalBoss=true;actor.finalBossPatrol=true;actor.spriteId=boss.handbookEnemyId||boss.enemyId;actor.leak=0;this.s.finalBossUid=actor.uid;this.combatScale=addScale;
-  // 逐名机制登记（native-final-boss.js FINAL_BOSS_MECHANICS）：受击矩形、自缚站桩、不可阻挡、失衡免疫与
+  // 逐名机制登记（native-final-boss.js FINAL_BOSS_MECHANICS）：右上角 2列×3行受击矩形、自缚站桩、不可阻挡、失衡免疫与
   // 表现缩放。两位站桩 Boss 的普攻由 native-enemy-skills 的逐名 tick 全权接管，通用普攻必须关掉，
   // 否则会出现「冰凌/延迟斩之外又多一次普通单发」的双算。
   actor.spriteScale=mechanics?.spriteScale??2.2;
@@ -13787,7 +13790,7 @@ const {NativeEconomy} = load("native-economy.js");
 const {NativeBattle} = load("native-battle.js");
 const {buildPhasePlan,singleDecisionRounds,blackboard,ensureStock,restoreStock,stockOf,INFINITE_FUNDS,ROUND_LEAK_CAP} = load("protocol.js");
 const {allowsHighlandPlacement} = load("native-branches.js");
-const {AVAILABLE_FINAL_BOSS_IDS,finalBossConfig,rollFinalBoss} = load("native-final-boss.js");
+const {AVAILABLE_FINAL_BOSS_IDS,finalBossConfig,finalBossPlacementArea,finalBossPlacementContains,rollFinalBoss} = load("native-final-boss.js");
 const {runStrategyEvent} = load("strategy.js");
 const {createWaveRoster} = load("native-wave-random.js");
 const {bondBanIds,loadBondBan,normalizeBondBan} = load("native-bond-ban.js");
@@ -13798,6 +13801,8 @@ const {itemAllowed,operatorAllowed,seesRun,freeDeploy,settleFundsToLayers,grantC
 // 召唤物落点不受主人攻击范围限制的类型（见 summonCardRange 的注释）。
 const SUMMON_FREE_PLACEMENT=new Set(['cathy-device','skadi2-seaborn']);
 const SUMMON_ZERO_OCCUPANCY=new Set(['cathy-device']);
+const FINAL_BOSS_ROUND_CACHE=new WeakMap();
+function finalBossRound(data,modeId){let rounds=FINAL_BOSS_ROUND_CACHE.get(data);if(!rounds){rounds=new Map();FINAL_BOSS_ROUND_CACHE.set(data,rounds);}if(!rounds.has(modeId))rounds.set(modeId,buildPhasePlan(data,modeId).filter(t=>t.isBossTurn&&!t.isConditional).at(-1)?.round??null);return rounds.get(modeId);}
 // 召唤物的**同时部署上限**取它自己 token 的 `maxDeployCount`（爬行号·防护单元 = 2，正好对上天赋「最多部署2个」）。
 const summonDeployCap=(data,type)=>{const t=data?.tokens?.[TOKEN_IDS[type]];return Number(t?.phases?.[0]?.attributesKeyFrames?.[0]?.data?.maxDeployCount)||Infinity;};
 
@@ -13873,7 +13878,7 @@ class NativeSession extends NativeEconomy {
  //    是与普通单位同级的装置，按格子选即可、**没有攻击范围限制**——此前统一套用战术家口径，
  //    导致凯瑟琳只能把装置放在自己脚下或身前那一格（用户 2026-09-22 报「召唤物依然不能正确放置在场上」）。
  summonCardRange(card,x,y){if(SUMMON_FREE_PLACEMENT.has(card.type))return true;const owner=this.s.units.find(u=>u.uid===card.ownerUid);if(!owner?.position)return false;const grids=this.data.profiles[owner.chessId]?.range?.grids||[];return grids.some(g=>{let dx=g.col,dy=-g.row;for(let i=0;i<(owner.dir||0);i++)[dx,dy]=[-dy,dx];return owner.position.x+dx===x&&owner.position.y+dy===y;});}
- canDeploySummonCard(cardUid,x,y){if(this.s.phase!=='prep')return false;const card=this.s.summonCards?.find(c=>c.uid===cardUid),cell=this.map.grid[y]?.[x];if(!card||!cell||cell.buildableType==='NONE'||cell.obstacle||!this.summonCardRange(card,x,y))return false;if(card.type==='cathy-device'&&this.s.summonCards.filter(c=>c.uid!==card.uid&&c.ownerUid===card.ownerUid&&c.type===card.type&&c.position).length>=summonDeployCap(this.data,card.type))return false;if(card.type==='vigil-wolf'&&cell.heightType==='HIGHLAND')return false;return SUMMON_ZERO_OCCUPANCY.has(card.type)||(!this.s.units.some(u=>u.position?.x===x&&u.position?.y===y)&&!this.s.summonCards.some(c=>c.uid!==card.uid&&c.position?.x===x&&c.position?.y===y));}
+ canDeploySummonCard(cardUid,x,y){if(this.s.phase!=='prep')return false;const card=this.s.summonCards?.find(c=>c.uid===cardUid),cell=this.map.grid[y]?.[x];if(!card||!cell||cell.buildableType==='NONE'||cell.obstacle||!this.summonCardRange(card,x,y)||finalBossPlacementContains(this.finalBossPrepArea(),x,y))return false;if(card.type==='cathy-device'&&this.s.summonCards.filter(c=>c.uid!==card.uid&&c.ownerUid===card.ownerUid&&c.type===card.type&&c.position).length>=summonDeployCap(this.data,card.type))return false;if(card.type==='vigil-wolf'&&cell.heightType==='HIGHLAND')return false;return SUMMON_ZERO_OCCUPANCY.has(card.type)||(!this.s.units.some(u=>u.position?.x===x&&u.position?.y===y)&&!this.s.summonCards.some(c=>c.uid!==card.uid&&c.position?.x===x&&c.position?.y===y));}
  deploySummonCard(cardUid,x,y,dir=0){if(!this.canDeploySummonCard(cardUid,x,y))return false;const card=this.s.summonCards.find(c=>c.uid===cardUid);card.position={x,y};card.dir=dir;return true;}
  withdrawSummonCard(cardUid){if(this.s.phase!=='prep')return false;const card=this.s.summonCards?.find(c=>c.uid===cardUid&&c.position);if(!card||this.handFull())return false;card.position=null;return true;}
  // 所属盟约全部被禁的干员不进调配池。判定只有这一条：
@@ -14015,9 +14020,10 @@ class NativeSession extends NativeEconomy {
   this.s.items=this.s.items.filter(i=>i.uid!==itemUid);this.settleBondRewards();return true;
  }
  chooseBounty(id){const reward=this.s.rewardPending;if(this.s.phase!=='prep'||reward?.kind!=='bounty'||!reward.offers.includes(id))return false;const option=bountyOption(this.data,id);if(!option)return false;this.s.pendingBounty={enemyId:option.enemyId,coin:option.coin,count:option.count};this.s.rewardPending=this.s.rewardQueue.shift()||null;return true;}
+ finalBossPrepArea(){if(this.s.phase!=='prep'||this.s.round!==finalBossRound(this.data,this.s.modeId))return null;return finalBossPlacementArea(this.map,finalBossConfig(this.data,this.s.finalBossId,this.s.modeId).enemyId);}
  canDeploy(uid,x,y){
   if(!Number.isInteger(x)||!Number.isInteger(y))return false;
-  const u=this.s.units.find(u=>u.uid===uid),cell=this.map.grid[y]?.[x];if(!u||!cell||this.s.phase!=='prep'||cell.buildableType==='NONE')return false;
+  const u=this.s.units.find(u=>u.uid===uid),cell=this.map.grid[y]?.[x];if(!u||!cell||this.s.phase!=='prep'||cell.buildableType==='NONE'||finalBossPlacementContains(this.finalBossPrepArea(),x,y))return false;
   const valid=(unit,tile)=>{const p=this.data.profiles[unit.chessId];return tile.heightType!=='HIGHLAND'||p.position!=='MELEE'||allowsHighlandPlacement(p);};if(!valid(u,cell))return false;
   const other=this.s.units.find(v=>v.uid!==uid&&v.position?.x===x&&v.position?.y===y),old=u.position;
   // 已放置的召唤物卡也占格：干员不能压在**别人**的召唤物上（自己的那张在移动时会被清位）。
@@ -14114,7 +14120,7 @@ class NativeSession extends NativeEconomy {
   return gained;
  }
  resolveTurn(turn){if(!turn?.isBossTurn||turn.isConditional)return turn;const finals=buildPhasePlan(this.data,this.s.modeId).filter(t=>t.isBossTurn&&!t.isConditional);if(turn.round!==finals.at(-1)?.round)return turn;const config=finalBossConfig(this.data,this.s.finalBossId,this.s.modeId);return {...turn,finalBossId:this.s.finalBossId,finalBoss:config,finalBossHp:config.hp};}
- startBattle(){if(this.s.phase!=='prep'||this.s.rewardPending)return false;this.applyTouchReplacement();this.settleTartarusRound();const ok=this.beginBattle();if(!ok)return false;if(this.s.phase==='prep')return true;const turn=this.resolveTurn(buildPhasePlan(this.data,this.s.modeId).find(t=>t.round===this.s.round));this.battle=new NativeBattle(this.data,this,this.map,turn);return true;}
+ startBattle(){if(this.s.phase!=='prep'||this.s.rewardPending)return false;const area=this.finalBossPrepArea();if(area&&[...this.s.units.filter(u=>u.position),...(this.s.summonCards||[]).filter(c=>c.position)].some(actor=>finalBossPlacementContains(area,actor.position.x,actor.position.y)))throw Error('昆图斯／萨米的意志将占据右上角 2 列 × 3 行，请先移开该区域的干员和召唤物。');this.applyTouchReplacement();this.settleTartarusRound();const ok=this.beginBattle();if(!ok)return false;if(this.s.phase==='prep')return true;const turn=this.resolveTurn(buildPhasePlan(this.data,this.s.modeId).find(t=>t.round===this.s.round));this.battle=new NativeBattle(this.data,this,this.map,turn);return true;}
  finishCurrentBattle(){if(!this.battle?.s.finished||this.s.phase!=='battle')return;const r=this.battle.s.result;this.s.history.push(r);if(r.kind==='final-boss'){this.s.runResult=r;if(r.reason!=='boss-killed')this.s.hp=0;this.s.phase='finished';}else{const loss=Math.min(ROUND_LEAK_CAP,r.leaks);this.s.hp=Math.max(0,this.s.hp-loss);this.finishBattle({success:this.s.hp>0,leaks:r.leaks});this.s.lastBattle.loss=loss;if(!this.s.hp)this.s.runResult=r;}this.applyPostBattleTransforms();}
  tick(){if(this.s.phase==='battle'&&this.battle){this.battle.step();this.finishCurrentBattle();}}
  advanceRound(){if(this.s.phase!=='intermission')return false;const locked=this.s.locked,oldOffers=locked?this.s.offers.slice():null,oldItems=locked?this.s.itemOffers.slice():null;this.s.prepApplied=false;const ok=this.nextRound(locked?[]:this.rollOffers());if(!ok)return false;if(locked){const refillOffers=this.rollOffers();this.s.offers=Array.from({length:this.terms().operatorSlots},(_,i)=>oldOffers[i]??refillOffers[i]);const refillItems=Array.from({length:this.terms().itemSlots},()=>this.drawFromPool({kind:'item'}));this.s.itemOffers=Array.from({length:this.terms().itemSlots},(_,i)=>oldItems[i]??refillItems[i]);}else this.fillItems();this.addFunds(this.s.passiveIncome);this.applyProjectionUpgrades();
@@ -17123,9 +17129,18 @@ function drawTerrain(c,z,map){
  drawWindCells(c,z,map,now);
  c.font='9px monospace';c.textAlign='center';c.fillStyle='#a7bebc';for(let x=map.viewport.left;x<=map.viewport.right;x++)c.fillText(String.fromCharCode(65+x),z.ox+(x+.5)*z.tw,z.oy-5);for(let y=map.viewport.top;y<=map.viewport.bottom;y++)c.fillText(canvasNumber(y+1),Math.max(8,z.ox+map.viewport.left*z.tw-10),z.oy+(y+.5)*z.th+3);
 }
+function drawFinalBossPlacementPreview(c,z,area){
+ if(!area)return;
+ const x=z.ox+area.firstColumn*z.tw+1,y=z.oy+area.firstRow*z.th+1,w=area.columns*z.tw-2,h=area.rows*z.th-2;
+ c.save();c.fillStyle='#efb85b35';c.fillRect(x,y,w,h);c.strokeStyle='#ffd17a';c.lineWidth=2.5;c.strokeRect(x+1,y+1,w-2,h-2);c.strokeStyle='#ffd17a88';c.lineWidth=1;
+ for(let col=1;col<area.columns;col++){c.beginPath();c.moveTo(x+col*z.tw,y);c.lineTo(x+col*z.tw,y+h);c.stroke();}
+ c.beginPath();c.moveTo(x,y+z.th);c.lineTo(x+w,y+z.th);c.stroke();
+ c.fillStyle='#102127e8';c.fillRect(x+4,y+4,w-8,Math.min(17,z.th*.36));c.fillStyle='#ffe2a8';c.font='bold '+Math.max(9,Math.min(12,z.tw*.2))+'px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(w<88?'BOSS 2×3':'最终 Boss · 2列×3行',x+w/2,y+4+Math.min(17,z.th*.36)/2);c.restore();
+}
 function draw(){
  if(!canvas||state.view!=='game'||!state.game)return;const g=state.game,z=geometry(),dpr=Math.min(2,window.devicePixelRatio||1);if(canvas.width!==Math.round(z.r.width*dpr)||canvas.height!==Math.round(z.r.height*dpr)){canvas.width=Math.round(z.r.width*dpr);canvas.height=Math.round(z.r.height*dpr);}const c=canvas.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,z.r.width,z.r.height);const point=(x,y)=>({x:z.ox+(x+.5)*z.tw,y:z.oy+(y+.5)*z.th});c.fillStyle='#111f23';c.fillRect(0,0,z.r.width,z.r.height);
  drawTerrain(c,z,g.map);
+ if(g.s.phase==='prep')drawFinalBossPlacementPreview(c,z,g.finalBossPrepArea());
  const selected=g.s.units.find(u=>u.uid===(state.preview?.uid||state.selected)),live=selected&&g.battle?g.battle.s.units.find(u=>u.uid===selected.uid):null;
  if(selected&&(selected.position||state.preview)){
   const p=state.preview||{...selected.position,dir:selected.dir};

@@ -4,7 +4,7 @@ import {NATIVE_DATA} from '../dist/runtime-data.js';
 import {NativeSession} from '../dist/native-session.js';
 import {buildPhasePlan,enemySprite} from '../dist/protocol.js';
 import {dealDamage} from '../dist/native-effects.js';
-import {AVAILABLE_FINAL_BOSS_IDS,finalBossConfig,finalBossSpawnPoint,rollFinalBoss} from '../dist/native-final-boss.js';
+import {AVAILABLE_FINAL_BOSS_IDS,finalBossConfig,finalBossPlacementArea,finalBossSpawnPoint,rollFinalBoss} from '../dist/native-final-boss.js';
 
 function finalRound(g){g.s.round=buildPhasePlan(NATIVE_DATA,g.s.modeId).filter(t=>t.isBossTurn&&!t.isConditional).at(-1).round;}
 function game({mapId=NATIVE_DATA.maps[0].stageId,operator=false,seed=42}={}){
@@ -26,7 +26,7 @@ test('implemented final bosses 4/5/7 enter the weighted run roll and simulated h
  assert.equal(finalBossConfig(NATIVE_DATA,'boss_7','mode_single_abyss').hp,1000000);
 });
 
-test('static bosses spawn self-bound, unblockable, with the season giant hit rect and closed generic attacks',()=>{
+test('static bosses spawn in the reserved 3x2 upper-right area and keep generic attacks closed',()=>{
  for(const bossId of ['boss_4','boss_7']){
   const g=new NativeSession(NATIVE_DATA,{modeId:'mode_single_normal',bandId:'band_amiya',mapId:NATIVE_DATA.maps[0].stageId,seed:42,bondBan:{bonds:[]},finalBossId:bossId});
   g.s.round=buildPhasePlan(NATIVE_DATA,g.s.modeId).filter(t=>t.isBossTurn&&!t.isConditional).at(-1).round;
@@ -36,11 +36,11 @@ test('static bosses spawn self-bound, unblockable, with the season giant hit rec
   assert.equal(boss.formHold,true,bossId+' 自缚站桩');
   assert.equal(boss.unblockable,true,bossId+' 不可阻挡');
   assert.equal(boss.canAttack,false,bossId+' 通用普攻关闭，攻击全部走逐名 tick');
-  assert.deepEqual(boss.hitRect,{length:4.95,width:2.95,offsetY:1},bossId+' 本期巨型受击矩形');
+  assert.deepEqual(boss.hitRect,{length:2,width:3,offsetY:0},bossId+' 右上角 2列×3行占位与攻击范围');
   assert.equal(boss.spriteScale>2,true,bossId+' 放大表现');
   assert.equal(enemySprite(boss).key,finalBossConfig(NATIVE_DATA,bossId,'mode_single_normal').handbookEnemyId,bossId+' 使用本期图鉴头像映射');
   assert.ok(NATIVE_DATA.assets[enemySprite(boss).key],bossId+' 战斗头像资源存在');
-  const point=finalBossSpawnPoint(g.map,boss.route,b.s.units);assert.equal(boss.x,point.x);assert.equal(boss.y,point.y);
+  const point=finalBossSpawnPoint(g.map,bossId);assert.equal(boss.x,point.x);assert.equal(boss.y,point.y);
   assert.notDeepEqual([boss.x,boss.y],[boss.route[0].x,boss.route[0].y],bossId+' 不应站在红门出生点');
   for(let i=0;i<90;i++)b.step();
   assert.equal(boss.x,point.x);assert.equal(boss.y,point.y);
@@ -62,13 +62,12 @@ test('every arena has two tile_start routes, a tile_end target, and a closed wal
  }
 });
 
-test('static bosses use a central road tile instead of remaining on the red spawn door',()=>{
+test('static bosses reserve and target the upper-right 2-column by 3-row area',()=>{
  for(const map of NATIVE_DATA.maps){
-  const point=finalBossSpawnPoint(map,map.bossPatrolRoute);
-  assert.equal(map.grid[point.y]?.[point.x]?.tileKey,'tile_road',map.stageId+' static Boss road anchor');
-  assert.ok(Math.hypot(point.x-(map.cols-1)/2,point.y-(map.rows-1)/2)<=2.01,map.stageId+' anchor stays near arena center');
-  const occupied=finalBossSpawnPoint(map,map.bossPatrolRoute,[{x:point.x,y:point.y,hp:1,deployed:true}]);
-  assert.notDeepEqual(occupied,point,map.stageId+' prefer an unoccupied anchor');
+  const area=finalBossPlacementArea(map,'enemy_1521_dslily'),point=finalBossSpawnPoint(map,'enemy_1521_dslily');
+  assert.deepEqual([area.firstColumn,area.firstRow,area.columns,area.rows],[map.cols-2,0,2,3],map.stageId+' upper-right footprint');
+  assert.deepEqual(point,{x:map.cols-1.5,y:1},map.stageId+' footprint center');
+  assert.deepEqual([area.left,area.right,area.top,area.bottom],[map.cols-2.5,map.cols-.5,-.5,2.5],map.stageId+' targetable preview bounds');
  }
 });
 
