@@ -14055,10 +14055,9 @@ class NativeSession extends NativeEconomy {
   const u=this.s.units.find(u=>u.uid===uid),cell=this.map.grid[y]?.[x];if(!u||!cell||this.s.phase!=='prep'||cell.buildableType==='NONE'||finalBossPlacementContains(this.finalBossPrepArea(),x,y))return false;
   const valid=(unit,tile)=>{const p=this.data.profiles[unit.chessId];return tile.heightType!=='HIGHLAND'||p.position!=='MELEE'||allowsHighlandPlacement(p);};if(!valid(u,cell))return false;
   const other=this.s.units.find(v=>v.uid!==uid&&v.position?.x===x&&v.position?.y===y),old=u.position;
-  // 已放置的召唤物卡也占格：干员不能压在**别人**的召唤物上（自己的那张在移动时会被清位）。
-  // 例外：部署占用数 0 的装置（凯瑟琳的支援装置）不占格——PRTS 写「部署占用数 0」，
-  // 所以「先把装置摆好、干员后上场」是成立的，摆在同一个格子上也算在装置的攻击范围内。
-  if((this.s.summonCards||[]).some(c=>c.ownerUid!==uid&&c.position?.x===x&&c.position?.y===y&&!SUMMON_ZERO_OCCUPANCY.has(c.type)))return false;
+  // 已放置的召唤物卡也占格：干员不能压在别人的卡上（自己的卡会随干员移动清位）；
+  // 凯瑟琳支援装置虽不占部署位，但不能再放置干员与其重叠。
+  if((this.s.summonCards||[]).some(c=>c.position?.x===x&&c.position?.y===y&&(c.type==='cathy-device'||c.ownerUid!==uid&&!SUMMON_ZERO_OCCUPANCY.has(c.type))))return false;
   // 虎狼丸的「不占用部署位」：它自己不占名额，所以判定要看「放下去之后」的计数
   // （8 名普通干员已满时它仍能上场，而它在场也不挡别的干员）。
   if(!old&&!other){
