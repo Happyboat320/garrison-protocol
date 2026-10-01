@@ -13,7 +13,7 @@ import {bondIsCore,bondName,bondRoster,bondIds} from './native-bond-ban.js';
 import {richText,DIRECTION_NAMES} from './protocol.js';
 import {renderSkillDescription} from './native-skill-text.js';
 import {ARCHIVE_FLAG_DEFAULTS,loadArchive} from './native-archive.js';
-import {dataForPrep} from './native-sees.js';
+import {dataForPrep,SEES_BOND_ID,TARTARUS_BOND_ID} from './native-sees.js';
 
 export const PREP_SKILL_KEY='garrison-prep-default-skill-v1';
 // 配置版本：只认当前版本，读到别的版本（或没有版本号）一律当作「没设置过」，回落到档案自带档位。
@@ -243,13 +243,15 @@ ${unlocks.length?`<div class="native-archive-unlock-grid">${unlocks.map(name=>`<
 ${flags.sees?'<button data-act="prep-flags-sees" class="native-archive-toggle" aria-pressed="true">隐藏 S.E.E.S. 内容</button>':''}
 </section>
 <section class="native-archive-runs"><div class="native-archive-section-head"><h3><i>02</i> 最近对局</h3><small>${runs.length} / 10</small></div>
-${runs.length?`<div class="native-archive-run-list">${runs.map((run,index)=>runCard(run,index+1,esc)).join('')}</div>`:'<p class="native-prep-empty">尚无对局记录。完成一局后会自动归档。</p>'}
+${runs.length?`<div class="native-archive-run-list">${runs.map((run,index)=>runCard(run,index+1,esc,flags.sees)).join('')}</div>`:'<p class="native-prep-empty">尚无对局记录。完成一局后会自动归档。</p>'}
 </section>
 </div>`;
 }
-function runCard(run,index,esc){
+function runCard(run,index,esc,showSees=false){
  const types=(run.types||[]).map(t=>esc(t.name)).join(' · ')||'—';
- const bonds=(run.finalBonds||[]).map(b=>`${esc(b.name)} ×${b.count}${b.active?'':'(未激活)'}`).join('、')||'无';
+ const visibleBond=id=>showSees||id!==SEES_BOND_ID&&id!==TARTARUS_BOND_ID;
+ const bonds=(run.finalBonds||[]).filter(b=>visibleBond(b.id)).map(b=>`${esc(b.name)} ×${b.count}${b.active?'':'(未激活)'}`).join('、')||'无';
+ const bondLayers=(run.finalBondLayers||[]).filter(b=>visibleBond(b.id)).map(b=>`${esc(b.name)} ${b.layers}层`).join('、')||'旧记录未保存';
  const banned=(run.bannedBonds||[]).map(b=>esc(b.name)).join('、')||'无';
  const lineup=(run.finalLineup||[]).map(u=>`<li><b>${esc(u.name)}</b>${u.isGolden?' · 精锐':''} <small>${esc(u.chessId)}</small><span>（${u.x},${u.y}）朝向${esc(DIRECTION_NAMES?.[u.dir]??u.dir)}${u.skillName?' · '+esc(u.skillName):''}${u.damage?` · 输出 ${Math.round(u.damage).toLocaleString()}`:''}${(u.equipment||[]).length?' · 装备 '+u.equipment.map(e=>esc(e.name)).join('／'):''}</span></li>`).join('')||'<li>场上没有干员</li>';
  return `<details class="native-prep-run">
@@ -261,6 +263,7 @@ function runCard(run,index,esc){
 <p><span>是否通关</span>${run.cleared?'通关':'未通关'}${run.finalRound?'（打到最终轮）':''}</p>
 <p><span>最终轮输出</span>${Math.round(run.finalDamage).toLocaleString()}${run.finalElapsed?` · ${run.finalElapsed.toFixed(2)} 秒`:''}${run.finalDps?` · DPS ${run.finalDps.toFixed(2)}`:''}${run.finalKills||run.finalLeaks?` · 击倒 ${run.finalKills} · 漏失 ${run.finalLeaks}`:''}</p>
 <p><span>最终轮盟约情况</span>${bonds}</p>
+<p><span>盟约最终层数</span>${bondLayers}</p>
 <p><span>本局缺席盟约</span>${banned}</p>
 <p><span>最终轮场上阵容</span></p><ul class="native-prep-run-lineup">${lineup}</ul>
 </div></details>`;

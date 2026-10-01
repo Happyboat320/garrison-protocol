@@ -8,6 +8,7 @@
 // - 这一层只做「取数 + 规范化 + 读写」，不做 DOM，也不改任何战斗状态；storage 由调用方注入（便于单测）。
 import {activeBonds} from './protocol.js';
 import {trainingType} from './native-wave-random.js';
+import {isSeesBand,SEES_BOND_ID,TARTARUS_BOND_ID} from './native-sees.js';
 
 export const ARCHIVE_KEY='garrison-archive-v1';
 export const ARCHIVE_LIMIT=10;
@@ -36,6 +37,7 @@ export function normalizeRun(raw){
  if(!id||at==null||!mapId)return null;
  const types=(Array.isArray(raw.types)?raw.types:[]).filter(t=>isPlainObject(t)&&typeof t.id==='string').map(t=>({id:t.id,name:typeof t.name==='string'?t.name:t.id}));
  const bonds=(Array.isArray(raw.finalBonds)?raw.finalBonds:[]).filter(b=>isPlainObject(b)&&typeof b.id==='string').map(b=>({id:b.id,name:typeof b.name==='string'?b.name:b.id,count:finite(b.count)?b.count:0,rawCount:finite(b.rawCount)?b.rawCount:finite(b.count)?b.count:0,active:!!b.active}));
+ const bondLayers=(Array.isArray(raw.finalBondLayers)?raw.finalBondLayers:[]).filter(b=>isPlainObject(b)&&typeof b.id==='string').map(b=>({id:b.id,name:typeof b.name==='string'?b.name:b.id,layers:finite(b.layers)?Math.max(0,Math.floor(b.layers)):0}));
  const banned=(Array.isArray(raw.bannedBonds)?raw.bannedBonds:[]).filter(b=>isPlainObject(b)&&typeof b.id==='string').map(b=>({id:b.id,name:typeof b.name==='string'?b.name:b.id}));
  const lineup=(Array.isArray(raw.finalLineup)?raw.finalLineup:[]).filter(u=>isPlainObject(u)&&typeof u.chessId==='string').map(u=>({uid:finite(u.uid)?u.uid:null,chessId:u.chessId,charId:typeof u.charId==='string'?u.charId:null,name:typeof u.name==='string'?u.name:u.chessId,isGolden:!!u.isGolden,rank:finite(u.rank)?u.rank:null,level:finite(u.level)?u.level:null,x:finite(u.x)?u.x:null,y:finite(u.y)?u.y:null,dir:finite(u.dir)?u.dir:0,skillIndex:finite(u.skillIndex)?u.skillIndex:null,skillName:typeof u.skillName==='string'?u.skillName:null,damage:finite(u.damage)?u.damage:0,equipment:(Array.isArray(u.equipment)?u.equipment:[]).filter(e=>isPlainObject(e)&&typeof e.chessId==='string').map(e=>({chessId:e.chessId,name:typeof e.name==='string'?e.name:e.chessId}))}));
  return {
@@ -59,6 +61,7 @@ export function normalizeRun(raw){
   finalKills:finite(raw.finalKills)?raw.finalKills:0,
   finalLeaks:finite(raw.finalLeaks)?raw.finalLeaks:0,
   finalBonds:bonds,
+  finalBondLayers:bondLayers,
   bannedBonds:banned,
   finalLineup:lineup
  };
@@ -106,13 +109,15 @@ export function runRecord(game,data,{at=Date.now()}={}){
  s.runRecordId??='run-'+at.toString(36)+'-'+Math.floor(Math.random()*0xffffff).toString(36);
  const roster=s.waveRoster||{};
  const types=(roster.types||[]).map(id=>{const t=trainingType(id);return {id,name:t?.name||id};});
+ const result=s.runResult||(s.history||[]).at(-1)||null;
+ const visibleBond=id=>isSeesBand(s.bandId)||id!==SEES_BOND_ID&&id!==TARTARUS_BOND_ID;
  const bondRows=game.bonds?game.bonds():activeBonds(data,s.units,s.modeId,s.bandId);
  const finalBonds=Object.entries(bondRows||{})
   .filter(([,row])=>Number(row?.count)>0||Number(row?.rawCount)>0)
   .map(([id,row])=>({id,name:data.season.bondInfoDict[id]?.name||id,count:Number(row.count)||0,rawCount:Number(row.rawCount??row.count)||0,active:!!row.active}))
   .sort((a,b)=>b.count-a.count||a.id.localeCompare(b.id));
  const bannedBonds=(s.bondBan?.bonds||[]).map(id=>({id,name:data.season.bondInfoDict[id]?.name||id}));
- const result=s.runResult||(s.history||[]).at(-1)||null;
+ const finalBondLayers=(Array.isArray(result?.finalBondLayers)?result.finalBondLayers:[...new Set([...Object.keys(data.season.bondInfoDict||{}),SEES_BOND_ID,TARTARUS_BOND_ID,...Object.keys(s.bondLayers||{})])].map(id=>({id,name:data.season.bondInfoDict[id]?.name||id,layers:s.bondLayers?.[id]||0}))).filter(b=>visibleBond(b.id));
  const damageByUid=new Map((result?.units||[]).map(u=>[u.uid,Number(u.damage)||0]));
  const finalLineup=s.units.filter(u=>u.position).map(u=>{
   const p=data.profiles[u.chessId]||{},index=u.skillIndex??p.skillIndex??0;
@@ -144,7 +149,7 @@ export function runRecord(game,data,{at=Date.now()}={}){
   finalDps:Number(result?.dps)||0,
   finalKills:Number(result?.kills)||0,
   finalLeaks:Number(result?.leaks)||0,
-  finalBonds,bannedBonds,finalLineup
+  finalBonds,finalBondLayers,bannedBonds,finalLineup
  });
 }
 function itemName(data,chessId){

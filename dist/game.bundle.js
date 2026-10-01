@@ -13804,7 +13804,7 @@ const {bondBanIds,loadBondBan,normalizeBondBan} = load("native-bond-ban.js");
 // 干员默认技能（「战前准备」页保存的配置）：购买时按它决定新干员携带哪一档，读档时用来补齐/对齐副本。
 const {applyPrepSkills} = load("native-prep.js");
 const {TOKEN_IDS} = load("native-effects.js");
-const {itemAllowed,operatorAllowed,seesRun,freeDeploy,settleFundsToLayers,grantCountForLayers,seesGrantCandidates,tartarusLayers} = load("native-sees.js");
+const {itemAllowed,operatorAllowed,seesRun,freeDeploy,settleFundsToLayers,grantCountForLayers,seesGrantCandidates,tartarusLayers,SEES_BOND_ID,TARTARUS_BOND_ID} = load("native-sees.js");
 // 召唤物落点不受主人攻击范围限制的类型（见 summonCardRange 的注释）。
 const SUMMON_FREE_PLACEMENT=new Set(['cathy-device','skadi2-seaborn','silent-drone']);
 const SUMMON_ZERO_OCCUPANCY=new Set(['cathy-device']);
@@ -14129,8 +14129,9 @@ class NativeSession extends NativeEconomy {
   return gained;
  }
  resolveTurn(turn){if(!turn?.isBossTurn||turn.isConditional)return turn;const finals=buildPhasePlan(this.data,this.s.modeId).filter(t=>t.isBossTurn&&!t.isConditional);if(turn.round!==finals.at(-1)?.round)return turn;const config=finalBossConfig(this.data,this.s.finalBossId,this.s.modeId,this.s.finalBossHpMultiplier);return {...turn,finalBossId:this.s.finalBossId,finalBoss:config,finalBossHp:config.hp};}
- startBattle(){if(this.s.phase!=='prep'||this.s.rewardPending)return false;const area=this.finalBossPrepArea();if(area&&[...this.s.units.filter(u=>u.position),...(this.s.summonCards||[]).filter(c=>c.position)].some(actor=>finalBossPlacementContains(area,actor.position.x,actor.position.y)))throw Error('昆图斯／萨米的意志将占据右上角 2 列 × 3 行，请先移开该区域的干员和召唤物。');this.applyTouchReplacement();this.settleTartarusRound();const ok=this.beginBattle();if(!ok)return false;if(this.s.phase==='prep')return true;const turn=this.resolveTurn(buildPhasePlan(this.data,this.s.modeId).find(t=>t.round===this.s.round));this.battle=new NativeBattle(this.data,this,this.map,turn);return true;}
- finishCurrentBattle(){if(!this.battle?.s.finished||this.s.phase!=='battle')return;const r=this.battle.s.result;this.s.history.push(r);if(r.kind==='final-boss'){this.s.runResult=r;if(r.reason!=='boss-killed')this.s.hp=0;this.s.phase='finished';}else{const loss=Math.min(ROUND_LEAK_CAP,r.leaks);this.s.hp=Math.max(0,this.s.hp-loss);this.finishBattle({success:this.s.hp>0,leaks:r.leaks});this.s.lastBattle.loss=loss;if(!this.s.hp)this.s.runResult=r;}this.applyPostBattleTransforms();}
+ startBattle(){if(this.s.phase!=='prep'||this.s.rewardPending)return false;this.syncSummonCards();this.syncHandSlots();const area=this.finalBossPrepArea();if(area&&[...this.s.units.filter(u=>u.position),...(this.s.summonCards||[]).filter(c=>c.position)].some(actor=>finalBossPlacementContains(area,actor.position.x,actor.position.y)))throw Error('昆图斯／萨米的意志将占据右上角 2 列 × 3 行，请先移开该区域的干员和召唤物。');this.applyTouchReplacement();this.settleTartarusRound();const ok=this.beginBattle();if(!ok)return false;if(this.s.phase==='prep')return true;const turn=this.resolveTurn(buildPhasePlan(this.data,this.s.modeId).find(t=>t.round===this.s.round));this.battle=new NativeBattle(this.data,this,this.map,turn);return true;}
+ bondLayerSnapshot(){const visible=id=>seesRun(this)||id!==SEES_BOND_ID&&id!==TARTARUS_BOND_ID,ids=new Set([...Object.keys(this.data.season.bondInfoDict||{}),SEES_BOND_ID,TARTARUS_BOND_ID,...Object.keys(this.s.bondLayers||{})]);return [...ids].filter(visible).map(id=>{const value=Number(this.s.bondLayers?.[id]);return {id,name:this.data.season.bondInfoDict[id]?.name||id,layers:Number.isFinite(value)?Math.max(0,Math.floor(value)):0};});}
+ finishCurrentBattle(){if(!this.battle?.s.finished||this.s.phase!=='battle')return;const r=this.battle.s.result;r.finalBondLayers=this.bondLayerSnapshot();this.s.history.push(r);if(r.kind==='final-boss'){this.s.runResult=r;if(r.reason!=='boss-killed')this.s.hp=0;this.s.phase='finished';}else{const loss=Math.min(ROUND_LEAK_CAP,r.leaks);this.s.hp=Math.max(0,this.s.hp-loss);this.finishBattle({success:this.s.hp>0,leaks:r.leaks});this.s.lastBattle.loss=loss;if(!this.s.hp)this.s.runResult=r;}this.applyPostBattleTransforms();}
  tick(){if(this.s.phase==='battle'&&this.battle){this.battle.step();this.finishCurrentBattle();}}
  advanceRound(){if(this.s.phase!=='intermission')return false;const locked=this.s.locked,oldOffers=locked?this.s.offers.slice():null,oldItems=locked?this.s.itemOffers.slice():null;this.s.prepApplied=false;const ok=this.nextRound(locked?[]:this.rollOffers());if(!ok)return false;if(locked){const refillOffers=this.rollOffers();this.s.offers=Array.from({length:this.terms().operatorSlots},(_,i)=>oldOffers[i]??refillOffers[i]);const refillItems=Array.from({length:this.terms().itemSlots},()=>this.drawFromPool({kind:'item'}));this.s.itemOffers=Array.from({length:this.terms().itemSlots},(_,i)=>oldItems[i]??refillItems[i]);}else this.fillItems();this.addFunds(this.s.passiveIncome);this.applyProjectionUpgrades();
   // 进入新回合只做「按持有者/类型对账」，**不重置已放置的召唤物卡**：召唤物留在原位跨回合存在，
@@ -16798,7 +16799,9 @@ function showRequired(){
 // 整局结束（打完 BOSS／血量清空 game over）后的作战报告。底部动作行用 `.native-result-actions`
 // 吸底：手机上伤害列表要滚动，按钮不能被列表顶出屏幕；「回到大厅」是这一屏的主按钮。
 function reportCurve(samples){const values=(samples||[]).map(v=>Math.max(0,Number(v)||0)),w=320,h=120,p=8,peak=Math.max(0,...values),scale=peak||1,points=values.map((v,i)=>`${p+(w-2*p)*(values.length<2?0:i/(values.length-1))},${h-p-(h-2*p)*v/scale}`).join(' ');return `<svg class="native-dps-chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="每秒伤害变化曲线"><path d="M ${p} ${h-p} H ${w-p} M ${p} ${h-p} V ${p}"/><polyline points="${points}"/></svg><small>战斗时间（秒） · 峰值 ${Math.round(peak).toLocaleString()} DPS</small>`;}
-function showResult(){const g=state.game,r=g.s.runResult||g.s.history.at(-1);if(!r)return;const archived=state.archive?.runs?.length||archiveNow().runs.length,units=(r.units||[]).slice().sort((a,b)=>b.damage-a.damage),selected=units.find(u=>u.uid===state.resultUnitUid)||units[0],bossName=r.bossName||'最终 Boss';modal(`<h2>${r.kind==='final-boss'?(r.reason==='boss-killed'?'Boss 击破 · 挑战成功':'Boss 未能击破 · 挑战结束'):'作战报告'}</h2>${r.kind==='final-boss'?`<p class="native-boss-result-heading">${esc(bossName)} · ${r.elapsed.toFixed(1)} 秒</p>`:''}<p>总伤害</p><strong class="native-total">${Math.round(r.totalDamage||0).toLocaleString()}</strong><p>${r.elapsed.toFixed(2)} 秒 · DPS ${(r.dps??(r.elapsed>0?r.totalDamage/r.elapsed:0)).toFixed(2)}${r.kind==='final-boss'?` · 红门漏怪 ${r.timePenalty||0} 次`:''}</p>${archived?`<p class="muted small">已记入本地战绩：最近 ${archived} 场，可在「战前准备」页查看并随存档导出。</p>`:''}<div class="native-result-dps"><h3>角色全程 DPS</h3><div class="native-result-unit-list">${units.map(u=>{const source=g.s.units.find(x=>x.uid===u.uid),name=source?data.profiles[source.chessId].name:u.id||'其他来源';return `<button data-act="result-unit" data-uid="${u.uid}" class="${selected?.uid===u.uid?'chosen':''}">${esc(name)}<b>${Math.round(u.damage).toLocaleString()}</b></button>`;}).join('')||'<p>本次没有造成伤害。</p>'}</div>${selected?reportCurve(selected.dpsSamples):''}</div><div class="native-result-actions"><button data-act="export">导出本次记录</button><button class="native-primary" data-act="home">回到大厅</button></div>`);}
+function finalBondLayerRows(g,r){const sees=isSeesBand(g.s.bandId),visible=id=>sees||id!==SEES_BOND_ID&&id!==TARTARUS_BOND_ID,ids=[...new Set([...Object.keys(data.season.bondInfoDict||{}),SEES_BOND_ID,TARTARUS_BOND_ID,...Object.keys(g.s.bondLayers||{})])].filter(visible),rows=Array.isArray(r.finalBondLayers)?r.finalBondLayers.filter(row=>visible(row.id)):ids.map(id=>({id,name:data.season.bondInfoDict[id]?.name||id,layers:g.s.bondLayers?.[id]||0}));return rows.map(row=>{const value=Number(row.layers);return {id:row.id,name:row.name||data.season.bondInfoDict[row.id]?.name||row.id,layers:Number.isFinite(value)?Math.max(0,Math.floor(value)):0};});}
+function bondLayerReport(rows){return '<section class="native-result-bond-layers"><h3>盟约最终层数</h3><div role="list">'+rows.map(row=>'<span role="listitem" class="'+(row.layers?'has-layers':'')+'"><b>'+esc(row.name)+'</b><i>'+row.layers+' 层</i></span>').join('')+'</div></section>';}
+function showResult(){const g=state.game,r=g.s.runResult||g.s.history.at(-1);if(!r)return;const archived=state.archive?.runs?.length||archiveNow().runs.length,units=(r.units||[]).slice().sort((a,b)=>b.damage-a.damage),selected=units.find(u=>u.uid===state.resultUnitUid)||units[0],bossName=r.bossName||'最终 Boss';modal(`<h2>${r.kind==='final-boss'?(r.reason==='boss-killed'?'Boss 击破 · 挑战成功':'Boss 未能击破 · 挑战结束'):'作战报告'}</h2>${r.kind==='final-boss'?`<p class="native-boss-result-heading">${esc(bossName)} · ${r.elapsed.toFixed(1)} 秒</p>`:''}<p>总伤害</p><strong class="native-total">${Math.round(r.totalDamage||0).toLocaleString()}</strong><p>${r.elapsed.toFixed(2)} 秒 · DPS ${(r.dps??(r.elapsed>0?r.totalDamage/r.elapsed:0)).toFixed(2)}${r.kind==='final-boss'?` · 红门漏怪 ${r.timePenalty||0} 次`:''}</p>${archived?`<p class="muted small">已记入本地战绩：最近 ${archived} 场，可在「战前准备」页查看并随存档导出。</p>`:''}<div class="native-result-dps"><h3>角色全程 DPS</h3><div class="native-result-unit-list">${units.map(u=>{const source=g.s.units.find(x=>x.uid===u.uid),name=source?data.profiles[source.chessId].name:u.id||'其他来源';return `<button data-act="result-unit" data-uid="${u.uid}" class="${selected?.uid===u.uid?'chosen':''}">${esc(name)}<b>${Math.round(u.damage).toLocaleString()}</b></button>`;}).join('')||'<p>本次没有造成伤害。</p>'}</div>${selected?reportCurve(selected.dpsSamples):''}</div>${bondLayerReport(finalBondLayerRows(g,r))}<div class="native-result-actions"><button data-act="export">导出本次记录</button><button class="native-primary" data-act="home">回到大厅</button></div>`);}
 function action(button,anchor=null){const a=button.dataset.act,g=state.game,uid=Number(button.dataset.uid);if(button.disabled)return;if(['home','new','begin','resume','sandbox','sandbox-exit'].includes(a))runtimeFault=null;if(['sandbox','home','sandbox-exit','new'].includes(a))rememberView('lobby');if(['begin','resume','import'].includes(a))rememberView('game');
  if(a==='result-unit'){state.resultUnitUid=uid;showResult();return;}
  if(a==='fullscreen'){enterPlayChrome().then(()=>{if(!(document.fullscreenElement||document.webkitFullscreenElement))notice('未能进入全屏，请再次点击或检查浏览器全屏设置。');});return;}
@@ -18298,7 +18301,7 @@ const {bondIsCore,bondName,bondRoster,bondIds} = load("native-bond-ban.js");
 const {richText,DIRECTION_NAMES} = load("protocol.js");
 const {renderSkillDescription} = load("native-skill-text.js");
 const {ARCHIVE_FLAG_DEFAULTS,loadArchive} = load("native-archive.js");
-const {dataForPrep} = load("native-sees.js");
+const {dataForPrep,SEES_BOND_ID,TARTARUS_BOND_ID} = load("native-sees.js");
 const PREP_SKILL_KEY='garrison-prep-default-skill-v1';
 // 配置版本：只认当前版本，读到别的版本（或没有版本号）一律当作「没设置过」，回落到档案自带档位。
 const PREP_SKILL_VERSION=1;
@@ -18527,13 +18530,15 @@ ${unlocks.length?`<div class="native-archive-unlock-grid">${unlocks.map(name=>`<
 ${flags.sees?'<button data-act="prep-flags-sees" class="native-archive-toggle" aria-pressed="true">隐藏 S.E.E.S. 内容</button>':''}
 </section>
 <section class="native-archive-runs"><div class="native-archive-section-head"><h3><i>02</i> 最近对局</h3><small>${runs.length} / 10</small></div>
-${runs.length?`<div class="native-archive-run-list">${runs.map((run,index)=>runCard(run,index+1,esc)).join('')}</div>`:'<p class="native-prep-empty">尚无对局记录。完成一局后会自动归档。</p>'}
+${runs.length?`<div class="native-archive-run-list">${runs.map((run,index)=>runCard(run,index+1,esc,flags.sees)).join('')}</div>`:'<p class="native-prep-empty">尚无对局记录。完成一局后会自动归档。</p>'}
 </section>
 </div>`;
 }
-function runCard(run,index,esc){
+function runCard(run,index,esc,showSees=false){
  const types=(run.types||[]).map(t=>esc(t.name)).join(' · ')||'—';
- const bonds=(run.finalBonds||[]).map(b=>`${esc(b.name)} ×${b.count}${b.active?'':'(未激活)'}`).join('、')||'无';
+ const visibleBond=id=>showSees||id!==SEES_BOND_ID&&id!==TARTARUS_BOND_ID;
+ const bonds=(run.finalBonds||[]).filter(b=>visibleBond(b.id)).map(b=>`${esc(b.name)} ×${b.count}${b.active?'':'(未激活)'}`).join('、')||'无';
+ const bondLayers=(run.finalBondLayers||[]).filter(b=>visibleBond(b.id)).map(b=>`${esc(b.name)} ${b.layers}层`).join('、')||'旧记录未保存';
  const banned=(run.bannedBonds||[]).map(b=>esc(b.name)).join('、')||'无';
  const lineup=(run.finalLineup||[]).map(u=>`<li><b>${esc(u.name)}</b>${u.isGolden?' · 精锐':''} <small>${esc(u.chessId)}</small><span>（${u.x},${u.y}）朝向${esc(DIRECTION_NAMES?.[u.dir]??u.dir)}${u.skillName?' · '+esc(u.skillName):''}${u.damage?` · 输出 ${Math.round(u.damage).toLocaleString()}`:''}${(u.equipment||[]).length?' · 装备 '+u.equipment.map(e=>esc(e.name)).join('／'):''}</span></li>`).join('')||'<li>场上没有干员</li>';
  return `<details class="native-prep-run">
@@ -18545,6 +18550,7 @@ function runCard(run,index,esc){
 <p><span>是否通关</span>${run.cleared?'通关':'未通关'}${run.finalRound?'（打到最终轮）':''}</p>
 <p><span>最终轮输出</span>${Math.round(run.finalDamage).toLocaleString()}${run.finalElapsed?` · ${run.finalElapsed.toFixed(2)} 秒`:''}${run.finalDps?` · DPS ${run.finalDps.toFixed(2)}`:''}${run.finalKills||run.finalLeaks?` · 击倒 ${run.finalKills} · 漏失 ${run.finalLeaks}`:''}</p>
 <p><span>最终轮盟约情况</span>${bonds}</p>
+<p><span>盟约最终层数</span>${bondLayers}</p>
 <p><span>本局缺席盟约</span>${banned}</p>
 <p><span>最终轮场上阵容</span></p><ul class="native-prep-run-lineup">${lineup}</ul>
 </div></details>`;
@@ -19525,6 +19531,7 @@ return {makotoHooks};
 // - 这一层只做「取数 + 规范化 + 读写」，不做 DOM，也不改任何战斗状态；storage 由调用方注入（便于单测）。
 const {activeBonds} = load("protocol.js");
 const {trainingType} = load("native-wave-random.js");
+const {isSeesBand,SEES_BOND_ID,TARTARUS_BOND_ID} = load("native-sees.js");
 const ARCHIVE_KEY='garrison-archive-v1';
 const ARCHIVE_LIMIT=10;
 const ARCHIVE_VERSION=1;
@@ -19552,6 +19559,7 @@ function normalizeRun(raw){
  if(!id||at==null||!mapId)return null;
  const types=(Array.isArray(raw.types)?raw.types:[]).filter(t=>isPlainObject(t)&&typeof t.id==='string').map(t=>({id:t.id,name:typeof t.name==='string'?t.name:t.id}));
  const bonds=(Array.isArray(raw.finalBonds)?raw.finalBonds:[]).filter(b=>isPlainObject(b)&&typeof b.id==='string').map(b=>({id:b.id,name:typeof b.name==='string'?b.name:b.id,count:finite(b.count)?b.count:0,rawCount:finite(b.rawCount)?b.rawCount:finite(b.count)?b.count:0,active:!!b.active}));
+ const bondLayers=(Array.isArray(raw.finalBondLayers)?raw.finalBondLayers:[]).filter(b=>isPlainObject(b)&&typeof b.id==='string').map(b=>({id:b.id,name:typeof b.name==='string'?b.name:b.id,layers:finite(b.layers)?Math.max(0,Math.floor(b.layers)):0}));
  const banned=(Array.isArray(raw.bannedBonds)?raw.bannedBonds:[]).filter(b=>isPlainObject(b)&&typeof b.id==='string').map(b=>({id:b.id,name:typeof b.name==='string'?b.name:b.id}));
  const lineup=(Array.isArray(raw.finalLineup)?raw.finalLineup:[]).filter(u=>isPlainObject(u)&&typeof u.chessId==='string').map(u=>({uid:finite(u.uid)?u.uid:null,chessId:u.chessId,charId:typeof u.charId==='string'?u.charId:null,name:typeof u.name==='string'?u.name:u.chessId,isGolden:!!u.isGolden,rank:finite(u.rank)?u.rank:null,level:finite(u.level)?u.level:null,x:finite(u.x)?u.x:null,y:finite(u.y)?u.y:null,dir:finite(u.dir)?u.dir:0,skillIndex:finite(u.skillIndex)?u.skillIndex:null,skillName:typeof u.skillName==='string'?u.skillName:null,damage:finite(u.damage)?u.damage:0,equipment:(Array.isArray(u.equipment)?u.equipment:[]).filter(e=>isPlainObject(e)&&typeof e.chessId==='string').map(e=>({chessId:e.chessId,name:typeof e.name==='string'?e.name:e.chessId}))}));
  return {
@@ -19575,6 +19583,7 @@ function normalizeRun(raw){
   finalKills:finite(raw.finalKills)?raw.finalKills:0,
   finalLeaks:finite(raw.finalLeaks)?raw.finalLeaks:0,
   finalBonds:bonds,
+  finalBondLayers:bondLayers,
   bannedBonds:banned,
   finalLineup:lineup
  };
@@ -19622,13 +19631,15 @@ function runRecord(game,data,{at=Date.now()}={}){
  s.runRecordId??='run-'+at.toString(36)+'-'+Math.floor(Math.random()*0xffffff).toString(36);
  const roster=s.waveRoster||{};
  const types=(roster.types||[]).map(id=>{const t=trainingType(id);return {id,name:t?.name||id};});
+ const result=s.runResult||(s.history||[]).at(-1)||null;
+ const visibleBond=id=>isSeesBand(s.bandId)||id!==SEES_BOND_ID&&id!==TARTARUS_BOND_ID;
  const bondRows=game.bonds?game.bonds():activeBonds(data,s.units,s.modeId,s.bandId);
  const finalBonds=Object.entries(bondRows||{})
   .filter(([,row])=>Number(row?.count)>0||Number(row?.rawCount)>0)
   .map(([id,row])=>({id,name:data.season.bondInfoDict[id]?.name||id,count:Number(row.count)||0,rawCount:Number(row.rawCount??row.count)||0,active:!!row.active}))
   .sort((a,b)=>b.count-a.count||a.id.localeCompare(b.id));
  const bannedBonds=(s.bondBan?.bonds||[]).map(id=>({id,name:data.season.bondInfoDict[id]?.name||id}));
- const result=s.runResult||(s.history||[]).at(-1)||null;
+ const finalBondLayers=(Array.isArray(result?.finalBondLayers)?result.finalBondLayers:[...new Set([...Object.keys(data.season.bondInfoDict||{}),SEES_BOND_ID,TARTARUS_BOND_ID,...Object.keys(s.bondLayers||{})])].map(id=>({id,name:data.season.bondInfoDict[id]?.name||id,layers:s.bondLayers?.[id]||0}))).filter(b=>visibleBond(b.id));
  const damageByUid=new Map((result?.units||[]).map(u=>[u.uid,Number(u.damage)||0]));
  const finalLineup=s.units.filter(u=>u.position).map(u=>{
   const p=data.profiles[u.chessId]||{},index=u.skillIndex??p.skillIndex??0;
@@ -19660,7 +19671,7 @@ function runRecord(game,data,{at=Date.now()}={}){
   finalDps:Number(result?.dps)||0,
   finalKills:Number(result?.kills)||0,
   finalLeaks:Number(result?.leaks)||0,
-  finalBonds,bannedBonds,finalLineup
+  finalBonds,finalBondLayers,bannedBonds,finalLineup
  });
 }
 function itemName(data,chessId){
