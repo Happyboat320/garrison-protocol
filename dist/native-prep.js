@@ -140,7 +140,7 @@ export function prepEquipmentRows(data){
   const base=form('normal'),elite=form('elite');
   if(!base&&!elite)continue;
   rows.push({
-   id:item.id,name:item.name||item.normal?.effectName||item.id,tier:Number(item.rank)||1,
+   id:item.id,name:item.name||item.normal?.effectName||item.id,tier:Number(item.rank)||1,asset:data.assets?.[item.id]||null,
    bond:item.normal?.giveBondId||'',base,elite,
   });
  }
@@ -223,10 +223,10 @@ ${renderPrepSkillInfo(data,row.charId,current,custom,esc)}
 function equipmentCard(data,item,esc){
  // 基础与精锐两种形态的效果文案都要列（精锐是基础装备三合一后的形态，数值通常不一样）。
  const form=(label,entry)=>entry?`<p><b class="native-prep-form">${label}</b><span>${esc(entry.desc)}</span></p>`:'';
- const body=form('基础',item.base)+form('精锐',item.elite);
+ const body=form('基础',item.base)+form('精锐',item.elite),icon=item.asset?`<img class="native-prep-item-icon" src="./${esc(item.asset)}" alt="">`:'<span class="native-prep-item-icon native-prep-item-icon-empty" aria-hidden="true"></span>';
  return `<article class="native-prep-card native-prep-item" data-item="${esc(item.id)}">
 <div class="native-prep-body">
-<div class="native-prep-title"><b>${esc(item.name)}</b><small>${item.tier} 阶</small></div>
+<div class="native-prep-title">${icon}<b>${esc(item.name)}</b><small>${item.tier} 阶</small></div>
 <div class="native-prep-bonds">${item.bond?bondChip(data,item.bond,esc,''):'<span class="native-prep-bond none">无盟约归属</span>'}</div>
 ${body}
 </div>

@@ -30,7 +30,8 @@ export function renderDecisionChoice(data,offers,round,{type='tactical'}={}){
   }
   if(value.kind==='equipment'){
    const item=data.items?.find(row=>row.id===value.itemId),name=item?.name||value.itemId,desc=richText(item?.effect?.effectDesc||'');
-   return `<button class="native-choice-card native-decision-card" data-act="decision" data-id="${esc(value.id)}" style="--choice-order:${i}"><span class="native-choice-index">0${i+1} / 道具补给 · ${item?.rank||''} 阶</span><span class="native-decision-mark" aria-hidden="true">◇</span><strong>${esc(name)}</strong><p>${esc(desc)}</p><span class="native-choice-card-footer">免费获得 <b>→</b></span></button>`;
+   const icon=data.assets?.[item?.id]?`<img class="native-item-art" src="./${esc(data.assets[item.id])}" alt="">`:'<span class="native-item-art native-item-art-empty"></span>';
+   return `<button class="native-choice-card native-decision-card" data-act="decision" data-id="${esc(value.id)}" style="--choice-order:${i}"><span class="native-choice-index">0${i+1} / 道具补给 · ${item?.rank||''} 阶</span><span class="native-decision-mark native-decision-item-mark" aria-hidden="true">${icon}</span><strong>${esc(name)}</strong><p>${esc(desc)}</p><span class="native-choice-card-footer">免费获得 <b>→</b></span></button>`;
   }
   const e=data.season.effectInfoDataDict[value.effectId];
   return `<button class="native-choice-card native-decision-card" data-act="decision" data-id="${esc(value.id)}" style="--choice-order:${i}"><span class="native-choice-index">0${i+1} / 战术方案</span><span class="native-decision-mark" aria-hidden="true">${['Ⅰ','Ⅱ','Ⅲ'][i]||'◇'}</span><strong>${esc(e?.effectName||value.effectId)}</strong><p>${esc(richText(e?.effectDesc||''))}</p><span class="native-choice-card-footer">选择本项 <b>→</b></span></button>`;
