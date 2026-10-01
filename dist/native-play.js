@@ -323,7 +323,7 @@ function dossier(){
  const live=t.live,phase=live?(live.dollForm?`替身 ${Math.max(0,live.dollForm.until-(g.battle?.s.time||0)).toFixed(1)}s`:live.ammo>0?`弹药 ${live.ammo}/${live.ammoMax}`:live.skillLeft>0?`技能持续 ${live.skillLeft.toFixed(1)}s`:live.down>0?`再部署 ${Math.ceil(live.down)}s`:(g.battle?spBarFill(live,p.skill,g.battle.spCost(live)):null)?.ready?'技力就绪':'待机'):'';
  const parts=(a.parts||[]).map(x=>`${esc(x.src)} ${x.stat} ${x.layer} ${x.v}`).join('<br>')||'无额外加成';
  const statuses=(live?.statuses||[]).map(s=>s.kind).join('、')||'无';
- const bondIds=[...new Set(p.bonds||data.season.charChessDataDict[owned?.chessId||p.chessId]?.bondIds||[])];
+ const bondIds=[...new Set(owned?g.ownBonds(owned):p.bonds||data.season.charChessDataDict[p.chessId]?.bondIds||[])];
  // 同名干员（按 charId 归并）的技能是共用的：档案里给个提示，免得玩家以为要一张张改。
  const sameNameCount=owned?g.s.units.filter(v=>v.charId===owned.charId).length:0;
  const equipment=owned?.equipment||[],equipmentSlots=Array.from({length:2},(_,i)=>equipment[i]?`<button class="native-equipment-slot filled" data-act="equip-inspect" data-uid="${owned.uid}" data-slot="${i}"><span class="native-equipment-slot-art">${itemIcon(equipment[i].chessId)}</span><span>装备位 ${i+1}</span><b>${esc(itemName(equipment[i].chessId))}</b><small>已装备 · 点击查看</small></button>`:`<div class="native-equipment-slot"><span>装备位 ${i+1}</span><b>空槽</b><small>${owned?'可装备':'获得干员后可用'}</small></div>`).join('');
