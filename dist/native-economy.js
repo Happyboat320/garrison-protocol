@@ -78,7 +78,8 @@ export class NativeEconomy extends PreparationState {
  settleBondRewards(){
   const rows=this.bonds();for(const[id,b]of Object.entries(rows))if(b.active){const info=this.data.season.bondInfoDict[id];for(const [index,e]of (this.data.season.effectBuffInfoDataDict[info.effectId]||[]).entries()){
    const p=blackboard(e.blackboard),layers=this.s.bondLayers[id]||0,key=id+':'+index;
-   if(e.key==='bond_layer_gain_coin'){const count=Math.floor(layers/p.layer),old=this.s.claimedBondRewards[key]||0;if(count>old){this.addFunds((count-old)*p.count);this.s.claimedBondRewards[key]=count;}}
+   // 开战会清零资金、回合切换会重置资金；跨过阈值时若没有整备窗口，就顺延到下次备战。
+   if(e.key==='bond_layer_gain_coin'){const count=Math.floor(layers/p.layer),old=this.s.claimedBondRewards[key]||0;if(count>old){const amount=(count-old)*p.count;if(this.deferBondLayerFunds||['battle','intermission'].includes(this.s.phase))this.s.nextRoundBonus=(this.s.nextRoundBonus||0)+amount;else this.addFunds(amount);this.s.claimedBondRewards[key]=count;}}
    if(e.key==='bond_layer_added_reward_equip'){const count=Math.floor(layers/(Number(p.layer)||25)),old=this.s.claimedBondRewards[key]||0;if(count>old){for(let n=old;n<count;n++){let itemId;if(this.poolDraw)itemId=this.draw({kind:'item',pool:p.pool});else{const items=(this.data.items||[]).filter(i=>!i.hidden&&i.normal?.itemType==='EQUIP'&&(!String(p.pool).includes('equip_vict')||i.normal?.giveBondId==='victoriaShip'));const fallback=items.length?items.map(i=>i.id):Object.entries(this.data.season.trapChessDataDict).filter(([,i])=>i.itemType==='EQUIP'&&(!String(p.pool).includes('equip_vict')||i.giveBondId==='victoriaShip')).map(([id])=>id);if(!fallback.length)throw Error('没有可用装备');itemId=this.pick(fallback);}this.gainItem(itemId);}this.s.claimedBondRewards[key]=count;}}
    // permanentDiscount 是客户端档位编码：2=调度中心内所有干员、1=仅【远见】干员；折扣金额读原表 discount（见 price()）。
    if(e.key==='bond_multi_layer_char_goods_price_bond_discount'){if(layers>=p.layer2)this.s.permanentDiscount=2;else if(layers>=p.layer1)this.s.permanentDiscount=Math.max(1,this.s.permanentDiscount);}
@@ -95,12 +96,17 @@ export class NativeEconomy extends PreparationState {
    for(let i=0;i<repeat;i++)for(const id of this.data.season.charChessDataDict[unit.chessId].garrisonIds){const rule=this.data.season.garrisonDataDict[id];if(rule.eventType===event){runGarrison(this,effectOwner,rule,event);this.s.events.push({type:'garrison',id,uid:effectOwner.uid,event});}}
   }finally{this.triggerChain.pop();}
  }
+ onOperatorGained(unit){
+  if(!unit)return unit;
+  if(this.data.season.charChessDataDict[unit.chessId]?.garrisonIds.some(id=>this.data.season.garrisonDataDict[id]?.effectType==='SERVER_GAIN_BOND_LAYER_BY_REFRESH_CNT'))unit.garrisonRefreshBaseline={round:this.s.round,count:this.s.roundRefreshCount||0};
+  this.s.roundGainCount++;this.settleBondRewards();this.triggerGarrisons('SERVER_GAIN',unit);return unit;
+ }
  gain(chessId){
   const chess=this.data.season.charChessDataDict[chessId];if(!chess)throw Error('Unknown chess '+chessId);const previousReward=this.s.rewardPending;let unit;
   if(chess.isGolden){const normalId=this.data.season.chessNormalIdLookupDict[chessId]||Object.keys(this.data.season.charShopChessDatas).find(id=>this.data.season.charShopChessDatas[id].goldenChessId===chessId),shop=this.data.season.charShopChessDatas[normalId];if(!shop?.charId)throw Error('Unassigned DIY slot');unit={uid:++this.s.seq,chessId,charId:shop.charId,rank:shop.chessLevel,position:null,dir:0,equipment:[]};this.s.units.push(unit);}
   else unit=super.gain(chessId);
   if(previousReward&&previousReward!==this.s.rewardPending){this.s.rewardQueue.push(this.s.rewardPending);this.s.rewardPending=previousReward;}
-  this.s.roundGainCount++;this.settleBondRewards();this.triggerGarrisons('SERVER_GAIN',unit);return unit;
+  return this.onOperatorGained(unit);
  }
  // 获取装备时的同名合成（唯一实现，别在子类里再抄一份）：
  //  · 材料数取原表的 `upgradeNum`（50 件常规装备都是 2；6 件特殊道具是 100＝实际不合成）；
@@ -153,9 +159,10 @@ export class NativeEconomy extends PreparationState {
   for(const u of this.s.units.slice().sort((a,b)=>(a.position?.y??999)-(b.position?.y??999)||(a.position?.x??999)-(b.position?.x??999)))this.triggerGarrisons('SERVER_PREP_START',u);this.settleBondRewards();return true;
  }
  beginBattle(){
-  if(this.s.phase!=='prep'||this.s.rewardPending)return false;if(this.s.prepApplied)return super.beginBattle();for(const u of this.s.units.slice())this.triggerGarrisons('SERVER_PREP_FIN',u);
-  const rows=this.bonds();if(rows.deputShip.active){const bb=bondEffectBlackboard(this.data,'deputShip','bond_activated_add_layer'),variants=new Set(this.s.units.filter(u=>u.position&&this.ownBonds(u).includes('deputShip')).map(u=>u.charId+':'+this.data.season.charChessDataDict[u.chessId].isGolden)),amount=variants.size>=bondValue(bb,'count',3)?bondValue(bb,'more_layer',4):bondValue(bb,'layer',2);for(const[id,b]of Object.entries(rows))if(b.active)this.addLayers(id,amount);}
-  runStrategyEvent(this,'prepEnd');this.s.prepApplied=true;if(this.s.rewardPending)return true;return super.beginBattle();
+  if(this.s.phase!=='prep'||this.s.rewardPending)return false;if(this.s.prepApplied)return super.beginBattle();this.deferBondLayerFunds=true;try{for(const u of this.s.units.slice())this.triggerGarrisons('SERVER_PREP_FIN',u);
+   const rows=this.bonds();if(rows.deputShip.active){const bb=bondEffectBlackboard(this.data,'deputShip','bond_activated_add_layer'),variants=new Set(this.s.units.filter(u=>u.position&&this.ownBonds(u).includes('deputShip')).map(u=>u.charId+':'+this.data.season.charChessDataDict[u.chessId].isGolden)),amount=variants.size>=bondValue(bb,'count',3)?bondValue(bb,'more_layer',4):bondValue(bb,'layer',2);for(const[id,b]of Object.entries(rows))if(b.active)this.addLayers(id,amount);}
+   runStrategyEvent(this,'prepEnd');this.s.prepApplied=true;if(this.s.rewardPending)return true;return super.beginBattle();
+  }finally{this.deferBondLayerFunds=false;}
  }
  nextRound(...args){const result=super.nextRound(...args);if(result&&['prep','decision'].includes(this.s.phase)){this.s.roundGainCount=0;this.s.roundSpent=0;this.s.roundRefreshCount=0;this.s.roundBoughtBonds={};this.s.refreshLayerClaimed={};if(this.s.phase==='prep')this.startPreparation();}return result;}
 }

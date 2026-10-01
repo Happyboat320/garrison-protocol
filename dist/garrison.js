@@ -42,7 +42,12 @@ const handlers={
    c.addLayers(id,grant,event!=='SERVER_GAIN');c.s.refreshLayerClaimed[key]=claimed+grant;
   }
  },
- SERVER_GAIN_BOND_LAYER_BY_REFRESH_CNT:(c,u,p)=>{if(c.s.roundRefreshCount===p.refresh_cnt)add(c,split(p.bond),p.layer);},
+ // 按干员当前形态记录刷新基线：回合内购入或三合一后的新形态，从获得时起判首次刷新。
+ SERVER_GAIN_BOND_LAYER_BY_REFRESH_CNT:(c,u,p,event)=>{
+  const round=c.s.round,baseline=u.garrisonRefreshBaseline?.round===round?Number(u.garrisonRefreshBaseline.count)||0:0,claim=`${round}:${u.chessId}`;
+  if(event!=='SERVER_REFRESH_SHOP'||c.s.roundRefreshCount!==baseline+Number(p.refresh_cnt||1)||u.refreshGarrisonClaim===claim)return;
+  add(c,split(p.bond),p.layer);u.refreshGarrisonClaim=claim;
+ },
  SERVER_ONCE_GOLD_WITH_BOND_CONDITION:(c,u,p)=>{if(u.position||split(p.bond).some(id=>c.bonds()[id]?.active))c.s.nextRoundBonus+=p.count;},
  SERVER_GAIN_EQUIP:(c,u,p)=>{for(let i=0;i<p.count;i++)c.gainItem(p.chess);},
  SERVER_GAIN_CHAR:(c,u,p)=>{for(let i=0;i<p.count;i++)c.gain(p.chess);},
