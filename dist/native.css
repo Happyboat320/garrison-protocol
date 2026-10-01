@@ -1089,3 +1089,18 @@ html.native-landscape-ui #native-modal .native-ban-entry{display:block;width:100
 }
 html.native-landscape-ui .native-briefing-v2{display:flex;flex-direction:column;overflow:hidden}
 html.native-need-rotate .native-briefing.native-briefing-v2{overflow:hidden}
+
+/* PC 战前准备卡片：技能说明与卡片标签需要在三行名册布局中保持可读。 */
+@media (min-width:641px){
+ html:not(.native-landscape-ui) .native-prep-title b{font-size:15px}
+ html:not(.native-landscape-ui) .native-prep-title small{font-size:10px}
+ html:not(.native-landscape-ui) .native-prep-bond{font-size:10px}
+ html:not(.native-landscape-ui) .native-prep-current-skill-head b{font-size:12px}
+ html:not(.native-landscape-ui) .native-prep-current-skill-head small{font-size:9px}
+ html:not(.native-landscape-ui) .native-prep-current-skill p{font-size:12px;line-height:1.4}
+ html:not(.native-landscape-ui) .native-prep-current-skill-meta{font-size:9px;line-height:1.25}
+ html:not(.native-landscape-ui) .native-prep-item p{font-size:13px}
+ html:not(.native-landscape-ui) .native-prep-form{font-size:10px}
+ html:not(.native-landscape-ui) .native-prep-no-skill{font-size:13px}
+ html:not(.native-landscape-ui) .native-prep-skill-options button{font-size:13px}
+}
