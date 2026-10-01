@@ -452,10 +452,11 @@ function baseFunding(round){if(!Number.isInteger(round)||round<1)throw Error('In
 // 开局时按本局种子从可选阵地（weight>0）里等概率抽一个具体 stageId 写进 draft／会话——之后简报、波次、
 // 地图控制器都只看到具体阵地，认不出这个哨兵；阵地下拉里选中它只表示「本局开局再抽」。
 const RANDOM_MAP_ID='random';
-function selectableMaps(data){return (data?.maps||[]).filter(m=>Number(m?.weight)>0);}
-function resolveMapId(data,id,random=Math.random){
+// 绝境与终极难度的随机池排除 act1autochess_m01；具体地图仍可由玩家手动指定。
+function selectableMaps(data,modeId=null){const difficulty=data?.season?.modeDataDict?.[modeId]?.modeDifficulty,skipAct1M01=difficulty==='HARD'||difficulty==='ABYSS';return (data?.maps||[]).filter(m=>Number(m?.weight)>0&&(!skipAct1M01||m?.stageId!=='act1autochess_m01'));}
+function resolveMapId(data,id,random=Math.random,modeId=null){
  if(id&&id!==RANDOM_MAP_ID)return id;
- const list=selectableMaps(data);
+ const list=selectableMaps(data,modeId);
  if(!list.length)return id||null;
  const index=Math.max(0,Math.min(list.length-1,Math.floor((Number(random())||0)*list.length)));
  return list[index].stageId;
@@ -1509,7 +1510,12 @@ const handlers={
    c.addLayers(id,grant,event!=='SERVER_GAIN');c.s.refreshLayerClaimed[key]=claimed+grant;
   }
  },
- SERVER_GAIN_BOND_LAYER_BY_REFRESH_CNT:(c,u,p)=>{if(c.s.roundRefreshCount===p.refresh_cnt)add(c,split(p.bond),p.layer);},
+ // 按干员当前形态记录刷新基线：回合内购入或三合一后的新形态，从获得时起判首次刷新。
+ SERVER_GAIN_BOND_LAYER_BY_REFRESH_CNT:(c,u,p,event)=>{
+  const round=c.s.round,baseline=u.garrisonRefreshBaseline?.round===round?Number(u.garrisonRefreshBaseline.count)||0:0,claim=`${round}:${u.chessId}`;
+  if(event!=='SERVER_REFRESH_SHOP'||c.s.roundRefreshCount!==baseline+Number(p.refresh_cnt||1)||u.refreshGarrisonClaim===claim)return;
+  add(c,split(p.bond),p.layer);u.refreshGarrisonClaim=claim;
+ },
  SERVER_ONCE_GOLD_WITH_BOND_CONDITION:(c,u,p)=>{if(u.position||split(p.bond).some(id=>c.bonds()[id]?.active))c.s.nextRoundBonus+=p.count;},
  SERVER_GAIN_EQUIP:(c,u,p)=>{for(let i=0;i<p.count;i++)c.gainItem(p.chess);},
  SERVER_GAIN_CHAR:(c,u,p)=>{for(let i=0;i<p.count;i++)c.gain(p.chess);},
@@ -1669,7 +1675,8 @@ class NativeEconomy extends PreparationState {
  settleBondRewards(){
   const rows=this.bonds();for(const[id,b]of Object.entries(rows))if(b.active){const info=this.data.season.bondInfoDict[id];for(const [index,e]of (this.data.season.effectBuffInfoDataDict[info.effectId]||[]).entries()){
    const p=blackboard(e.blackboard),layers=this.s.bondLayers[id]||0,key=id+':'+index;
-   if(e.key==='bond_layer_gain_coin'){const count=Math.floor(layers/p.layer),old=this.s.claimedBondRewards[key]||0;if(count>old){this.addFunds((count-old)*p.count);this.s.claimedBondRewards[key]=count;}}
+   // 开战会清零资金、回合切换会重置资金；跨过阈值时若没有整备窗口，就顺延到下次备战。
+   if(e.key==='bond_layer_gain_coin'){const count=Math.floor(layers/p.layer),old=this.s.claimedBondRewards[key]||0;if(count>old){const amount=(count-old)*p.count;if(this.deferBondLayerFunds||['battle','intermission'].includes(this.s.phase))this.s.nextRoundBonus=(this.s.nextRoundBonus||0)+amount;else this.addFunds(amount);this.s.claimedBondRewards[key]=count;}}
    if(e.key==='bond_layer_added_reward_equip'){const count=Math.floor(layers/(Number(p.layer)||25)),old=this.s.claimedBondRewards[key]||0;if(count>old){for(let n=old;n<count;n++){let itemId;if(this.poolDraw)itemId=this.draw({kind:'item',pool:p.pool});else{const items=(this.data.items||[]).filter(i=>!i.hidden&&i.normal?.itemType==='EQUIP'&&(!String(p.pool).includes('equip_vict')||i.normal?.giveBondId==='victoriaShip'));const fallback=items.length?items.map(i=>i.id):Object.entries(this.data.season.trapChessDataDict).filter(([,i])=>i.itemType==='EQUIP'&&(!String(p.pool).includes('equip_vict')||i.giveBondId==='victoriaShip')).map(([id])=>id);if(!fallback.length)throw Error('没有可用装备');itemId=this.pick(fallback);}this.gainItem(itemId);}this.s.claimedBondRewards[key]=count;}}
    // permanentDiscount 是客户端档位编码：2=调度中心内所有干员、1=仅【远见】干员；折扣金额读原表 discount（见 price()）。
    if(e.key==='bond_multi_layer_char_goods_price_bond_discount'){if(layers>=p.layer2)this.s.permanentDiscount=2;else if(layers>=p.layer1)this.s.permanentDiscount=Math.max(1,this.s.permanentDiscount);}
@@ -1686,12 +1693,17 @@ class NativeEconomy extends PreparationState {
    for(let i=0;i<repeat;i++)for(const id of this.data.season.charChessDataDict[unit.chessId].garrisonIds){const rule=this.data.season.garrisonDataDict[id];if(rule.eventType===event){runGarrison(this,effectOwner,rule,event);this.s.events.push({type:'garrison',id,uid:effectOwner.uid,event});}}
   }finally{this.triggerChain.pop();}
  }
+ onOperatorGained(unit){
+  if(!unit)return unit;
+  if(this.data.season.charChessDataDict[unit.chessId]?.garrisonIds.some(id=>this.data.season.garrisonDataDict[id]?.effectType==='SERVER_GAIN_BOND_LAYER_BY_REFRESH_CNT'))unit.garrisonRefreshBaseline={round:this.s.round,count:this.s.roundRefreshCount||0};
+  this.s.roundGainCount++;this.settleBondRewards();this.triggerGarrisons('SERVER_GAIN',unit);return unit;
+ }
  gain(chessId){
   const chess=this.data.season.charChessDataDict[chessId];if(!chess)throw Error('Unknown chess '+chessId);const previousReward=this.s.rewardPending;let unit;
   if(chess.isGolden){const normalId=this.data.season.chessNormalIdLookupDict[chessId]||Object.keys(this.data.season.charShopChessDatas).find(id=>this.data.season.charShopChessDatas[id].goldenChessId===chessId),shop=this.data.season.charShopChessDatas[normalId];if(!shop?.charId)throw Error('Unassigned DIY slot');unit={uid:++this.s.seq,chessId,charId:shop.charId,rank:shop.chessLevel,position:null,dir:0,equipment:[]};this.s.units.push(unit);}
   else unit=super.gain(chessId);
   if(previousReward&&previousReward!==this.s.rewardPending){this.s.rewardQueue.push(this.s.rewardPending);this.s.rewardPending=previousReward;}
-  this.s.roundGainCount++;this.settleBondRewards();this.triggerGarrisons('SERVER_GAIN',unit);return unit;
+  return this.onOperatorGained(unit);
  }
  // 获取装备时的同名合成（唯一实现，别在子类里再抄一份）：
  //  · 材料数取原表的 `upgradeNum`（50 件常规装备都是 2；6 件特殊道具是 100＝实际不合成）；
@@ -1744,9 +1756,10 @@ class NativeEconomy extends PreparationState {
   for(const u of this.s.units.slice().sort((a,b)=>(a.position?.y??999)-(b.position?.y??999)||(a.position?.x??999)-(b.position?.x??999)))this.triggerGarrisons('SERVER_PREP_START',u);this.settleBondRewards();return true;
  }
  beginBattle(){
-  if(this.s.phase!=='prep'||this.s.rewardPending)return false;if(this.s.prepApplied)return super.beginBattle();for(const u of this.s.units.slice())this.triggerGarrisons('SERVER_PREP_FIN',u);
-  const rows=this.bonds();if(rows.deputShip.active){const bb=bondEffectBlackboard(this.data,'deputShip','bond_activated_add_layer'),variants=new Set(this.s.units.filter(u=>u.position&&this.ownBonds(u).includes('deputShip')).map(u=>u.charId+':'+this.data.season.charChessDataDict[u.chessId].isGolden)),amount=variants.size>=bondValue(bb,'count',3)?bondValue(bb,'more_layer',4):bondValue(bb,'layer',2);for(const[id,b]of Object.entries(rows))if(b.active)this.addLayers(id,amount);}
-  runStrategyEvent(this,'prepEnd');this.s.prepApplied=true;if(this.s.rewardPending)return true;return super.beginBattle();
+  if(this.s.phase!=='prep'||this.s.rewardPending)return false;if(this.s.prepApplied)return super.beginBattle();this.deferBondLayerFunds=true;try{for(const u of this.s.units.slice())this.triggerGarrisons('SERVER_PREP_FIN',u);
+   const rows=this.bonds();if(rows.deputShip.active){const bb=bondEffectBlackboard(this.data,'deputShip','bond_activated_add_layer'),variants=new Set(this.s.units.filter(u=>u.position&&this.ownBonds(u).includes('deputShip')).map(u=>u.charId+':'+this.data.season.charChessDataDict[u.chessId].isGolden)),amount=variants.size>=bondValue(bb,'count',3)?bondValue(bb,'more_layer',4):bondValue(bb,'layer',2);for(const[id,b]of Object.entries(rows))if(b.active)this.addLayers(id,amount);}
+   runStrategyEvent(this,'prepEnd');this.s.prepApplied=true;if(this.s.rewardPending)return true;return super.beginBattle();
+  }finally{this.deferBondLayerFunds=false;}
  }
  nextRound(...args){const result=super.nextRound(...args);if(result&&['prep','decision'].includes(this.s.phase)){this.s.roundGainCount=0;this.s.roundSpent=0;this.s.roundRefreshCount=0;this.s.roundBoughtBonds={};this.s.refreshLayerClaimed={};if(this.s.phase==='prep')this.startPreparation();}return result;}
 }
@@ -12864,6 +12877,8 @@ const LANE_ROW_PENALTY=0.4;
 // 条件型第二类型（污染/技能）由各自专属实现显式改写 e.damageType。
 const ENEMY_DAMAGE_TYPE_BY_KEY={PHYSIC:'physical',MAGIC:'arts'};
 function enemyBaseDamageType(raw){const list=raw?.damageTypes;if(Array.isArray(list))for(const key of list){const mapped=ENEMY_DAMAGE_TYPE_BY_KEY[key];if(mapped)return mapped;}return 'physical';}
+// 攻击回复技力的瞬时自动技会在命中后充满，此时攻击冷却仍在倒计时，不能因此延后一整轮。
+function attackTriggeredInstantAuto(skill){return skill?.skillType==='AUTO'&&skillKind(skill)==='instant'&&spTypeOf(skill)==='INCREASE_WHEN_ATTACK';}
 
 class NativeBattle {
  constructor(data,economy,map,turn,{restore=false}={}){
@@ -13624,7 +13639,7 @@ class NativeBattle {
   swapReserveBaseCosts(predicate=()=>true){const rows=this.reserveUnits(predicate).sort((a,b)=>(a.baseCostOverride??a.baseCost??0)-(b.baseCostOverride??b.baseCost??0)||a.uid-b.uid);if(rows.length<2)return false;const first=rows[0],last=rows.at(-1),a=first.baseCostOverride??first.baseCost,b=last.baseCostOverride??last.baseCost;first.baseCostOverride=b;last.baseCostOverride=a;return true;}
   deploymentCost(u){if(u.indomFreeDeploy)return 0;const p=this.profile(u),base=Math.max(0,Number(u.baseCostOverride??u.baseCost??p.attributes.cost)||0),runtime=!u.runtimeCostUsed&&u.runtimeCostActive?Number(u.runtimeCost)||0:0;let baseDelta=Number(u.costBaseDelta||0)+Number(u.wildmaneCostDelta||0),realtime=Number(u.costRealtimeDelta)||0;if(u.id==='char_237_gravel')baseDelta-=1;for(const source of this.s.units.filter(v=>v.deployed&&v.hp>0)){const sp=this.profile(source);if(source.id==='char_249_mlyss'&&p.groupId==='rhine'&&sp.activeTalents?.some(t=>/莱茵生命.*部署费用/.test(t.description||''))){baseDelta-=2;if(!this.s.mlyssFirstRhineDiscountUsed&&u.id!=='char_249_mlyss')baseDelta-=1;}}const multiplier=Math.pow(1.5,Math.min(2,Math.max(0,Number(u.redeployPenalty)||0)));return Math.max(0,Math.floor((base+baseDelta)*multiplier+realtime+runtime));}
   deploy(u,{reentry=false}={}){if(reentry){const cost=this.deploymentCost(u);if(cost>0&&!this.spendCost(cost,{considerNegativeCost:true}))return false;u.deploymentCost=cost;u.lastDeploymentCost=cost;u.refundCap=Math.max(0,Math.floor(Number(u.baseCostOverride??u.baseCost)||0)+(Number(u.costBaseDelta)||0));u.refundEligible=true;u.waitingCost=false;u.indomFreeDeploy=false;}u.dollForm=null;u.runtimeCostUsed=true;u.corrosionDefLoss=0;u.elementBurstUntil=0;u.elementalMax=1000;u.elemental={};u.elementalType=null;u.elementalBatch=null;u.wildmaneCostDelta=0;if(u.id!=='char_249_mlyss'&&this.s.mlyssFirstRhineDiscountUsed===false&&this.profile(u).groupId==='rhine'&&this.s.units.some(v=>v.id==='char_249_mlyss'&&v.deployed&&v.hp>0))this.s.mlyssFirstRhineDiscountUsed=true;u.hornBuff=null;u.etlchiSaved=false;u.sbellRevived=false;u.pasngrNext=null;u.cetsyrNextShare=0;u.svashCostAt=0;u.svashCostRemaining=0;u.svashCostHandled=false;u.etlchiCandles=[];u.pendingAttackHits=0;u.invulnerableUntil=0;u.mudrokSleepUntil=0;u.mudrokAwake=false;u.mudrokS1=null;u.titiSleepUid=null;u.titiSleepState={};u.lumenEmergencyAt=-Infinity;u.blaze2AnchorUid=null;u.ulpiaKills=0;u.nymphStacks=0;u.nymphNextAt=0;u.haloStacks=0;u.haloStay={};u.qiubaiNext=null;u.blkkgtNext=null;u.pepeStacks=0;u.pepeSkillUses=0;u.pepeKillSp=0;u.excu2Targets=[];u.lemuenTargets=[];u.lemuenNextAt=0;u.lemuenWanted={};u.whitwNextAt=0;u.whitwTalentStage=0;u.kjeraNextAt=0;u.siege2Next=null;u.siege2Marks={};u.duskNext=null;u.archetNext=null;u.inesStealAt=0;u.surtrS1=false;u.lockHp=null;u.damageProtection=null;u.returnPosition=null;u.helmetMaxHpBonus=0;u.raidGrenadeUntil=0;u.equipUndeadUsed=false;u.equipCamoUsed=false;u.equipSaltBlocked=0;u.m3Revives??=0;u.trenchReflectAt=-Infinity;u.equipHitStacks=0;u.equipSkillUses=0;u.equipAspdStacks=0;u.equipAmmoRestores=0;u.kazimierzFlagAt=null;u.compassSkillEnd=false;u.knightDecreeUntil=0;u.equipRetreatAtSkillEnd=false;u.yaleNextAt=null;u.familyBadgeAtk=0;u.familyBadgeAt=0;u.familyBadgeBonus=0;u.familyBadgePaid=false;u.pendingAttackHeal=null;u.pendingAttackSelfHeal=null;u.pendingHealBonus=null;u.pendingHealScale=null;u.papyrsShieldScale=null;u.skillDisarmUntil=null;u.focusHealAfter=null;u.focusHeal=false;u.statusResistance=0;u.skillEndHealRatio=0;u.talentSpRecoveryUntil=0;u.talentSpRecovery=0;u.pineSkillUses=0;u.philaeNextAt=0;u.philaeElementBoost=false;u.elementDamageResistance=0;u.downed=false;u.blazeDownUsed=false;u.healable=true;u.energy=0;u.talentTime=0;u.talentAmmoTimers={};u.talentAmmoFlags={};u.talentAmmoBonus=0;u.merchantDeployGen=null;u.merchantNextFeeAt=null;u.merchantTalentStacks=0;u.wildmaneAspdUntil=0;u.gravelDefBuff=null;u.physicalEvadeOnce=false;u.physicalEvadeUntil=0;u.physicalEvadeProb=0;u.artsEvadeOnce=false;u.artsEvadeUntil=0;u.artsEvadeProb=0;u.skillEvasionProb=0;u.vulpisMarks={};u.vulpisKilled=false;u.hainiTalentScale=1;u.kroosHits=0;u.kroosQuad=false;u.aromaSeen={};u.aromaPending=null;u.texas2Killed=false;u.duskTalentStacks=0;u.aromaLevitateSeen={};u.aromaLevitateFired={};u.shield=0;u.shieldLayers=[];u.barriers=[];u.deployed=true;u.deployCount=(u.deployCount||0)+1;u.deployGen=(u.deployGen||0)+1;u.exitLife=null;u.branchCharge=0;u.branchSkillActive=false;u.pendingReturns=0;u.energy=0;u.magazine=branchTrait(this.profile(u)).values.value??8;u.pendingSelfHeals=[];u.droneTarget=null;u.droneScale=0;u.reaperWindowStart=-999;u.reaperWindowCount=0;u.nextSelfHealAt=0;u.hp=u.maxHp=this.stats(u).maxHp;u.sp=initSpOf(this.profile(u).skill);u.spCd=0;u.spLock=0;u.ammo=0;u.ammoMax=0;u.lockId=null;if(this.on('soloShip')&&this.owns(u,'soloShip'))u.sp+=bondValue(this.params('soloShip'),'sp',15);u.deployAt=this.s.time;this.event(u,'deploy');this.emit('deploy',{uid:u.uid,x:u.x,y:u.y});dispatch(this,'deploy',{target:u});}
-  activate(u){if(u.dollForm)return;const p=this.profile(u),sk=p.skill,cfg=operatorSkillConfig(this,u);if(!sk||!permissions(u).skill||(!usesSp(sk)&&!cfg.coinCost))return;const b=blackboard(sk.blackboard),cost=this.spCost(u),kind=skillKind(sk)||(cfg.coinCost?'instant':null),flow=skillFlow(sk),passiveCoinSkill=sk.skillType==='PASSIVE'&&u.coinSkillEnabled,openingCoins=passiveCoinSkill?0:coinGainAtSkillStart(this,u),coinCap=coinCapFor(p);if(cfg.coinCost&&(u.coins||0)+openingCoins<cfg.coinCost)return;if(u.sp<cost||(usesSp(sk)&&sk.skillType!=='AUTO'&&this.s.time-u.lastSkill<3))return;if(kind==='instant'&&sk.skillType==='AUTO'&&(u.action||u.attackCooldown>0))return;if(flow.resetAttack){u.action=null;u.attackCooldown=0;}if(openingCoins)grantCoins(u,openingCoins,coinCap);if(cfg.coinCost&&!spendCoins(u,cfg.coinCost))return;u.sp=Math.max(0,Math.trunc(u.sp)-cost);u.lastSkill=this.s.time;u.skillCount++;
+  activate(u){if(u.dollForm)return;const p=this.profile(u),sk=p.skill,cfg=operatorSkillConfig(this,u);if(!sk||!permissions(u).skill||(!usesSp(sk)&&!cfg.coinCost))return;const b=blackboard(sk.blackboard),cost=this.spCost(u),kind=skillKind(sk)||(cfg.coinCost?'instant':null),flow=skillFlow(sk),passiveCoinSkill=sk.skillType==='PASSIVE'&&u.coinSkillEnabled,openingCoins=passiveCoinSkill?0:coinGainAtSkillStart(this,u),coinCap=coinCapFor(p);if(cfg.coinCost&&(u.coins||0)+openingCoins<cfg.coinCost)return;if(u.sp<cost||(usesSp(sk)&&sk.skillType!=='AUTO'&&this.s.time-u.lastSkill<3))return;if(kind==='instant'&&sk.skillType==='AUTO'&&(u.action||(u.attackCooldown>0&&!attackTriggeredInstantAuto(sk))))return;if(flow.resetAttack){u.action=null;u.attackCooldown=0;}if(openingCoins)grantCoins(u,openingCoins,coinCap);if(cfg.coinCost&&!spendCoins(u,cfg.coinCost))return;u.sp=Math.max(0,Math.trunc(u.sp)-cost);u.lastSkill=this.s.time;u.skillCount++;
 // 开技这一帧按技能范围判定：瞬时／AUTO／duration=-1 的技能 skillLeft 会是 0，而它们的
 // 「立即／下一击」效果就在这一帧结算，不挂住范围就会用常态范围（列表见 docs/SKILL_RANGE_AUDIT_2026-09-22.md）。
 u.skillRangeHold=sk.rangeId||null;u.skillRangeHoldAt=this.s.time;const skillAir=skillAntiAir(p.charId,p.skillIndex??u.source?.skillIndex);u.skillAir=skillAir==null?null:{value:skillAir,count:u.skillCount,until:this.s.time+(Number(sk.duration)>0?Number(sk.duration):0)};const lateranoBonus=this.on('lateranoShip')&&this.owns(u,'lateranoShip')?this.params('lateranoShip'):null,baseAmmo=ammoCount(sk),bondAmmo=lateranoBonus?Math.max(0,Math.floor(baseAmmo*(Number(lateranoBonus.base_ammo_percent||0)+Number(lateranoBonus.ammo_percent_per_stack||0)*(this.layers.lateranoShip||0)))):0;u.ammo=kind==='ammo'?baseAmmo+cfg.ammoBonus+(u.talentAmmoBonus||0)+bondAmmo+(p.charId==='char_1032_excu2'?Math.min(4,this.s.units.filter(v=>v.deployed&&v.hp>0&&this.profile(v)?.bonds?.includes('lateranoShip')).length):0):0;u.ammoMax=u.ammo;u.ammoPerAttack=cfg.ammoPerAttack;u.skillLeft=kind==='ammo'?0:this.skillTimeLeft(sk);if(kind==='instant'){const t=attackTiming(this.stats(u).baseAttackTime,this.stats(u).attackSpeed,windupSeconds(this.stats(u).baseAttackTime,p.attackWindup));u.spLock=t.seconds;}this.event(u,'skill');this.emit('skill-start',{uid:u.uid,kind,name:sk.name,x:u.x,y:u.y,wide:this.wideAttack(u),wideKind:this.wideKind(u)});if(dispatch(this,'skill-start',{target:u}))return;if(kind==='instant'&&sk.skillType==='AUTO'&&spTypeOf(sk)==='INCREASE_WHEN_ATTACK'){u.enhanced=true;return;}if(kind==='instant'){const targets=this.targets(u);if(p.branch!=='incantationmedic'&&/回复.*生命|治疗/.test(sk.description||'')){for(const v of this.healingTargets(u))this.heal(u,v,this.stats(u).atk*(cfg.bb.healScale??b.heal_scale??b.atk_scale??1));}else if(cfg.atkScale!=null||b.atk_scale){for(const e of targets.slice(0,cfg.multiTarget===Infinity?targets.length:(cfg.multiTarget??b.max_target??999)))for(let hit=0;hit<Math.max(1,cfg.hits||1);hit++)this.hit(u,e,this.stats(u).atk*(cfg.atkScale??b.atk_scale??1),this.baseDamageType(u),{skill:true});}if(b.stun||cfg.bb.stun)for(const e of targets){if(applyStatus(e,'stun',b.stun??cfg.bb.stun,{source:u.uid}))this.emit('control',{uid:e.uid,kind:'stun',x:e.x,y:e.y});}}}
@@ -13735,7 +13750,7 @@ u.skillRangeHold=sk.rangeId||null;u.skillRangeHoldAt=this.s.time;const skillAir=
    // 开了技能反而不能打空的（银灰「雪境生存法则」）同样按覆盖后的值判断。非对空技能两张表完全一致。
    const decisionAntiAir=this.upcomingAntiAir(u,p),decisionTargets=decisionAntiAir===behavior.antiAir?targets:this.targets(u,{antiAir:decisionAntiAir});
    const readyByTargets=healer?heals.length>0:(decisionTargets.length>0||canHitAfterSkill);
-   const skillReady=skill?.skillType==='AUTO'?u.sp>=cost&&readyByTargets:shouldAutoSkill({policy,ready:u.sp>=cost,deployed:u.deployed,now:this.s.time,lastOperation:u.lastSkill,initialDeployment:u.deployAt,hasTarget:readyByTargets,hasAnyTarget:this.s.enemies.length>0,hasEnemyInInitialRange:decisionTargets.length>0,hasEnemyInSkillRange:canHitAfterSkill,wasDamaged:this.s.time-(u.lastDamagedAt??-999)<.1});
+   const skillReady=skill?.skillType==='AUTO'?u.sp>=cost&&(readyByTargets||attackTriggeredInstantAuto(skill)):shouldAutoSkill({policy,ready:u.sp>=cost,deployed:u.deployed,now:this.s.time,lastOperation:u.lastSkill,initialDeployment:u.deployAt,hasTarget:readyByTargets,hasAnyTarget:this.s.enemies.length>0,hasEnemyInInitialRange:decisionTargets.length>0,hasEnemyInSkillRange:canHitAfterSkill,wasDamaged:this.s.time-(u.lastDamagedAt??-999)<.1});
    if(skill?.skillType==='PASSIVE'&&u.coinSkillEnabled&&(skill.skillIndex??u.source?.skillIndex)===1&&u.coins>0&&targets.length)this.activate(u);
    if(skill&&skill.skillType!=='PASSIVE'&&!u.enhanced&&!this.skillActive(u)&&skillReady)this.activate(u);
    stats=this.stats(u);behavior=this.behavior(u);healer=behavior.kind==='heal'||u.focusHeal;u.branchSkillActive=this.skillActive(u);
@@ -13880,7 +13895,7 @@ class NativeSession extends NativeEconomy {
   return out;}
  syncSummonCards({resetPlaced=false}={}){this.s.summonCards??=[];const owners=new Map(this.s.units.filter(u=>u.position&&this.summonCardSpecs(u).length).map(u=>[u.uid,u]));this.s.summonCards=this.s.summonCards.filter(card=>{const owner=owners.get(card.ownerUid),spec=owner&&this.summonCardSpecs(owner).find(x=>x.type===card.type);if(!spec)return false;if(resetPlaced)card.position=null;card.mode=spec.mode;card.placeable=!!spec.placeable;return true;});for(const owner of owners.values())for(const spec of this.summonCardSpecs(owner)){const existing=this.s.summonCards.filter(card=>card.ownerUid===owner.uid&&card.type===spec.type);for(let i=existing.length;i<spec.count;i++)this.s.summonCards.push({uid:++this.s.seq,kind:'summon-card',type:spec.type,name:spec.name,mode:spec.mode,placeable:!!spec.placeable,ownerUid:owner.uid,position:null,dir:0});}}
  hand(){return super.hand().sort((a,b)=>(a.handSlot??Number.MAX_SAFE_INTEGER)-(b.handSlot??Number.MAX_SAFE_INTEGER));}
- syncHandSlots(){const cards=super.hand(),active=new Set(cards),all=[...this.s.units,...this.s.items,...(this.s.summonCards||[])],used=new Set();for(const card of all)if(!active.has(card))delete card.handSlot;for(const card of cards){if(Number.isSafeInteger(card.handSlot)&&card.handSlot>=0&&card.handSlot<cards.length+HAND_LIMIT&&!used.has(card.handSlot))used.add(card.handSlot);else delete card.handSlot;}if(cards.length<=HAND_LIMIT)for(const card of cards.filter(x=>x.handSlot>=HAND_LIMIT).sort((a,b)=>a.handSlot-b.handSlot)){used.delete(card.handSlot);let slot=0;while(used.has(slot))slot++;card.handSlot=slot;used.add(slot);}for(const card of cards)if(!Number.isSafeInteger(card.handSlot)){let slot=0;while(used.has(slot))slot++;card.handSlot=slot;used.add(slot);}return cards.sort((a,b)=>a.handSlot-b.handSlot);}
+ syncHandSlots(){const cards=super.hand(),active=new Set(cards),all=[...this.s.units,...this.s.items,...(this.s.summonCards||[])];for(const card of all)if(!active.has(card))delete card.handSlot;const ordered=cards.slice().sort((a,b)=>(Number.isSafeInteger(a.handSlot)&&a.handSlot>=0?a.handSlot:Number.MAX_SAFE_INTEGER)-(Number.isSafeInteger(b.handSlot)&&b.handSlot>=0?b.handSlot:Number.MAX_SAFE_INTEGER));for(let i=0;i<ordered.length;i++)ordered[i].handSlot=i;return ordered;}
  // 召唤卡的落点规则（PRTS 分开写，别再统一套一套）：
  //  * 战术家分支特性：「可以在攻击范围内选择一次战术点来召唤援军」→ 狼群／流形必须在主人当前攻击范围内；
  //  * 工匠的支援装置（爬行号·防护单元）：召唤物页写「部署位置：全部位、部署占用数 0、不会受到攻击」，
@@ -13913,8 +13928,10 @@ class NativeSession extends NativeEconomy {
   if(r.kind==='item'){
    const pool=String(r.pool||''),fixedTier=r.tier||Number(pool.match(/shop_(\d)/)?.[1]),named=NAMED_POOLS[pool];
    const pooled=Boolean(named?.members||named?.bond);
-   let items=this.data.items.filter(i=>itemAllowed(i,this)&&(pooled||i.rank<=this.s.level));
-   if(fixedTier)items=this.data.items.filter(i=>itemAllowed(i,this)&&i.rank===fixedTier);
+   // 带特殊词条的维式重锤只走维多利亚专属奖励池；1 阶基础版仍可进入常规商店。
+   const storePool=!pool,isVictoriaSpecial=item=>(item.normal?.giveBondId==='victoriaShip'||this.data.season.trapChessDataDict[item.id]?.giveBondId==='victoriaShip')&&Number(item.rank)>1,eligible=item=>itemAllowed(item,this)&&(!storePool||!isVictoriaSpecial(item));
+   let items=this.data.items.filter(i=>eligible(i)&&(pooled||i.rank<=this.s.level));
+   if(fixedTier)items=this.data.items.filter(i=>eligible(i)&&i.rank===fixedTier);
    const bond=named?.bond||(pool.includes('equip_vict')?'victoriaShip':null);
    if(bond)items=items.filter(i=>i.normal?.giveBondId===bond||this.data.season.trapChessDataDict[i.id]?.giveBondId===bond);
    if(named?.members){const weights=namedWeights(named);items=items.filter(i=>weights.has(i.id));if(items.length)return this.pick(namedPickList(items,weights,i=>i.id)).id;}
@@ -13969,7 +13986,7 @@ class NativeSession extends NativeEconomy {
  ensureRewards(){const r=this.s.rewardPending;if(r?.tier&&!r.offers){r.offers=this.drawDistinct({kind:'operator',tier:r.tier},3);r.kind='operator';}}
  rewardFromBond(owner,count){const bonds=this.gainableBonds(owner,this.s.level).filter(Boolean);if(!bonds.length)return false;this.s.rewardPending={offers:this.drawDistinct({kind:'operator',bond:this.pick(bonds),maxTier:this.s.level},count),choice:1,kind:'operator'};return true;}
  rewardFromTier(tier,count){this.s.rewardPending={offers:this.drawDistinct({kind:'operator',tier:Math.min(6,tier)},count),choice:1,kind:'operator'};return true;}
- applyPostBattleTransforms(){for(const u of this.s.units.filter(x=>x.transformAfterBattle)){const itemIndex=(u.equipment||[]).findIndex(item=>{const def=this.data.season.trapChessDataDict[item.chessId];return(this.data.season.effectBuffInfoDataDict[def?.effectId]||[]).some(e=>e.key==='char_chess_transformation_equip');});if(itemIndex<0){delete u.transformAfterBattle;continue;}const id=this.drawFromPool({kind:'operator',tier:Math.min(6,(u.rank||1)+1)}),shop=this.data.season.charShopChessDatas[id];u.chessId=id;u.charId=shop.charId;u.rank=shop.chessLevel;this.s.items.push(u.equipment.splice(itemIndex,1)[0]);delete u.transformAfterBattle;}}
+ applyPostBattleTransforms(){for(const u of this.s.units.filter(x=>x.transformAfterBattle)){const itemIndex=(u.equipment||[]).findIndex(item=>{const def=this.data.season.trapChessDataDict[item.chessId];return(this.data.season.effectBuffInfoDataDict[def?.effectId]||[]).some(e=>e.key==='char_chess_transformation_equip');});if(itemIndex<0){delete u.transformAfterBattle;continue;}const id=this.drawFromPool({kind:'operator',tier:Math.min(6,(u.rank||1)+1)}),shop=this.data.season.charShopChessDatas[id];u.chessId=id;u.charId=shop.charId;u.rank=shop.chessLevel;this.s.items.push(u.equipment.splice(itemIndex,1)[0]);delete u.transformAfterBattle;this.refreshEquipmentBonds(u);this.onOperatorGained(u);}}
   // 装备增减后重算盟约：以干员自身盟约为底。**装备的 giveBondId 是它自己的盟约归属**（商店与具名池按它取货），
   // 不会让携带者变成该盟约干员——否则给谁都装一件「谢拉格不融冰」就能凑出谢拉格层数、触发 6 层寒风。
   // 只有 canGiveBond 的装备（变形同构体）才给携带者盟约，而且给的是「另一件携带装备」的盟约：
@@ -14021,12 +14038,12 @@ class NativeSession extends NativeEconomy {
  destroyItem(itemUid){if(this.s.phase!=='prep')return false;const item=this.s.items.find(i=>i.uid===itemUid);if(!item)return false;this.s.items=this.s.items.filter(i=>i.uid!==itemUid);this.s.events.push({type:'destroyItem',uid:itemUid,chessId:item.chessId});const row=this.equipRowsOf({equipment:[item]}).find(r=>r.key==='trap_disney_special');if(row)this.addFunds(Number(row.bb.count)||1);return true;}
  destroyEquipment(unitUid,slot){if(this.s.phase!=='prep')return false;const u=this.s.units.find(x=>x.uid===unitUid);if(!u||!Number.isInteger(slot))return false;const item=u.equipment[slot];if(!item)return false;u.equipment.splice(slot,1);this.refreshEquipmentBonds(u);this.s.events.push({type:'destroyItem',uid:item.uid,chessId:item.chessId});return true;}
  equip(itemUid,unitUid,replaceIndex=null){
-  if(this.s.phase!=='prep')return false;const item=this.s.items.find(i=>i.uid===itemUid),u=this.s.units.find(u=>u.uid===unitUid);if(!item||!u)return false;const def=this.data.season.trapChessDataDict[item.chessId],effects=this.data.season.effectBuffInfoDataDict[def.effectId]||[];let consumed=false;
+  if(this.s.phase!=='prep')return false;const item=this.s.items.find(i=>i.uid===itemUid),u=this.s.units.find(u=>u.uid===unitUid);if(!item||!u)return false;const originalChessId=u.chessId,def=this.data.season.trapChessDataDict[item.chessId],effects=this.data.season.effectBuffInfoDataDict[def.effectId]||[];let consumed=false;
   if(def.itemType==='MAGIC'){const effect=effects.find(e=>e.key==='trap_create_self_choice'||e.key==='trap_copy_front_char');if(effect?.key==='trap_create_self_choice'){this.s.rewardPending={kind:'bounty',choice:1,offers:bountyOffers(this.data,this.s.randomState^itemUid)};consumed=true;}if(effect?.key==='trap_copy_front_char'){const copy=this.gain(u.chessId);copy.equipment=(u.equipment||[]).map(i=>({uid:++this.s.seq,chessId:i.chessId}));copy.bondIds=[...this.ownBonds(u)];consumed=true;}if(consumed){this.s.items=this.s.items.filter(i=>i.uid!==itemUid);return true;}}
   for(const e of effects){const p=blackboard(e.blackboard);if(e.key==='equip_destory_gain_random_coin'){this.addFunds(p.min+Math.floor(this.random()*(p.max-p.min+1)));consumed=true;}if(e.key==='use_equip_gain_coin_when_next_round_start'){this.s.nextRoundBonus+=p.count;consumed=true;}if(e.key==='gain_coin_when_round_start'){this.s.passiveIncome+=p.count;consumed=true;}if(e.key==='use_equip_reward_char_chess_bond_layer'){for(const b of this.ownBonds(u))this.addLayers(b,p.layer,false);consumed=true;}if(e.key==='equip_destory_deployment_cnt_change'){this.s.capacity=p.count;consumed=true;}if(e.key==='equip_round_start_upgrade_char')u.projectionUpgrade={itemUid:item.uid};if(e.key==='use_equip_upgrade_char'){const next=this.data.season.charChessDataDict[u.chessId].upgradeChessId;if(next)u.chessId=next;consumed=true;}if(e.key==='use_equip_reward_char_chess'){const initial=this.data.season.chessNormalIdLookupDict[u.chessId]||u.chessId,owned=this.s.units.filter(x=>(this.data.season.chessNormalIdLookupDict[x.chessId]||x.chessId)===initial).length,bonds=this.gainableBonds(u,this.s.level);if(owned>=2)this.gain(initial);else if(bonds.length)this.gain(this.drawFromPool({kind:'operator',bond:this.pick(bonds),maxTier:this.s.level}));consumed=true;}if(e.key==='use_equip_reward_char_chess_with_same_bond'){const bonds=this.gainableBonds(u,this.s.level);if(bonds.length)for(let n=0;n<p.count;n++)this.gain(this.drawFromPool({kind:'operator',bond:this.pick(bonds),maxTier:this.s.level}));consumed=true;}if(e.key==='use_equip_reward_random_char_chess_in_shop'){const indices=this.s.offers.map((x,i)=>x?i:null).filter(x=>x!==null);for(let n=0;n<p.count&&indices.length;n++){const index=indices.splice(Math.floor(this.random()*indices.length),1)[0];this.gain(this.s.offers[index]);this.s.offers[index]=null;}consumed=true;}}
   for(const e of effects){const p=blackboard(e.blackboard);if(e.key==='use_equip_reward_special_goods_char_chess')consumed=this.rewardFromBond(u,p.refresh_cnt||3)||consumed;if(e.key==='use_equip_recruit_new_char_and_give_char_to_player_most_bond'){this.rewardFromTier(u.rank||1,p.refresh_cnt||2);if(this.s.bandId==='band_fang')this.queueFangTransfer(u);this.s.units=this.s.units.filter(x=>x!==u);consumed=true;}if(e.key==='char_chess_transformation_equip')u.transformAfterBattle=true;if(e.key==='use_equip_upgrade_char'){const normal=this.data.season.chessNormalIdLookupDict[u.chessId]||u.chessId,golden=this.data.season.charShopChessDatas[normal]?.goldenChessId;if(golden)u.chessId=golden;consumed=true;}}
   if(!consumed){if(u.equipment.length>=2){if(replaceIndex===null)return false;const old=u.equipment.splice(replaceIndex,1)[0];if(old)this.s.items.push(old);}u.equipment.push(item);this.refreshEquipmentBonds(u);}
-  this.s.items=this.s.items.filter(i=>i.uid!==itemUid);this.settleBondRewards();return true;
+  this.s.items=this.s.items.filter(i=>i.uid!==itemUid);this.settleBondRewards();if(u.chessId!==originalChessId){this.refreshEquipmentBonds(u);this.onOperatorGained(u);}return true;
  }
  chooseBounty(id){const reward=this.s.rewardPending;if(this.s.phase!=='prep'||reward?.kind!=='bounty'||!reward.offers.includes(id))return false;const option=bountyOption(this.data,id);if(!option)return false;this.s.pendingBounty={enemyId:option.enemyId,coin:option.coin,count:option.count};this.s.rewardPending=this.s.rewardQueue.shift()||null;return true;}
  finalBossPrepArea(){if(this.s.phase!=='prep'||this.s.round!==finalBossRound(this.data,this.s.modeId))return null;return finalBossPlacementArea(this.map,finalBossConfig(this.data,this.s.finalBossId,this.s.modeId).enemyId);}
@@ -14063,6 +14080,13 @@ class NativeSession extends NativeEconomy {
   // 禁用盟约的干员在**所有**渠道都拿不到（用户 2026-09-22 口径）：商店抽取靠 eligible() 过滤，
   // 策略／道具的固定点名发放、卫戍 SERVER_GAIN_CHAR、援军转让、精锐形态则在这里统一挡下——
   // 一个都不发、不记账（roundGainedChars 不加），只留一条事件与计数器给界面提示。
+  onOperatorGained(unit){
+   super.onOperatorGained(unit);if(!unit)return unit;
+   // 「战前准备」里设置的默认技能：新获得的干员默认携带指定档位。只对齐**这名干员自己的**同名副本。
+   applyPrepSkills(this.data,this.s.units.filter(v=>v.charId===unit.charId));
+   if(this.s.roundGainedChars?.round!==this.s.round)this.s.roundGainedChars={round:this.s.round,count:0};
+   this.s.roundGainedChars.count++;this.gainCharEquipEffects();return unit;
+  }
   gain(chessId){
    if(this.bondBanned(chessId)){
     const bonds=this.bondBanBlockers(chessId);
@@ -14070,14 +14094,7 @@ class NativeSession extends NativeEconomy {
     this.s.events.push({type:'bond-ban-block',chessId,round:this.s.round,bonds});
     return null;
    }
-   const u=super.gain(chessId);
-   // 「战前准备」里设置的默认技能：新买的干员默认携带指定档位。只对齐**这名干员自己的**同名副本
-   // （同名共用一个技能），局内已经显式改过技能的就沿用那个值；没有任何配置时不写字段、行为与以前一致。
-   if(u)applyPrepSkills(this.data,this.s.units.filter(v=>v.charId===u.charId));
-   if(this.s.roundGainedChars?.round!==this.s.round)this.s.roundGainedChars={round:this.s.round,count:0};
-   this.s.roundGainedChars.count++;
-   this.gainCharEquipEffects();
-   return u;
+   return super.gain(chessId);
   }
   // 携带者装备的全部效果行（备战期按 key 判定）。
   equipRowsOf(unit){return (unit?.equipment||[]).flatMap(item=>{const def=this.data.season.trapChessDataDict[item.chessId];return (this.data.season.effectBuffInfoDataDict[def?.effectId]||[]).map(row=>({key:row.key,bb:blackboard(row.blackboard)}));});}
@@ -14102,11 +14119,10 @@ class NativeSession extends NativeEconomy {
     const index=(u.equipment||[]).findIndex(i=>i.uid===pending.itemUid);if(index<0)continue;
     u.equipment.splice(index,1);
     const next=this.data.season.charChessDataDict[u.chessId]?.upgradeChessId;
-    if(next){u.chessId=next;u.charId=this.data.season.charShopChessDatas[next]?.charId??u.charId;}
-    this.refreshEquipmentBonds(u);
+    if(next){u.chessId=next;u.charId=this.data.season.charShopChessDatas[next]?.charId??u.charId;this.refreshEquipmentBonds(u);this.onOperatorGained(u);}else this.refreshEquipmentBonds(u);
    }
   }
- applyTouchReplacement(){if(this.s.bandId!=='band_amedic'||this.s.strategyClaims.touchReplacement)return false;const elites=this.s.units.filter(u=>u.position&&this.data.season.charChessDataDict[u.chessId]?.isGolden).length,target=this.s.units.find(u=>u.touchReserve);if(elites<2||!target)return false;target.chessId='chess_virtual_touch';target.charId='char_613_acmedc';target.rank=6;target.touchReserve=false;this.s.strategyClaims.touchReplacement=1;return true;}
+ applyTouchReplacement(){if(this.s.bandId!=='band_amedic'||this.s.strategyClaims.touchReplacement)return false;const elites=this.s.units.filter(u=>u.position&&this.data.season.charChessDataDict[u.chessId]?.isGolden).length,target=this.s.units.find(u=>u.touchReserve);if(elites<2||!target)return false;target.chessId='chess_virtual_touch';target.charId='char_613_acmedc';target.rank=6;target.touchReserve=false;this.refreshEquipmentBonds(target);this.onOperatorGained(target);this.s.strategyClaims.touchReplacement=1;return true;}
  // S.E.E.S. 策略（band_sees）的回合结算：**开战前**把剩余资金全部换成【塔尔塔罗斯】层数。
  // 用户口径是「回合结束时消耗剩余所有资金」，而 beginBattle 会把资金清零，所以这是唯一还有余额的时刻；
  // 层数每跨过 25 层补发一名不高于当前商店阶级的 S.E.E.S. 干员（优先不与场上已有的重复）。
@@ -14138,7 +14154,7 @@ class NativeSession extends NativeEconomy {
   // 只有持有者撤走（syncSummonCards 会把卡删掉）或主动撤回整备区（withdrawSummonCard）才会离场。
   if(this.s.phase==='prep')this.syncSummonCards();if(this.s.phase==='decision')this.prepareRoundDecision();return true;
  }
- prepareRoundDecision(){const schedule=singleDecisionRounds(this.data.season.modeDataDict[this.s.modeId]),index=schedule?.indexOf(this.s.round-1)??0;this.s.roundDecisionPool=index<=0?'early':'late';this.s.roundDecisionType=schedule===null?'tactical':['bounty','equipment','tactical'][Math.floor(this.random()*3)];this.s.roundDecisionStage='reward';this.s.roundDecisions=this.decisionRewardOffers(this.s.roundDecisionType);if(this.s.roundDecisions.length<3){this.s.roundDecisionType='tactical';this.s.roundDecisions=this.decisionRewardOffers('tactical');}}
+ prepareRoundDecision(){const mode=this.data.season.modeDataDict[this.s.modeId],schedule=singleDecisionRounds(mode),index=schedule?.indexOf(this.s.round-1)??0,forcedBounty=mode?.modeDifficulty==='ABYSS'&&this.s.round===3&&schedule?.includes(this.s.round-1);this.s.roundDecisionPool=index<=0?'early':'late';this.s.roundDecisionType=schedule===null?'tactical':forcedBounty?'bounty':['bounty','equipment','tactical'][Math.floor(this.random()*3)];this.s.roundDecisionStage='reward';this.s.roundDecisions=this.decisionRewardOffers(this.s.roundDecisionType);if(this.s.roundDecisions.length<3&&!forcedBounty){this.s.roundDecisionType='tactical';this.s.roundDecisions=this.decisionRewardOffers('tactical');}}
  decisionRewardOffers(type){
   const early=this.s.roundDecisionPool!=='late',assignment=this.s.waveRoster?.rounds?.[this.s.round]||null,seed=assignment?.waveSeed??this.s.round;
   if(type==='bounty')return bountyDecisionOffers(this.data,seed,{late:!early}).map(o=>({id:`bounty:${o.enemyId}`,kind:'bounty',enemyId:o.enemyId,name:o.name,count:o.count,coin:o.coin}));
@@ -16763,7 +16779,7 @@ function dossier(){
  // 同名干员（按 charId 归并）的技能是共用的：档案里给个提示，免得玩家以为要一张张改。
  const sameNameCount=owned?g.s.units.filter(v=>v.charId===owned.charId).length:0;
  const equipment=owned?.equipment||[],equipmentSlots=Array.from({length:2},(_,i)=>equipment[i]?`<button class="native-equipment-slot filled" data-act="equip-inspect" data-uid="${owned.uid}" data-slot="${i}"><span class="native-equipment-slot-art">${itemIcon(equipment[i].chessId)}</span><span>装备位 ${i+1}</span><b>${esc(itemName(equipment[i].chessId))}</b><small>已装备 · 点击查看</small></button>`:`<div class="native-equipment-slot"><span>装备位 ${i+1}</span><b>空槽</b><small>${owned?'可装备':'获得干员后可用'}</small></div>`).join('');
- return `<aside class="native-dossier" aria-label="干员档案"><div class="native-dossier-art">${avatar(p.charId)}</div><div class="native-dossier-body"><button data-act="inspect-close" class="native-dossier-close" aria-label="关闭">×</button><h2 class="native-dossier-heading"><span class="native-dossier-heading-name">${esc(p.name)}${p.isGolden?' · 精锐':''}</span>${bondIds.length?`<span class="native-dossier-name-bonds">${bondIds.map(id=>`<i>${esc(data.season.bondInfoDict[id]?.name||id)}</i>`).join('')}</span>`:''}${owned&&g.s.phase==='prep'?`<button class="native-dossier-sell" data-act="sell" data-uid="${owned.uid}">出售 +1 ◆</button>`:''}</h2><p class="native-dossier-kicker">${esc(data.branchRules.records.find(r=>r.id===p.branch)?.name||p.branch||'')} · ${p.rank} 阶${t.reward?' · 三合一奖励候选':''}</p><p id="native-dossier-hp" class="native-dossier-hp">生命 <b>${hp}</b><i>/${max}</i></p><div class="native-dossier-stats"><span>攻击 ${Math.round(a.atk)}</span><span>防御 ${Math.round(a.def)}</span><span>法抗 ${Math.round(a.magicResistance)}</span><span>攻速 ${Math.round(a.attackSpeed)}</span></div><div id="native-dossier-live" class="native-dossier-live"><p>阶段 ${esc(phase)}</p><p>状态 ${esc(statuses)}</p><h3>属性来源</h3><p>${parts}</p></div><h3>所属盟约</h3><div class="native-dossier-bonds">${bondIds.map(id=>`<span>${esc(data.season.bondInfoDict[id]?.name||id)}</span>`).join('')||'<small>暂无盟约</small>'}</div><h3>技能</h3>${owned?`<label>携带技能<select data-uid="${owned.uid}" id="native-skill" ${g.s.phase!=='prep'?'disabled':''}>${data.profiles[owned.chessId].skillChoices.map((v,i)=>`<option value="${i}" ${(owned.skillIndex??data.profiles[owned.chessId].skillIndex)===i?'selected':''}>${esc(v.skill?.name||'无主动技能')}</option>`).join('')}</select></label>${sameNameCount>1?`<p class="native-dossier-sync">同名干员共 ${sameNameCount} 张，技能会一起切换（场上的这些干员保持同一个技能）。</p>`:''}`:`<p class="native-dossier-skill-name">${esc(p.skill?.name||'无主动技能')}</p>`}<p>${esc(renderSkillDescription(p.skill)||'无主动技能')}</p><h3>卫戍</h3>${(p.garrisons||[]).map(x=>`<p>${garrisonHtml(x)}</p>`).join('')||'<p>无卫戍效果</p>'}<h3>装备栏</h3><div class="native-dossier-equipment">${equipmentSlots}</div>${t.shop?`<p class="native-dossier-buy">再次点击卡片购买 · ${catOn()?'ALL':t.price} ◆</p>`:''}${owned&&owned.position&&g.s.phase==='prep'?`<div class="native-dossier-acts"><button data-act="withdraw" data-uid="${owned.uid}">撤回整备区</button></div>`:''}</div></aside>`;
+ return `<aside class="native-dossier" aria-label="干员档案"><div class="native-dossier-art">${avatar(p.charId)}</div><div class="native-dossier-body"><button data-act="inspect-close" class="native-dossier-close" aria-label="关闭">×</button><h2 class="native-dossier-heading"><span class="native-dossier-heading-name">${esc(p.name)}${p.isGolden?'<span class="native-dossier-elite-badge">进阶</span>':''}</span>${bondIds.length?`<span class="native-dossier-name-bonds">${bondIds.map(id=>`<i>${esc(data.season.bondInfoDict[id]?.name||id)}</i>`).join('')}</span>`:''}${owned&&g.s.phase==='prep'?`<button class="native-dossier-sell" data-act="sell" data-uid="${owned.uid}">出售 +1 ◆</button>`:''}</h2><p class="native-dossier-kicker">${esc(data.branchRules.records.find(r=>r.id===p.branch)?.name||p.branch||'')} · ${p.rank} 阶${t.reward?' · 三合一奖励候选':''}</p><p id="native-dossier-hp" class="native-dossier-hp">生命 <b>${hp}</b><i>/${max}</i></p><div class="native-dossier-stats"><span>攻击 ${Math.round(a.atk)}</span><span>防御 ${Math.round(a.def)}</span><span>法抗 ${Math.round(a.magicResistance)}</span><span>攻速 ${Math.round(a.attackSpeed)}</span></div><div id="native-dossier-live" class="native-dossier-live"><p>阶段 ${esc(phase)}</p><p>状态 ${esc(statuses)}</p><h3>属性来源</h3><p>${parts}</p></div><h3>所属盟约</h3><div class="native-dossier-bonds">${bondIds.map(id=>`<span>${esc(data.season.bondInfoDict[id]?.name||id)}</span>`).join('')||'<small>暂无盟约</small>'}</div><h3>技能</h3>${owned?`<label>携带技能<select data-uid="${owned.uid}" id="native-skill" ${g.s.phase!=='prep'?'disabled':''}>${data.profiles[owned.chessId].skillChoices.map((v,i)=>`<option value="${i}" ${(owned.skillIndex??data.profiles[owned.chessId].skillIndex)===i?'selected':''}>${esc(v.skill?.name||'无主动技能')}</option>`).join('')}</select></label>${sameNameCount>1?`<p class="native-dossier-sync">同名干员共 ${sameNameCount} 张，技能会一起切换（场上的这些干员保持同一个技能）。</p>`:''}`:`<p class="native-dossier-skill-name">${esc(p.skill?.name||'无主动技能')}</p>`}<p>${esc(renderSkillDescription(p.skill)||'无主动技能')}</p><h3>卫戍</h3>${(p.garrisons||[]).map(x=>`<p>${garrisonHtml(x)}</p>`).join('')||'<p>无卫戍效果</p>'}<h3>装备栏</h3><div class="native-dossier-equipment">${equipmentSlots}</div>${t.shop?`<p class="native-dossier-buy">再次点击卡片购买 · ${catOn()?'ALL':t.price} ◆</p>`:''}${owned&&owned.position&&g.s.phase==='prep'?`<div class="native-dossier-acts"><button data-act="withdraw" data-uid="${owned.uid}">撤回整备区</button></div>`:''}</div></aside>`;
 }
 function syncQuickSell(){
  document.getElementById('native-quick-sell')?.remove();
@@ -16848,7 +16864,7 @@ function action(button,anchor=null){const a=button.dataset.act,g=state.game,uid=
   if(result)render();if(a==='ed-close-test')root.querySelector('.wave-ed-current [data-act=ed-roll]')?.focus();return;
  }
   if(a==='strategy-select'&&state.view==='briefing'){state.strategyDraft=null;state.view='strategy-select';render();return;}if(a==='strategy-pick'&&state.view==='strategy-select'){const catalog=document.querySelector('.native-strategy-catalog'),scrollHost=catalog?.scrollHeight>catalog?.clientHeight?catalog:catalog?.closest('.native-lobby'),scroll=scrollHost?.scrollTop||0,id=button.dataset.id;if(state.strategyDraft===id){state.band=id;state.strategyDraft=null;state.view='briefing';render();return;}state.strategyDraft=id;render();const next=document.querySelector('.native-strategy-catalog'),nextHost=next?.scrollHeight>next?.clientHeight?next:next?.closest('.native-lobby');if(nextHost)nextHost.scrollTop=scroll;return;}if(a==='strategy-cancel'&&state.view==='strategy-select'){state.strategyDraft=null;state.view='briefing';render();return;}
- if(a==='new'){const egg=state.mode===EGG_MODE_ID,cat=state.mode===CAT_MODE_ID,modeId=egg?EGG_BASE_MODE:cat?CAT_BASE_MODE:state.mode,seed=(Date.now()&0xffffffff)>>>0;const banConfig=loadBondBan(data),mapId=resolveMapId(data,state.map,waveRng((seed^0x9e3779b9)>>>0));state.draft={modeId,mapId,seed,finalBossId:rollFinalBoss(data,modeId,seed),roster:createWaveRoster({random:waveRng(seed),data,modeId}),bondBan:{bonds:bondBanIds(data,seed,banConfig),always:banConfig.always,never:banConfig.never},egg325:egg,cat};state.bondBanBlocks=0;state.view='briefing';state.strategyDraft=null;state.modal=null;render();return;}
+ if(a==='new'){const egg=state.mode===EGG_MODE_ID,cat=state.mode===CAT_MODE_ID,modeId=egg?EGG_BASE_MODE:cat?CAT_BASE_MODE:state.mode,seed=(Date.now()&0xffffffff)>>>0;const banConfig=loadBondBan(data),mapId=resolveMapId(data,state.map,waveRng((seed^0x9e3779b9)>>>0),modeId);state.draft={modeId,mapId,seed,finalBossId:rollFinalBoss(data,modeId,seed),roster:createWaveRoster({random:waveRng(seed),data,modeId}),bondBan:{bonds:bondBanIds(data,seed,banConfig),always:banConfig.always,never:banConfig.never},egg325:egg,cat};state.bondBanBlocks=0;state.view='briefing';state.strategyDraft=null;state.modal=null;render();return;}
  if(a==='begin'){state.lastChoiceContent=null;enterPlayChrome();state.supplyCollapsed=false;if(!state.draft){state.view='lobby';leavePlayChrome();render();return;}try{state.game=new NativeSession(data,{modeId:state.draft.modeId,bandId:guardedBandId(),mapId:state.draft.mapId,seed:state.draft.seed,waveRoster:state.draft.roster,bondBan:state.draft.bondBan,egg325:!!state.draft.egg325,cat:!!state.draft.cat,finalBossId:state.draft.finalBossId,finalBossHpMultiplier:state.waveTable?.finalBossHpMultiplier??DEFAULT_FINAL_BOSS_HP_MULTIPLIER});state.view='game';state.draft=null;state.paused=false;state.expiresAt=null;state.resultUnitUid=null;state.selected=state.summonSelected=state.item=state.inspect=state.preview=state.modal=null;save();saveCheckpoint();render();}catch(e){notice(e.message);}return;}
  if(a==='resume'){if(state.expiresAt&&Date.now()>=state.expiresAt){notice('暂离已超过24小时，请开始新模拟');return;}enterPlayChrome();state.expiresAt=null;state.view='game';render();return;}if(a==='home'){dismissRoundEnd();if(state.view==='editor'||state.view==='briefing'||state.view==='prepare'){state.view='lobby';leavePlayChrome();render();return;}state.view='lobby';state.paused=true;state.expiresAt??=Date.now()+86400000;state.modal=null;save();leavePlayChrome();render();return;}if(a==='result'){showResult();return;}
  // 导出存档（用户 2026-09-27 需求）：大厅与对局顶栏共用一个入口。
@@ -16882,8 +16898,8 @@ function action(button,anchor=null){const a=button.dataset.act,g=state.game,uid=
 }
 function handCards(game){if(game.s.phase==='prep')game.syncSummonCards?.();return game.syncHandSlots?.()||game.hand();}
 function handCardKind(game,card){return game.s.units.includes(card)?'operator':game.s.items.includes(card)?'item':'summon-card';}
-function handCardHtml(game,card){const kind=handCardKind(game,card),slot=card.handSlot;if(kind==='operator')return `<button data-act="select" data-uid="${card.uid}" data-hand-card="true" class="native-hand-card${state.selected===card.uid||inspectSame('unit',card.uid)?' chosen':''}" aria-label="${esc(data.profiles[card.chessId].name)}，手牌格 ${slot+1}">${avatar(card.charId)}<b>${esc(data.profiles[card.chessId].name)}</b>${data.profiles[card.chessId].isGolden?'<small>精锐</small>':''}</button>`;if(kind==='item')return `<div role="button" tabindex="0" data-act="item" data-uid="${card.uid}" data-hand-card="true" class="native-hand-card${state.item===card.uid||inspectSame('pack',card.uid)?' chosen':''}" aria-label="${esc(itemName(card.chessId))}，手牌格 ${slot+1}">${itemIcon(card.chessId)}<b>${esc(itemName(card.chessId))}</b></div>`;const hint=card.mode==='skill'?'技能转好后自动出现':card.mode==='auto'?'开战时自动出现':'可拖动放置并选择朝向';return `<button data-act="summon-select" data-uid="${card.uid}" data-mode="${card.mode||'manual'}" data-placeable="${String(!!card.placeable)}" data-hand-card="true" class="native-hand-card native-summon-card${state.summonSelected===card.uid?' chosen':''}"${card.mode!=='manual'&&!card.placeable?' disabled':''} aria-label="${esc(card.name)}，手牌格 ${slot+1}"><span class="native-summon-icon">◈</span><b>${esc(card.name)}</b><small>${hint}</small></button>`;}
-function handView(game){const cards=handCards(game),signature=cards.map(card=>`${handCardKind(game,card)}:${card.uid}@${card.handSlot}`).join('|');if(game.s.phase!=='prep')return {signature,html:cards.map(card=>handCardHtml(game,card)).join('')};const bySlot=new Map(cards.map(card=>[card.handSlot,card])),slot=(index,overflow=false)=>{const card=bySlot.get(index);return `<div class="native-hand-slot${overflow?' is-overflow-slot':''}${card?'':' is-empty'}" data-hand-slot="${index}" aria-label="${overflow?'临时超额':'手牌'}${card?'':'空位'} ${overflow?index-HAND_LIMIT+1:index+1}">${card?handCardHtml(game,card):`<span>${overflow?'+':String(index+1).padStart(2,'0')}</span>`}</div>`;},maxSlot=Math.max(HAND_LIMIT+1,...cards.map(card=>card.handSlot)),overflowSlots=Math.max(2,maxSlot-HAND_LIMIT+1);return {signature,html:Array.from({length:HAND_LIMIT},(_,i)=>slot(i)).join('')+`<span class="native-hand-overflow-divider" aria-hidden="true">临时</span>`+Array.from({length:overflowSlots},(_,i)=>slot(HAND_LIMIT+i,true)).join('')};}
+function handCardHtml(game,card){const kind=handCardKind(game,card),slot=card.handSlot;if(kind==='operator')return `<button data-act="select" data-uid="${card.uid}" data-hand-card="true" class="native-hand-card${data.profiles[card.chessId].isGolden?' is-elite':''}${state.selected===card.uid||inspectSame('unit',card.uid)?' chosen':''}" aria-label="${esc(data.profiles[card.chessId].name)}，手牌格 ${slot+1}">${avatar(card.charId)}<b>${esc(data.profiles[card.chessId].name)}</b>${data.profiles[card.chessId].isGolden?'<small>精锐</small>':''}</button>`;if(kind==='item')return `<div role="button" tabindex="0" data-act="item" data-uid="${card.uid}" data-hand-card="true" class="native-hand-card${state.item===card.uid||inspectSame('pack',card.uid)?' chosen':''}" aria-label="${esc(itemName(card.chessId))}，手牌格 ${slot+1}">${itemIcon(card.chessId)}<b>${esc(itemName(card.chessId))}</b></div>`;const hint=card.mode==='skill'?'技能转好后自动出现':card.mode==='auto'?'开战时自动出现':'可拖动放置并选择朝向';return `<button data-act="summon-select" data-uid="${card.uid}" data-mode="${card.mode||'manual'}" data-placeable="${String(!!card.placeable)}" data-hand-card="true" class="native-hand-card native-summon-card${state.summonSelected===card.uid?' chosen':''}"${card.mode!=='manual'&&!card.placeable?' disabled':''} aria-label="${esc(card.name)}，手牌格 ${slot+1}"><span class="native-summon-icon">◈</span><b>${esc(card.name)}</b><small>${hint}</small></button>`;}
+function handView(game){const cards=handCards(game),signature=cards.map(card=>`${handCardKind(game,card)}:${card.uid}@${card.handSlot}`).join('|');if(game.s.phase!=='prep')return {signature,html:cards.map(card=>handCardHtml(game,card)).join('')};const bySlot=new Map(cards.map(card=>[card.handSlot,card])),slot=(index,overflow=false)=>{const card=bySlot.get(index);return `<div class="native-hand-slot${overflow?' is-overflow-slot':''}${card?'':' is-empty'}" data-hand-slot="${index}" aria-label="${overflow?'临时超额':'手牌'}${card?'':'空位'} ${overflow?index-HAND_LIMIT+1:index+1}">${card?handCardHtml(game,card):`<span>${overflow?'+':String(index+1).padStart(2,'0')}</span>`}</div>`;},overflowSlots=Math.max(0,cards.length-HAND_LIMIT),temporary=overflowSlots?`<span class="native-hand-overflow-divider" aria-hidden="true">临时</span>${Array.from({length:overflowSlots},(_,i)=>slot(HAND_LIMIT+i,true)).join('')}`:'';return {signature,html:Array.from({length:HAND_LIMIT},(_,i)=>slot(i)).join('')+temporary};}
 function renderSummonCards(){const game=state.game,bench=document.getElementById('native-hand');if(!game||!bench)return;const view=handView(game);if(!drag&&bench.dataset.layout!==view.signature){bench.innerHTML=view.html;bench.dataset.layout=view.signature;}}
 // ── 回合结束演出 ────────────────────────────────────────────────────────────
 // 暗屏 + 拉出横幅「波次结束 / WAVE END」→ 停留 1 秒 → 收横幅 → 「损失生命」从 0 快速累加到位。
@@ -17302,7 +17318,7 @@ function paneLocal(scroller,x,y){
 }
 function scrollerAtPoint(x,y){
  const hit=document.elementFromPoint(x,y);
- const panes=[...root.querySelectorAll('.native-strategy-catalog, .native-strategy-pane, .native-dossier, .native-modal>section, .native-prep-list, .native-lobby')].reverse();
+ const panes=[...root.querySelectorAll('.native-strategy-catalog, .native-strategy-pane, .native-dossier, .native-modal>section, .native-prep-list, .native-bench, .native-lobby')].reverse();
  for(const pane of panes){
   if(paneMax(pane)<=0)continue;
   const p=paneLocal(pane,x,y);
@@ -17316,14 +17332,14 @@ function paneTrack(scroller){
  return scroller.querySelector(':scope > .native-strategies, :scope > .native-dossier-body, .native-strategies, .native-dossier-body')||scroller.firstElementChild;
 }
 function paneMax(scroller){
- if(scroller.matches('.native-prep-list'))return Math.max(0,scroller.scrollWidth-scroller.clientWidth);
+ if(scroller.matches('.native-prep-list, .native-bench'))return Math.max(0,scroller.scrollWidth-scroller.clientWidth);
  if(scroller.matches('.native-lobby, .native-strategy-catalog'))return Math.max(0,scroller.scrollHeight-scroller.clientHeight);
  const track=paneTrack(scroller);
  return Math.max(0,(track?.offsetHeight||0)-scroller.clientHeight);
 }
-function shiftOf(scroller){return scroller.matches('.native-prep-list')?scroller.scrollLeft:scroller.matches('.native-lobby, .native-strategy-catalog')?scroller.scrollTop:paneShift.get(scroller)||0;}
+function shiftOf(scroller){return scroller.matches('.native-prep-list, .native-bench')?scroller.scrollLeft:scroller.matches('.native-lobby, .native-strategy-catalog')?scroller.scrollTop:paneShift.get(scroller)||0;}
 function setShift(scroller,y){
- if(scroller.matches('.native-prep-list')){const next=Math.max(0,Math.min(paneMax(scroller),y));scroller.scrollLeft=next;return next;}
+ if(scroller.matches('.native-prep-list, .native-bench')){const next=Math.max(0,Math.min(paneMax(scroller),y));scroller.scrollLeft=next;return next;}
  if(scroller.matches('.native-lobby, .native-strategy-catalog')){const next=Math.max(0,Math.min(paneMax(scroller),y));scroller.scrollTop=next;return next;}
  const track=paneTrack(scroller);
  if(!track)return 0;
@@ -17341,16 +17357,18 @@ function hitInScroller(scroller,x,y){
 function paneScroller(start){
  let node=start?.nodeType===1?start:start?.parentElement;
  while(node&&node!==root){
-  if(node.matches?.('.native-strategy-catalog, .native-strategy-pane, .native-dossier, .native-modal>section, .native-prep-list, .native-lobby')&&paneMax(node)>0)return node;
+  if(node.matches?.('.native-strategy-catalog, .native-strategy-pane, .native-dossier, .native-modal>section, .native-prep-list, .native-bench, .native-lobby')&&paneMax(node)>0)return node;
   node=node.parentElement;
  }
  return null;
 }
 function paneDelta(touch,clientX,clientY,scroller){
+ if(scroller?.matches('.native-bench'))return rotatedPlay()?touch.y-clientY:touch.x-clientX;
  return scroller?.matches('.native-prep-list')||rotatedPlay()?touch.x-clientX:touch.y-clientY;
 }
-let paneTouch=null,paneMoved=false;
+let paneTouch=null,paneMoved=false,benchTouchMoved=false;
 root.addEventListener('touchstart',e=>{
+ benchTouchMoved=false;
  if(e.touches.length!==1)return;
  paneMoved=false;
  const t=e.touches[0],scroller=scrollerAtPoint(t.clientX,t.clientY)||paneScroller(e.target);
@@ -17363,20 +17381,21 @@ root.addEventListener('touchmove',e=>{
  const t=e.touches[0],dy=paneDelta(paneTouch,t.clientX,t.clientY,paneTouch.scroller);
  if(Math.abs(dy)<8)return;
  setShift(paneTouch.scroller,paneTouch.top+dy);
+ if(paneTouch.scroller.matches('.native-bench'))benchTouchMoved=true;
  paneMoved=true;
  touchButton=null;
  e.preventDefault();
 },{passive:false});
 root.addEventListener('touchend',()=>{
   if(paneMoved){ignoredClickUntil=Math.max(ignoredClickUntil,performance.now()+80);paneTouch=null;return;}
-  paneTouch=null;paneMoved=false;
+  paneTouch=null;paneMoved=false;benchTouchMoved=false;
 },{passive:true});
-root.addEventListener('touchcancel',()=>{paneTouch=null;paneMoved=false;},{passive:true});
+root.addEventListener('touchcancel',()=>{paneTouch=null;paneMoved=false;benchTouchMoved=false;},{passive:true});
 root.addEventListener('wheel',e=>{
  const scroller=scrollerAtPoint(e.clientX,e.clientY);
  if(!scroller||paneMax(scroller)<=0)return;
  e.preventDefault();
- setShift(scroller,shiftOf(scroller)+(scroller.matches('.native-prep-list')?(e.deltaX||e.deltaY):e.deltaY));
+ setShift(scroller,shiftOf(scroller)+(scroller.matches('.native-prep-list, .native-bench')?(e.deltaX||e.deltaY):e.deltaY));
 },{passive:false});
 root.addEventListener('click',e=>{
   if(dossierDismissedAt>0&&performance.now()-dossierDismissedAt<500){dossierDismissedAt=0;e.preventDefault();return;}
@@ -17407,10 +17426,12 @@ root.addEventListener('pointerdown',e=>{
 });
 root.addEventListener('pointermove',e=>{
  if(touchButton&&Math.hypot(e.clientX-touchButton.x,e.clientY-touchButton.y)>8)touchButton=null;
+ if(benchTouchMoved&&drag?.id===e.pointerId){clearDrag();return;}
  if(drag&&drag.id===e.pointerId){drag.x=e.clientX;drag.y=e.clientY;if(Math.hypot(e.clientX-drag.x0,e.clientY-drag.y0)>8)drag.moved=true;if(drag.moved){canvasPress=null;touchButton=null;dragFeedback();draw();}}
  if(aim&&aim.id===e.pointerId&&state.preview){const dx=e.clientX-aim.x,dy=e.clientY-aim.y;state.preview.dir=Math.hypot(dx,dy)<18?null:Math.abs(dx)>Math.abs(dy)?dx>0?0:2:dy>0?1:3;draw();}
 });
 root.addEventListener('pointerup',e=>{
+ if(benchTouchMoved){benchTouchMoved=false;paneMoved=false;paneTouch=null;ignoredClickPointer=e.pointerId;ignoredClickUntil=performance.now()+400;clearDrag();return;}
  if(drag&&drag.id===e.pointerId){const d=drag;if(d.moved){
 if(d.from==='hand'&&!(d.kind==='item'&&overUnitCard(e.clientX,e.clientY))){const slot=handSlotAt(e.clientX,e.clientY);if(slot!==null){drag=null;dragFeedback();ignoredClickPointer=e.pointerId;ignoredClickUntil=performance.now()+400;if(moveHandCardToSlot(d.kind,d.uid,slot)){state.inspect=null;save();notice('已调整手牌位置');}render();return;}}if(d.kind==='operator'&&overShop(e.clientX,e.clientY)){drag=null;dragFeedback();const u=state.game.s.units.find(x=>x.uid===d.uid);const name=u?(data.profiles[u.chessId]?.name||'干员'):'干员';if(state.game.perform('sell',d.uid)){state.selected=null;state.inspect=null;save();notice('已出售 '+name+'，资金 +'+(u?data.season.shopCharChessInfoData[u.rank][data.season.charChessDataDict[u.chessId].isGolden?1:0].chessSoldPrice:0)+' ◆');}else notice('当前阶段无法出售该干员。');render();return;}
 if(d.kind==='item'&&d.from==='hand'){const u=equipDropTarget(e.clientX,e.clientY);drag=null;dragFeedback();if(u){const name=data.profiles[u.chessId]?.name||'干员';const equipped=equipItemOnUnit(u.uid,d.uid);state.selected=u.uid;state.inspect={kind:'unit',uid:u.uid};save();render();if(equipped)notice('已为'+name+'装备。');return;}notice('请把装备拖到干员身上。');render();return;}ignoredClickPointer=e.pointerId;ignoredClickUntil=performance.now()+400;clearDrag();state.inspect=null;
@@ -17433,7 +17454,7 @@ if(d.kind==='item'&&d.from==='hand'){const u=equipDropTarget(e.clientX,e.clientY
   if(t.id===e.pointerId&&t.b.isConnected&&!t.b.disabled)action(t.b);
  }
 });
-root.addEventListener('pointercancel',()=>{if(!drag&&!aim&&!state.preview&&!canvasPress)return;clearDrag();aim=null;state.preview=null;render();});
+root.addEventListener('pointercancel',()=>{benchTouchMoved=false;if(!drag&&!aim&&!state.preview&&!canvasPress)return;clearDrag();aim=null;state.preview=null;render();});
 document.addEventListener('keydown',e=>{if(root.querySelector('#wave-ed-test[open]')||root.querySelector('.native-choice-overlay'))return;if(e.target.matches('input,select,textarea'))return;if(e.key==='Escape'){clearDrag();aim=null;state.preview=null;state.selected=state.summonSelected=null;state.inspect=null;if(!requiredChoicePending())state.modal=null;render();}if(state.preview){const d={ArrowRight:0,ArrowDown:1,ArrowLeft:2,ArrowUp:3}[e.key];if(d!==undefined){e.preventDefault();state.preview.dir=d;draw();}if(e.key==='Enter')commitPreview();}});
 window.addEventListener('beforeunload',()=>{state.expiresAt??=Date.now()+86400000;save();});
 // 切走页面**不再自动暂停**（用户 2026-09-23 口径「网页切走时后台继续运行而不是暂停」）：隐藏标签页里
