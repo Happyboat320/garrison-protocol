@@ -16439,10 +16439,11 @@ const CAT_MODE_ID='mode_cat_all';
 const NATIVE_CHANGELOG={
  version:'v0.9',publishedAt:'2026-10-01T19:24:24+08:00',displayTime:'2026-10-01 19:24 (UTC+8)',dateLabel:'10.01',
  preview:[
-  {topic:'支援装置',summary:'干员不能再部署到已放置的支援装置格。'},
-  {topic:'干员与装备',summary:'突变转化触发三合一；突变细胞不再进入商店。'},
-  {topic:'盟约显示',summary:'变形同构体转成的盟约会在详情中显示。'},
-  {topic:'模式与策略',summary:'325 模式基于终极；首个策略决策固定悬赏。'}
+  {topic:'反馈修复',summary:'根据反馈修复了大量 BUG。'},
+  {topic:'作战界面',summary:'调整了作战界面与交互。'},
+  {topic:'道具图标',summary:'实装道具图标。'},
+  {topic:'325模式',summary:'修复无法解除的问题；更新日志用彩色流动字体标示325。'},
+  {topic:'模式发现',summary:'尝试解决325模式不易被发现的问题。'}
  ],
  sections:[
   {title:'战斗与面板',items:[
@@ -16465,18 +16466,20 @@ const NATIVE_CHANGELOG={
   ]},
   {title:'地图与模式',items:[
    '绝境和终极随机地图池仅排除 act1autochess_m01，其他地图及手动选择不受影响。',
-   '325 数字效果只在325模式启用，切换到其他模式后关闭；325模式底层使用终极难度。'
+   '修复325模式数字效果切出后无法解除的问题；切换到其他模式后关闭，底层使用终极难度。',
+   '更新日志以彩色流动字体标记325模式；调整入口提示，尝试提升该模式的发现度。'
   ]},
   {title:'整备区、显示与部署',items:[
    '整备区按现有卡牌顺排，出售或消耗后自动填补空位，溢出干员不会漏下。',
    '临时手牌格只在发生溢出时显示，数量不限；临时手牌过多时可左右滚动。',
-   '进阶干员详情名旁标注“进阶”，手牌头像使用金色底色，手机版同步。',
+   '进阶干员详情名旁标注“进阶”，手牌头像使用金色底色，手机版同步；实装道具图标。',
    '干员不能再放置到已存在的凯瑟琳支援装置格；装置仍不占部署名额。'
   ]}
  ]
 };
 
 const escDefault=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const changelogHtml=(value,escape=escDefault)=>escape(value).replace(/325/g,'<span class="native-changelog-325">325</span>');
 
 function renderLobby({data,state,avatar,esc=escDefault}){
  const operatorCount=Object.keys(data.profiles).length;
@@ -16489,10 +16492,10 @@ function renderLobby({data,state,avatar,esc=escDefault}){
  const maps=data.maps.filter(m=>m.weight>0);
  // 阵地下拉第一项是哨兵「随机地图」（用户 2026-09-22 口径，且为默认）：开局时按本局种子抽一个具体阵地。
  const randomMapOption=`<option value="${RANDOM_MAP_ID}" ${state.map===RANDOM_MAP_ID?'selected':''}>随机地图</option>`;
- return `<main class="native-lobby"><header class="native-lobby-topbar"><div class="native-brand"><span class="native-brand-mark" aria-hidden="true">◇</span><div><span class="native-eyebrow">RHODES ISLAND / PRTS</span><strong>联合防卫终端</strong></div></div><div class="native-lobby-meta"><span class="native-live-dot">ONLINE</span></div></header><section class="native-hero"><div class="native-hero-copy"><p class="native-kicker">卫戍协议 · 盟约下半期</p><h1>卫戍协议</h1><p class="native-hero-lead">以真实数据驱动的独立战斗模拟。调配干员、构筑盟约，在连续回合中守住阵地。</p><div class="native-hero-actions"><button class="native-primary native-hero-start" data-act="new"><span>开始一局</span><small>随机生成特训、最终 Boss 与增援 →</small></button></div><div class="native-hero-facts" aria-label="终端数据"><span><b>${operatorCount}</b><small>干员数据</small></span><span><b>${enemyCount}</b><small>敌人档案</small></span><span><b>${mapCount}</b><small>可用阵地</small></span></div></div><aside class="native-home-card native-hero-panel" aria-labelledby="native-update-title"><div class="native-card-heading native-update-heading"><div><span class="native-eyebrow native-panel-kicker">UPDATE LOG / TERMINAL</span><h2 id="native-update-title">更新日志</h2></div><span class="native-card-index">${esc(NATIVE_CHANGELOG.version)}</span></div><div class="native-operation-line"><span>版本 / 更新时间</span><time class="native-operation-code" datetime="${NATIVE_CHANGELOG.publishedAt}">${esc(NATIVE_CHANGELOG.displayTime)}</time></div><p class="native-update-intro">本次对话完成 ${updateCount} 项修复，摘要如下。</p><ul class="native-update-list">${NATIVE_CHANGELOG.preview.map(item=>`<li><time datetime="${NATIVE_CHANGELOG.publishedAt}">${esc(NATIVE_CHANGELOG.dateLabel)}</time><div><b>${esc(item.topic)}</b><p>${esc(item.summary)}</p></div></li>`).join('')}</ul><div class="native-signal"><span aria-hidden="true"></span><small>点击卡片查看完整更新日志</small><time datetime="${NATIVE_CHANGELOG.publishedAt}">${esc(NATIVE_CHANGELOG.version)}</time></div><button class="native-update-hitbox" data-act="update-log" aria-label="查看完整更新日志 ${esc(NATIVE_CHANGELOG.version)}" aria-haspopup="dialog"></button></aside></section><div class="native-home"><section class="native-home-card native-loadout"><div class="native-card-heading"><div><span class="native-eyebrow">MISSION SETUP</span><h2>任务配置</h2></div><span class="native-card-index">01</span></div><label class="native-field-label" for="native-mode">行动难度<select id="native-mode">${modes.map(m=>`<option value="${m.modeId}" ${m.modeId===state.mode?'selected':''}>${m.name}</option>`).join('')}</select></label><label class="native-field-label" for="native-map">作战阵地<select id="native-map">${randomMapOption}${maps.map((m,i)=>`<option value="${m.stageId}" ${m.stageId===state.map?'selected':''}>阵地 ${i+1} · ${m.stageId}</option>`).join('')}</select></label><div class="native-loadout-actions"><button class="native-prep-entry" data-act="prepare"><span class="native-prep-entry-icon" aria-hidden="true">◈</span><span class="native-prep-entry-label">战前准备</span></button>${state.game?'<button data-act="resume">恢复本地模拟</button>':''}<button data-act="import">导入存档</button></div></section><section class="native-home-card native-database"><div class="native-card-heading"><div><span class="native-eyebrow">REFERENCE / TOOLS</span><h2>资料与工具</h2></div><span class="native-card-index">02</span></div><div class="native-tool-grid"><button data-act="editor"><span class="native-tool-icon">▦</span><span><b>协议自定义</b><small>编辑敌人波次、盟约禁用名单与随机禁用方案</small></span><em>→</em></button><button data-act="archive"><span class="native-tool-icon">▤</span><span><b>战绩与解锁</b><small>查看最近对局与已解锁内容</small></span><em>→</em></button><button data-act="passcode"><span class="native-tool-icon">※</span><span><b>输入密码</b><small>用数字键盘输入密码</small></span><em>→</em></button></div></section></div><footer class="native-lobby-footer"><span>本期预设与属性来源：PRTS / 历史游戏数据</span><span>非官方同人作品 · v0.9 combat console</span></footer></main>`;
+ return `<main class="native-lobby"><header class="native-lobby-topbar"><div class="native-brand"><span class="native-brand-mark" aria-hidden="true">◇</span><div><span class="native-eyebrow">RHODES ISLAND / PRTS</span><strong>联合防卫终端</strong></div></div><div class="native-lobby-meta"><span class="native-live-dot">ONLINE</span></div></header><section class="native-hero"><div class="native-hero-copy"><p class="native-kicker">卫戍协议 · 盟约下半期</p><h1>卫戍协议</h1><p class="native-hero-lead">以真实数据驱动的独立战斗模拟。调配干员、构筑盟约，在连续回合中守住阵地。</p><div class="native-hero-actions"><button class="native-primary native-hero-start" data-act="new"><span>开始一局</span><small>随机生成特训、最终 Boss 与增援 →</small></button></div><div class="native-hero-facts" aria-label="终端数据"><span><b>${operatorCount}</b><small>干员数据</small></span><span><b>${enemyCount}</b><small>敌人档案</small></span><span><b>${mapCount}</b><small>可用阵地</small></span></div></div><aside class="native-home-card native-hero-panel" aria-labelledby="native-update-title"><div class="native-card-heading native-update-heading"><div><span class="native-eyebrow native-panel-kicker">UPDATE LOG / TERMINAL</span><h2 id="native-update-title">更新日志</h2></div><span class="native-card-index">${esc(NATIVE_CHANGELOG.version)}</span></div><div class="native-operation-line"><span>版本 / 更新时间</span><time class="native-operation-code" datetime="${NATIVE_CHANGELOG.publishedAt}">${esc(NATIVE_CHANGELOG.displayTime)}</time></div><p class="native-update-intro">本次对话完成 ${updateCount} 项修复，摘要如下。</p><ul class="native-update-list">${NATIVE_CHANGELOG.preview.map(item=>`<li><time datetime="${NATIVE_CHANGELOG.publishedAt}">${esc(NATIVE_CHANGELOG.dateLabel)}</time><div><b>${changelogHtml(item.topic,esc)}</b><p>${changelogHtml(item.summary,esc)}</p></div></li>`).join('')}</ul><div class="native-signal"><span aria-hidden="true"></span><small>点击卡片查看完整更新日志</small><time datetime="${NATIVE_CHANGELOG.publishedAt}">${esc(NATIVE_CHANGELOG.version)}</time></div><button class="native-update-hitbox" data-act="update-log" aria-label="查看完整更新日志 ${esc(NATIVE_CHANGELOG.version)}" aria-haspopup="dialog"></button></aside></section><div class="native-home"><section class="native-home-card native-loadout"><div class="native-card-heading"><div><span class="native-eyebrow">MISSION SETUP</span><h2>任务配置</h2></div><span class="native-card-index">01</span></div><label class="native-field-label" for="native-mode">行动难度<select id="native-mode">${modes.map(m=>`<option value="${m.modeId}" ${m.modeId===state.mode?'selected':''}>${m.name}</option>`).join('')}</select></label><label class="native-field-label" for="native-map">作战阵地<select id="native-map">${randomMapOption}${maps.map((m,i)=>`<option value="${m.stageId}" ${m.stageId===state.map?'selected':''}>阵地 ${i+1} · ${m.stageId}</option>`).join('')}</select></label><div class="native-loadout-actions"><button class="native-prep-entry" data-act="prepare"><span class="native-prep-entry-icon" aria-hidden="true">◈</span><span class="native-prep-entry-label">战前准备</span></button>${state.game?'<button data-act="resume">恢复本地模拟</button>':''}<button data-act="import">导入存档</button></div></section><section class="native-home-card native-database"><div class="native-card-heading"><div><span class="native-eyebrow">REFERENCE / TOOLS</span><h2>资料与工具</h2></div><span class="native-card-index">02</span></div><div class="native-tool-grid"><button data-act="editor"><span class="native-tool-icon">▦</span><span><b>协议自定义</b><small>编辑敌人波次、盟约禁用名单与随机禁用方案</small></span><em>→</em></button><button data-act="archive"><span class="native-tool-icon">▤</span><span><b>战绩与解锁</b><small>查看最近对局与已解锁内容</small></span><em>→</em></button><button data-act="passcode"><span class="native-tool-icon">※</span><span><b>输入密码</b><small>用数字键盘输入密码</small></span><em>→</em></button></div></section></div><footer class="native-lobby-footer"><span>本期预设与属性来源：PRTS / 历史游戏数据</span><span>非官方同人作品 · v0.9 combat console</span></footer></main>`;
 }
 
-return {NATIVE_CHANGELOG,renderLobby};
+return {NATIVE_CHANGELOG,changelogHtml,renderLobby};
 },
 "native-play.js": function(load) {
 const {renderBountyChoice,renderDecisionChoice} = load("native-choices.js");
@@ -16510,7 +16513,7 @@ const {PASSCODE_MAX,applyPasscode} = load("native-passcode.js");
 const {NATIVE_DATA} = load("runtime-data.js");
 const {NativeSession} = load("native-session.js");
 const {NativeBattle} = load("native-battle.js");
-const {renderLobby,NATIVE_CHANGELOG} = load("native-lobby.js");
+const {renderLobby,NATIVE_CHANGELOG,changelogHtml} = load("native-lobby.js");
 const {buildPhasePlan,ensureStock,STOCK_BY_TIER,garrisonText,richText,battleBoardVisible,bondCurrentPreviewHtml,isolatedPlatform,tileLiftAmount,ROUND_LEAK_CAP,HAND_LIMIT,enemySprite,battleTally,RANDOM_MAP_ID,resolveMapId,directionOf,mapThumbnailHtml} = load("protocol.js");
 // 特殊地块/地图装置的绘制只读环境层：气流格由 blowerCells 统一算，别在绘制里另算一遍。
 const {blowerCells} = load("native-environment.js");
@@ -16613,7 +16616,7 @@ function recordRunIfOver(g){
 function notice(s){const t=document.getElementById('toast');t.textContent=eggOn()?rewrite325Text(s):s;t.classList.add('visible');clearTimeout(notice.timer);notice.timer=setTimeout(()=>t.classList.remove('visible'),4000);}
 function currentTurn(){return buildPhasePlan(data,state.game.s.modeId).find(t=>t.round===state.game.s.round);}
 function modal(html,meta=null){state.modal=html;state.modalMeta=meta;renderModal();}
-function showUpdateLog(){const log=NATIVE_CHANGELOG;modal(`<h2>更新日志</h2><div class="native-changelog-meta"><b>${esc(log.version)}</b><time datetime="${esc(log.publishedAt)}">${esc(log.displayTime)}</time></div><p class="native-changelog-intro">本次对话的修复与体验调整。</p>${log.sections.map(section=>`<section class="native-changelog-section"><h3>${esc(section.title)}</h3><ul>${section.items.map(item=>`<li>${esc(item)}</li>`).join('')}</ul></section>`).join('')}`);}
+function showUpdateLog(){const log=NATIVE_CHANGELOG;modal(`<h2>更新日志</h2><div class="native-changelog-meta"><b>${esc(log.version)}</b><time datetime="${esc(log.publishedAt)}">${esc(log.displayTime)}</time></div><p class="native-changelog-intro">本次对话的修复与体验调整。</p>${log.sections.map(section=>`<section class="native-changelog-section"><h3>${changelogHtml(section.title)}</h3><ul>${section.items.map(item=>`<li>${changelogHtml(item)}</li>`).join('')}</ul></section>`).join('')}`);}
 let painting=false;
 function eggOn(){return egg325Active(state);}
 // 海猫模式：整备资金视为无限，界面上以彩色 ALL 代替金额。
