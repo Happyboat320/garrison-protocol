@@ -16442,7 +16442,7 @@ const NATIVE_CHANGELOG={
   {topic:'反馈修复',summary:'根据反馈修复了大量 BUG。'},
   {topic:'作战界面',summary:'调整了作战界面与交互。'},
   {topic:'道具图标',summary:'实装道具图标。'},
-  {topic:'325模式',summary:'修复无法解除的问题；325模式数字采用彩色流动字体。'},
+  {topic:'325模式',summary:'已修复数字效果无法解除的问题。'},
   {topic:'模式发现',summary:'尝试解决325模式不易被发现的问题。'}
  ],
  sections:[
