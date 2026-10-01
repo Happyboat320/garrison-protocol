@@ -13,7 +13,7 @@ import {PASSCODE_MAX,applyPasscode} from './native-passcode.js';
 import {NATIVE_DATA} from './runtime-data.js';
 import {NativeSession} from './native-session.js';
 import {NativeBattle} from './native-battle.js';
-import {renderLobby} from './native-lobby.js';
+import {renderLobby,NATIVE_CHANGELOG} from './native-lobby.js';
 import {buildPhasePlan,ensureStock,STOCK_BY_TIER,garrisonText,richText,battleBoardVisible,bondCurrentPreviewHtml,isolatedPlatform,tileLiftAmount,ROUND_LEAK_CAP,HAND_LIMIT,enemySprite,battleTally,RANDOM_MAP_ID,resolveMapId,directionOf,mapThumbnailHtml} from './protocol.js';
 // 特殊地块/地图装置的绘制只读环境层：气流格由 blowerCells 统一算，别在绘制里另算一遍。
 import {blowerCells} from './native-environment.js';
@@ -117,6 +117,7 @@ function recordRunIfOver(g){
 function notice(s){const t=document.getElementById('toast');t.textContent=eggOn()?rewrite325Text(s):s;t.classList.add('visible');clearTimeout(notice.timer);notice.timer=setTimeout(()=>t.classList.remove('visible'),4000);}
 function currentTurn(){return buildPhasePlan(data,state.game.s.modeId).find(t=>t.round===state.game.s.round);}
 function modal(html,meta=null){state.modal=html;state.modalMeta=meta;renderModal();}
+function showUpdateLog(){const log=NATIVE_CHANGELOG;modal(`<h2>更新日志</h2><div class="native-changelog-meta"><b>${esc(log.version)}</b><time datetime="${esc(log.publishedAt)}">${esc(log.displayTime)}</time></div><p class="native-changelog-intro">本次对话的修复与体验调整。</p>${log.sections.map(section=>`<section class="native-changelog-section"><h3>${esc(section.title)}</h3><ul>${section.items.map(item=>`<li>${esc(item)}</li>`).join('')}</ul></section>`).join('')}`);}
 let painting=false;
 function eggOn(){return egg325Active(state);}
 // 海猫模式：整备资金视为无限，界面上以彩色 ALL 代替金额。
@@ -371,6 +372,7 @@ function bondLayerReport(rows){return '<section class="native-result-bond-layers
 function showResult(){const g=state.game,r=g.s.runResult||g.s.history.at(-1);if(!r)return;const archived=state.archive?.runs?.length||archiveNow().runs.length,units=(r.units||[]).slice().sort((a,b)=>b.damage-a.damage),selected=units.find(u=>u.uid===state.resultUnitUid)||units[0],bossName=r.bossName||'最终 Boss';modal(`<h2>${r.kind==='final-boss'?(r.reason==='boss-killed'?'Boss 击破 · 挑战成功':'Boss 未能击破 · 挑战结束'):'作战报告'}</h2>${r.kind==='final-boss'?`<p class="native-boss-result-heading">${esc(bossName)} · ${r.elapsed.toFixed(1)} 秒</p>`:''}<p>总伤害</p><strong class="native-total">${Math.round(r.totalDamage||0).toLocaleString()}</strong><p>${r.elapsed.toFixed(2)} 秒 · DPS ${(r.dps??(r.elapsed>0?r.totalDamage/r.elapsed:0)).toFixed(2)}${r.kind==='final-boss'?` · 红门漏怪 ${r.timePenalty||0} 次`:''}</p>${archived?`<p class="muted small">已记入本地战绩：最近 ${archived} 场，可在「战前准备」页查看并随存档导出。</p>`:''}<div class="native-result-dps"><h3>角色全程 DPS</h3><div class="native-result-unit-list">${units.map(u=>{const source=g.s.units.find(x=>x.uid===u.uid),name=source?data.profiles[source.chessId].name:u.id||'其他来源';return `<button data-act="result-unit" data-uid="${u.uid}" class="${selected?.uid===u.uid?'chosen':''}">${esc(name)}<b>${Math.round(u.damage).toLocaleString()}</b></button>`;}).join('')||'<p>本次没有造成伤害。</p>'}</div>${selected?reportCurve(selected.dpsSamples):''}</div>${bondLayerReport(finalBondLayerRows(g,r))}<div class="native-result-actions"><button data-act="export">导出本次记录</button><button class="native-primary" data-act="home">回到大厅</button></div>`);}
 function action(button,anchor=null){const a=button.dataset.act,g=state.game,uid=Number(button.dataset.uid);if(button.disabled)return;if(['home','new','begin','resume','sandbox','sandbox-exit'].includes(a))runtimeFault=null;if(['sandbox','home','sandbox-exit','new'].includes(a))rememberView('lobby');if(['begin','resume','import'].includes(a))rememberView('game');
  if(a==='result-unit'){state.resultUnitUid=uid;showResult();return;}
+ if(a==='update-log'){showUpdateLog();return;}
  if(a==='fullscreen'){enterPlayChrome().then(()=>{if(!(document.fullscreenElement||document.webkitFullscreenElement))notice('未能进入全屏，请再次点击或检查浏览器全屏设置。');});return;}
  if(a==='ban-list'){showBannedOperators();return;}
  if(a==='archive'&&state.view==='lobby'){modal(renderArchiveWindow(archiveNow(),esc));return;}
