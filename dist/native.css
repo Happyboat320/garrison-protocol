@@ -214,16 +214,15 @@ body{min-width:0;background:#071114}
 .native-update-heading h2{font-size:24px}
 .native-operation-line{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 0 13px;padding:9px 0;border-top:1px solid #244846;border-bottom:1px solid #244846;color:#80a89f;font:600 10px/1.4 var(--mono,'Arial Narrow',sans-serif);letter-spacing:.08em}
 .native-operation-code{color:#f0d18a;font:600 11px/1.4 var(--mono,'Arial Narrow',sans-serif);letter-spacing:.04em;text-align:right}
-.native-update-intro{margin:0 0 8px!important;color:#a7c5bd;font-size:12px!important;line-height:1.65!important}
 .native-update-list{display:grid;flex:1;grid-template-columns:1fr;gap:0;margin:0!important;padding:0!important;list-style:none}
 .native-update-list li{display:grid;grid-template-columns:42px minmax(0,1fr);gap:11px;padding:10px 0;border-top:1px solid #234744}
 .native-update-list time{padding-top:2px;color:#71d9bb;font:600 10px/1.4 var(--mono,'Arial Narrow',sans-serif);letter-spacing:.04em}
 .native-update-list li>div{position:relative;min-width:0;padding-left:13px}
 .native-update-list li>div:before{position:absolute;top:5px;left:0;width:5px;height:5px;border:1px solid #6fd7ba;content:"";transform:rotate(45deg)}
 .native-update-list b{display:block;color:#e8f4ef;font-size:12px;letter-spacing:.04em}
-.native-changelog-325{display:inline-block;background:linear-gradient(105deg,#ff6f91,#ffc86e,#6be6bc,#6fc7ff,#ba8cff,#ff6f91);background-size:240% 100%;background-clip:text;-webkit-background-clip:text;color:transparent;-webkit-text-fill-color:transparent;font-weight:800;animation:native-changelog-325-flow 3s linear infinite}
-@keyframes native-changelog-325-flow{to{background-position:240% 0}}
-@media(prefers-reduced-motion:reduce){.native-changelog-325{animation:none;background-position:50% 0}}
+.native-flow-color{display:inline-block;background:linear-gradient(105deg,#ff6f91,#ffc86e,#6be6bc,#6fc7ff,#ba8cff,#ff6f91);background-size:240% 100%;background-clip:text;-webkit-background-clip:text;color:transparent;-webkit-text-fill-color:transparent;font-weight:800;animation:native-flow-gradient 3s linear infinite}
+@keyframes native-flow-gradient{to{background-position:240% 0}}
+@media(prefers-reduced-motion:reduce){.native-flow-color{animation:none;background-position:50% 0}}
 .native-update-list p{margin:3px 0 0;color:#8eafa7;font-size:11px;line-height:1.5}
 .native-signal{display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:11px;border-top:1px solid #244846;color:#78d8b9}
 .native-signal>span{width:6px;height:6px;flex:0 0 auto;border-radius:50%;background:#69e0b4;box-shadow:0 0 0 4px #69e0b422}
