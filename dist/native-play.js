@@ -326,7 +326,7 @@ function dossier(){
  // 同名干员（按 charId 归并）的技能是共用的：档案里给个提示，免得玩家以为要一张张改。
  const sameNameCount=owned?g.s.units.filter(v=>v.charId===owned.charId).length:0;
  const equipment=owned?.equipment||[],equipmentSlots=Array.from({length:2},(_,i)=>equipment[i]?`<button class="native-equipment-slot filled" data-act="equip-inspect" data-uid="${owned.uid}" data-slot="${i}"><span class="native-equipment-slot-art">${itemIcon(equipment[i].chessId)}</span><span>装备位 ${i+1}</span><b>${esc(itemName(equipment[i].chessId))}</b><small>已装备 · 点击查看</small></button>`:`<div class="native-equipment-slot"><span>装备位 ${i+1}</span><b>空槽</b><small>${owned?'可装备':'获得干员后可用'}</small></div>`).join('');
- return `<aside class="native-dossier" aria-label="干员档案"><div class="native-dossier-art">${avatar(p.charId)}</div><div class="native-dossier-body"><button data-act="inspect-close" class="native-dossier-close" aria-label="关闭">×</button><h2 class="native-dossier-heading"><span class="native-dossier-heading-name">${esc(p.name)}${p.isGolden?' · 精锐':''}</span>${bondIds.length?`<span class="native-dossier-name-bonds">${bondIds.map(id=>`<i>${esc(data.season.bondInfoDict[id]?.name||id)}</i>`).join('')}</span>`:''}${owned&&g.s.phase==='prep'?`<button class="native-dossier-sell" data-act="sell" data-uid="${owned.uid}">出售 +1 ◆</button>`:''}</h2><p class="native-dossier-kicker">${esc(data.branchRules.records.find(r=>r.id===p.branch)?.name||p.branch||'')} · ${p.rank} 阶${t.reward?' · 三合一奖励候选':''}</p><p id="native-dossier-hp" class="native-dossier-hp">生命 <b>${hp}</b><i>/${max}</i></p><div class="native-dossier-stats"><span>攻击 ${Math.round(a.atk)}</span><span>防御 ${Math.round(a.def)}</span><span>法抗 ${Math.round(a.magicResistance)}</span><span>攻速 ${Math.round(a.attackSpeed)}</span></div><div id="native-dossier-live" class="native-dossier-live"><p>阶段 ${esc(phase)}</p><p>状态 ${esc(statuses)}</p><h3>属性来源</h3><p>${parts}</p></div><h3>所属盟约</h3><div class="native-dossier-bonds">${bondIds.map(id=>`<span>${esc(data.season.bondInfoDict[id]?.name||id)}</span>`).join('')||'<small>暂无盟约</small>'}</div><h3>技能</h3>${owned?`<label>携带技能<select data-uid="${owned.uid}" id="native-skill" ${g.s.phase!=='prep'?'disabled':''}>${data.profiles[owned.chessId].skillChoices.map((v,i)=>`<option value="${i}" ${(owned.skillIndex??data.profiles[owned.chessId].skillIndex)===i?'selected':''}>${esc(v.skill?.name||'无主动技能')}</option>`).join('')}</select></label>${sameNameCount>1?`<p class="native-dossier-sync">同名干员共 ${sameNameCount} 张，技能会一起切换（场上的这些干员保持同一个技能）。</p>`:''}`:`<p class="native-dossier-skill-name">${esc(p.skill?.name||'无主动技能')}</p>`}<p>${esc(renderSkillDescription(p.skill)||'无主动技能')}</p><h3>卫戍</h3>${(p.garrisons||[]).map(x=>`<p>${garrisonHtml(x)}</p>`).join('')||'<p>无卫戍效果</p>'}<h3>装备栏</h3><div class="native-dossier-equipment">${equipmentSlots}</div>${t.shop?`<p class="native-dossier-buy">再次点击卡片购买 · ${catOn()?'ALL':t.price} ◆</p>`:''}${owned&&owned.position&&g.s.phase==='prep'?`<div class="native-dossier-acts"><button data-act="withdraw" data-uid="${owned.uid}">撤回整备区</button></div>`:''}</div></aside>`;
+ return `<aside class="native-dossier" aria-label="干员档案"><div class="native-dossier-art">${avatar(p.charId)}</div><div class="native-dossier-body"><button data-act="inspect-close" class="native-dossier-close" aria-label="关闭">×</button><h2 class="native-dossier-heading"><span class="native-dossier-heading-name">${esc(p.name)}${p.isGolden?'<span class="native-dossier-elite-badge">进阶</span>':''}</span>${bondIds.length?`<span class="native-dossier-name-bonds">${bondIds.map(id=>`<i>${esc(data.season.bondInfoDict[id]?.name||id)}</i>`).join('')}</span>`:''}${owned&&g.s.phase==='prep'?`<button class="native-dossier-sell" data-act="sell" data-uid="${owned.uid}">出售 +1 ◆</button>`:''}</h2><p class="native-dossier-kicker">${esc(data.branchRules.records.find(r=>r.id===p.branch)?.name||p.branch||'')} · ${p.rank} 阶${t.reward?' · 三合一奖励候选':''}</p><p id="native-dossier-hp" class="native-dossier-hp">生命 <b>${hp}</b><i>/${max}</i></p><div class="native-dossier-stats"><span>攻击 ${Math.round(a.atk)}</span><span>防御 ${Math.round(a.def)}</span><span>法抗 ${Math.round(a.magicResistance)}</span><span>攻速 ${Math.round(a.attackSpeed)}</span></div><div id="native-dossier-live" class="native-dossier-live"><p>阶段 ${esc(phase)}</p><p>状态 ${esc(statuses)}</p><h3>属性来源</h3><p>${parts}</p></div><h3>所属盟约</h3><div class="native-dossier-bonds">${bondIds.map(id=>`<span>${esc(data.season.bondInfoDict[id]?.name||id)}</span>`).join('')||'<small>暂无盟约</small>'}</div><h3>技能</h3>${owned?`<label>携带技能<select data-uid="${owned.uid}" id="native-skill" ${g.s.phase!=='prep'?'disabled':''}>${data.profiles[owned.chessId].skillChoices.map((v,i)=>`<option value="${i}" ${(owned.skillIndex??data.profiles[owned.chessId].skillIndex)===i?'selected':''}>${esc(v.skill?.name||'无主动技能')}</option>`).join('')}</select></label>${sameNameCount>1?`<p class="native-dossier-sync">同名干员共 ${sameNameCount} 张，技能会一起切换（场上的这些干员保持同一个技能）。</p>`:''}`:`<p class="native-dossier-skill-name">${esc(p.skill?.name||'无主动技能')}</p>`}<p>${esc(renderSkillDescription(p.skill)||'无主动技能')}</p><h3>卫戍</h3>${(p.garrisons||[]).map(x=>`<p>${garrisonHtml(x)}</p>`).join('')||'<p>无卫戍效果</p>'}<h3>装备栏</h3><div class="native-dossier-equipment">${equipmentSlots}</div>${t.shop?`<p class="native-dossier-buy">再次点击卡片购买 · ${catOn()?'ALL':t.price} ◆</p>`:''}${owned&&owned.position&&g.s.phase==='prep'?`<div class="native-dossier-acts"><button data-act="withdraw" data-uid="${owned.uid}">撤回整备区</button></div>`:''}</div></aside>`;
 }
 function syncQuickSell(){
  document.getElementById('native-quick-sell')?.remove();
@@ -411,7 +411,7 @@ function action(button,anchor=null){const a=button.dataset.act,g=state.game,uid=
   if(result)render();if(a==='ed-close-test')root.querySelector('.wave-ed-current [data-act=ed-roll]')?.focus();return;
  }
   if(a==='strategy-select'&&state.view==='briefing'){state.strategyDraft=null;state.view='strategy-select';render();return;}if(a==='strategy-pick'&&state.view==='strategy-select'){const catalog=document.querySelector('.native-strategy-catalog'),scrollHost=catalog?.scrollHeight>catalog?.clientHeight?catalog:catalog?.closest('.native-lobby'),scroll=scrollHost?.scrollTop||0,id=button.dataset.id;if(state.strategyDraft===id){state.band=id;state.strategyDraft=null;state.view='briefing';render();return;}state.strategyDraft=id;render();const next=document.querySelector('.native-strategy-catalog'),nextHost=next?.scrollHeight>next?.clientHeight?next:next?.closest('.native-lobby');if(nextHost)nextHost.scrollTop=scroll;return;}if(a==='strategy-cancel'&&state.view==='strategy-select'){state.strategyDraft=null;state.view='briefing';render();return;}
- if(a==='new'){const egg=state.mode===EGG_MODE_ID,cat=state.mode===CAT_MODE_ID,modeId=egg?EGG_BASE_MODE:cat?CAT_BASE_MODE:state.mode,seed=(Date.now()&0xffffffff)>>>0;const banConfig=loadBondBan(data),mapId=resolveMapId(data,state.map,waveRng((seed^0x9e3779b9)>>>0));state.draft={modeId,mapId,seed,finalBossId:rollFinalBoss(data,modeId,seed),roster:createWaveRoster({random:waveRng(seed),data,modeId}),bondBan:{bonds:bondBanIds(data,seed,banConfig),always:banConfig.always,never:banConfig.never},egg325:egg,cat};state.bondBanBlocks=0;state.view='briefing';state.strategyDraft=null;state.modal=null;render();return;}
+ if(a==='new'){const egg=state.mode===EGG_MODE_ID,cat=state.mode===CAT_MODE_ID,modeId=egg?EGG_BASE_MODE:cat?CAT_BASE_MODE:state.mode,seed=(Date.now()&0xffffffff)>>>0;const banConfig=loadBondBan(data),mapId=resolveMapId(data,state.map,waveRng((seed^0x9e3779b9)>>>0),modeId);state.draft={modeId,mapId,seed,finalBossId:rollFinalBoss(data,modeId,seed),roster:createWaveRoster({random:waveRng(seed),data,modeId}),bondBan:{bonds:bondBanIds(data,seed,banConfig),always:banConfig.always,never:banConfig.never},egg325:egg,cat};state.bondBanBlocks=0;state.view='briefing';state.strategyDraft=null;state.modal=null;render();return;}
  if(a==='begin'){state.lastChoiceContent=null;enterPlayChrome();state.supplyCollapsed=false;if(!state.draft){state.view='lobby';leavePlayChrome();render();return;}try{state.game=new NativeSession(data,{modeId:state.draft.modeId,bandId:guardedBandId(),mapId:state.draft.mapId,seed:state.draft.seed,waveRoster:state.draft.roster,bondBan:state.draft.bondBan,egg325:!!state.draft.egg325,cat:!!state.draft.cat,finalBossId:state.draft.finalBossId,finalBossHpMultiplier:state.waveTable?.finalBossHpMultiplier??DEFAULT_FINAL_BOSS_HP_MULTIPLIER});state.view='game';state.draft=null;state.paused=false;state.expiresAt=null;state.resultUnitUid=null;state.selected=state.summonSelected=state.item=state.inspect=state.preview=state.modal=null;save();saveCheckpoint();render();}catch(e){notice(e.message);}return;}
  if(a==='resume'){if(state.expiresAt&&Date.now()>=state.expiresAt){notice('暂离已超过24小时，请开始新模拟');return;}enterPlayChrome();state.expiresAt=null;state.view='game';render();return;}if(a==='home'){dismissRoundEnd();if(state.view==='editor'||state.view==='briefing'||state.view==='prepare'){state.view='lobby';leavePlayChrome();render();return;}state.view='lobby';state.paused=true;state.expiresAt??=Date.now()+86400000;state.modal=null;save();leavePlayChrome();render();return;}if(a==='result'){showResult();return;}
  // 导出存档（用户 2026-09-27 需求）：大厅与对局顶栏共用一个入口。
@@ -445,8 +445,8 @@ function action(button,anchor=null){const a=button.dataset.act,g=state.game,uid=
 }
 function handCards(game){if(game.s.phase==='prep')game.syncSummonCards?.();return game.syncHandSlots?.()||game.hand();}
 function handCardKind(game,card){return game.s.units.includes(card)?'operator':game.s.items.includes(card)?'item':'summon-card';}
-function handCardHtml(game,card){const kind=handCardKind(game,card),slot=card.handSlot;if(kind==='operator')return `<button data-act="select" data-uid="${card.uid}" data-hand-card="true" class="native-hand-card${state.selected===card.uid||inspectSame('unit',card.uid)?' chosen':''}" aria-label="${esc(data.profiles[card.chessId].name)}，手牌格 ${slot+1}">${avatar(card.charId)}<b>${esc(data.profiles[card.chessId].name)}</b>${data.profiles[card.chessId].isGolden?'<small>精锐</small>':''}</button>`;if(kind==='item')return `<div role="button" tabindex="0" data-act="item" data-uid="${card.uid}" data-hand-card="true" class="native-hand-card${state.item===card.uid||inspectSame('pack',card.uid)?' chosen':''}" aria-label="${esc(itemName(card.chessId))}，手牌格 ${slot+1}">${itemIcon(card.chessId)}<b>${esc(itemName(card.chessId))}</b></div>`;const hint=card.mode==='skill'?'技能转好后自动出现':card.mode==='auto'?'开战时自动出现':'可拖动放置并选择朝向';return `<button data-act="summon-select" data-uid="${card.uid}" data-mode="${card.mode||'manual'}" data-placeable="${String(!!card.placeable)}" data-hand-card="true" class="native-hand-card native-summon-card${state.summonSelected===card.uid?' chosen':''}"${card.mode!=='manual'&&!card.placeable?' disabled':''} aria-label="${esc(card.name)}，手牌格 ${slot+1}"><span class="native-summon-icon">◈</span><b>${esc(card.name)}</b><small>${hint}</small></button>`;}
-function handView(game){const cards=handCards(game),signature=cards.map(card=>`${handCardKind(game,card)}:${card.uid}@${card.handSlot}`).join('|');if(game.s.phase!=='prep')return {signature,html:cards.map(card=>handCardHtml(game,card)).join('')};const bySlot=new Map(cards.map(card=>[card.handSlot,card])),slot=(index,overflow=false)=>{const card=bySlot.get(index);return `<div class="native-hand-slot${overflow?' is-overflow-slot':''}${card?'':' is-empty'}" data-hand-slot="${index}" aria-label="${overflow?'临时超额':'手牌'}${card?'':'空位'} ${overflow?index-HAND_LIMIT+1:index+1}">${card?handCardHtml(game,card):`<span>${overflow?'+':String(index+1).padStart(2,'0')}</span>`}</div>`;},maxSlot=Math.max(HAND_LIMIT+1,...cards.map(card=>card.handSlot)),overflowSlots=Math.max(2,maxSlot-HAND_LIMIT+1);return {signature,html:Array.from({length:HAND_LIMIT},(_,i)=>slot(i)).join('')+`<span class="native-hand-overflow-divider" aria-hidden="true">临时</span>`+Array.from({length:overflowSlots},(_,i)=>slot(HAND_LIMIT+i,true)).join('')};}
+function handCardHtml(game,card){const kind=handCardKind(game,card),slot=card.handSlot;if(kind==='operator')return `<button data-act="select" data-uid="${card.uid}" data-hand-card="true" class="native-hand-card${data.profiles[card.chessId].isGolden?' is-elite':''}${state.selected===card.uid||inspectSame('unit',card.uid)?' chosen':''}" aria-label="${esc(data.profiles[card.chessId].name)}，手牌格 ${slot+1}">${avatar(card.charId)}<b>${esc(data.profiles[card.chessId].name)}</b>${data.profiles[card.chessId].isGolden?'<small>精锐</small>':''}</button>`;if(kind==='item')return `<div role="button" tabindex="0" data-act="item" data-uid="${card.uid}" data-hand-card="true" class="native-hand-card${state.item===card.uid||inspectSame('pack',card.uid)?' chosen':''}" aria-label="${esc(itemName(card.chessId))}，手牌格 ${slot+1}">${itemIcon(card.chessId)}<b>${esc(itemName(card.chessId))}</b></div>`;const hint=card.mode==='skill'?'技能转好后自动出现':card.mode==='auto'?'开战时自动出现':'可拖动放置并选择朝向';return `<button data-act="summon-select" data-uid="${card.uid}" data-mode="${card.mode||'manual'}" data-placeable="${String(!!card.placeable)}" data-hand-card="true" class="native-hand-card native-summon-card${state.summonSelected===card.uid?' chosen':''}"${card.mode!=='manual'&&!card.placeable?' disabled':''} aria-label="${esc(card.name)}，手牌格 ${slot+1}"><span class="native-summon-icon">◈</span><b>${esc(card.name)}</b><small>${hint}</small></button>`;}
+function handView(game){const cards=handCards(game),signature=cards.map(card=>`${handCardKind(game,card)}:${card.uid}@${card.handSlot}`).join('|');if(game.s.phase!=='prep')return {signature,html:cards.map(card=>handCardHtml(game,card)).join('')};const bySlot=new Map(cards.map(card=>[card.handSlot,card])),slot=(index,overflow=false)=>{const card=bySlot.get(index);return `<div class="native-hand-slot${overflow?' is-overflow-slot':''}${card?'':' is-empty'}" data-hand-slot="${index}" aria-label="${overflow?'临时超额':'手牌'}${card?'':'空位'} ${overflow?index-HAND_LIMIT+1:index+1}">${card?handCardHtml(game,card):`<span>${overflow?'+':String(index+1).padStart(2,'0')}</span>`}</div>`;},overflowSlots=Math.max(0,cards.length-HAND_LIMIT),temporary=overflowSlots?`<span class="native-hand-overflow-divider" aria-hidden="true">临时</span>${Array.from({length:overflowSlots},(_,i)=>slot(HAND_LIMIT+i,true)).join('')}`:'';return {signature,html:Array.from({length:HAND_LIMIT},(_,i)=>slot(i)).join('')+temporary};}
 function renderSummonCards(){const game=state.game,bench=document.getElementById('native-hand');if(!game||!bench)return;const view=handView(game);if(!drag&&bench.dataset.layout!==view.signature){bench.innerHTML=view.html;bench.dataset.layout=view.signature;}}
 // ── 回合结束演出 ────────────────────────────────────────────────────────────
 // 暗屏 + 拉出横幅「波次结束 / WAVE END」→ 停留 1 秒 → 收横幅 → 「损失生命」从 0 快速累加到位。
@@ -865,7 +865,7 @@ function paneLocal(scroller,x,y){
 }
 function scrollerAtPoint(x,y){
  const hit=document.elementFromPoint(x,y);
- const panes=[...root.querySelectorAll('.native-strategy-catalog, .native-strategy-pane, .native-dossier, .native-modal>section, .native-prep-list, .native-lobby')].reverse();
+ const panes=[...root.querySelectorAll('.native-strategy-catalog, .native-strategy-pane, .native-dossier, .native-modal>section, .native-prep-list, .native-bench, .native-lobby')].reverse();
  for(const pane of panes){
   if(paneMax(pane)<=0)continue;
   const p=paneLocal(pane,x,y);
@@ -879,14 +879,14 @@ function paneTrack(scroller){
  return scroller.querySelector(':scope > .native-strategies, :scope > .native-dossier-body, .native-strategies, .native-dossier-body')||scroller.firstElementChild;
 }
 function paneMax(scroller){
- if(scroller.matches('.native-prep-list'))return Math.max(0,scroller.scrollWidth-scroller.clientWidth);
+ if(scroller.matches('.native-prep-list, .native-bench'))return Math.max(0,scroller.scrollWidth-scroller.clientWidth);
  if(scroller.matches('.native-lobby, .native-strategy-catalog'))return Math.max(0,scroller.scrollHeight-scroller.clientHeight);
  const track=paneTrack(scroller);
  return Math.max(0,(track?.offsetHeight||0)-scroller.clientHeight);
 }
-function shiftOf(scroller){return scroller.matches('.native-prep-list')?scroller.scrollLeft:scroller.matches('.native-lobby, .native-strategy-catalog')?scroller.scrollTop:paneShift.get(scroller)||0;}
+function shiftOf(scroller){return scroller.matches('.native-prep-list, .native-bench')?scroller.scrollLeft:scroller.matches('.native-lobby, .native-strategy-catalog')?scroller.scrollTop:paneShift.get(scroller)||0;}
 function setShift(scroller,y){
- if(scroller.matches('.native-prep-list')){const next=Math.max(0,Math.min(paneMax(scroller),y));scroller.scrollLeft=next;return next;}
+ if(scroller.matches('.native-prep-list, .native-bench')){const next=Math.max(0,Math.min(paneMax(scroller),y));scroller.scrollLeft=next;return next;}
  if(scroller.matches('.native-lobby, .native-strategy-catalog')){const next=Math.max(0,Math.min(paneMax(scroller),y));scroller.scrollTop=next;return next;}
  const track=paneTrack(scroller);
  if(!track)return 0;
@@ -904,16 +904,18 @@ function hitInScroller(scroller,x,y){
 function paneScroller(start){
  let node=start?.nodeType===1?start:start?.parentElement;
  while(node&&node!==root){
-  if(node.matches?.('.native-strategy-catalog, .native-strategy-pane, .native-dossier, .native-modal>section, .native-prep-list, .native-lobby')&&paneMax(node)>0)return node;
+  if(node.matches?.('.native-strategy-catalog, .native-strategy-pane, .native-dossier, .native-modal>section, .native-prep-list, .native-bench, .native-lobby')&&paneMax(node)>0)return node;
   node=node.parentElement;
  }
  return null;
 }
 function paneDelta(touch,clientX,clientY,scroller){
+ if(scroller?.matches('.native-bench'))return rotatedPlay()?touch.y-clientY:touch.x-clientX;
  return scroller?.matches('.native-prep-list')||rotatedPlay()?touch.x-clientX:touch.y-clientY;
 }
-let paneTouch=null,paneMoved=false;
+let paneTouch=null,paneMoved=false,benchTouchMoved=false;
 root.addEventListener('touchstart',e=>{
+ benchTouchMoved=false;
  if(e.touches.length!==1)return;
  paneMoved=false;
  const t=e.touches[0],scroller=scrollerAtPoint(t.clientX,t.clientY)||paneScroller(e.target);
@@ -926,20 +928,21 @@ root.addEventListener('touchmove',e=>{
  const t=e.touches[0],dy=paneDelta(paneTouch,t.clientX,t.clientY,paneTouch.scroller);
  if(Math.abs(dy)<8)return;
  setShift(paneTouch.scroller,paneTouch.top+dy);
+ if(paneTouch.scroller.matches('.native-bench'))benchTouchMoved=true;
  paneMoved=true;
  touchButton=null;
  e.preventDefault();
 },{passive:false});
 root.addEventListener('touchend',()=>{
   if(paneMoved){ignoredClickUntil=Math.max(ignoredClickUntil,performance.now()+80);paneTouch=null;return;}
-  paneTouch=null;paneMoved=false;
+  paneTouch=null;paneMoved=false;benchTouchMoved=false;
 },{passive:true});
-root.addEventListener('touchcancel',()=>{paneTouch=null;paneMoved=false;},{passive:true});
+root.addEventListener('touchcancel',()=>{paneTouch=null;paneMoved=false;benchTouchMoved=false;},{passive:true});
 root.addEventListener('wheel',e=>{
  const scroller=scrollerAtPoint(e.clientX,e.clientY);
  if(!scroller||paneMax(scroller)<=0)return;
  e.preventDefault();
- setShift(scroller,shiftOf(scroller)+(scroller.matches('.native-prep-list')?(e.deltaX||e.deltaY):e.deltaY));
+ setShift(scroller,shiftOf(scroller)+(scroller.matches('.native-prep-list, .native-bench')?(e.deltaX||e.deltaY):e.deltaY));
 },{passive:false});
 root.addEventListener('click',e=>{
   if(dossierDismissedAt>0&&performance.now()-dossierDismissedAt<500){dossierDismissedAt=0;e.preventDefault();return;}
@@ -970,10 +973,12 @@ root.addEventListener('pointerdown',e=>{
 });
 root.addEventListener('pointermove',e=>{
  if(touchButton&&Math.hypot(e.clientX-touchButton.x,e.clientY-touchButton.y)>8)touchButton=null;
+ if(benchTouchMoved&&drag?.id===e.pointerId){clearDrag();return;}
  if(drag&&drag.id===e.pointerId){drag.x=e.clientX;drag.y=e.clientY;if(Math.hypot(e.clientX-drag.x0,e.clientY-drag.y0)>8)drag.moved=true;if(drag.moved){canvasPress=null;touchButton=null;dragFeedback();draw();}}
  if(aim&&aim.id===e.pointerId&&state.preview){const dx=e.clientX-aim.x,dy=e.clientY-aim.y;state.preview.dir=Math.hypot(dx,dy)<18?null:Math.abs(dx)>Math.abs(dy)?dx>0?0:2:dy>0?1:3;draw();}
 });
 root.addEventListener('pointerup',e=>{
+ if(benchTouchMoved){benchTouchMoved=false;paneMoved=false;paneTouch=null;ignoredClickPointer=e.pointerId;ignoredClickUntil=performance.now()+400;clearDrag();return;}
  if(drag&&drag.id===e.pointerId){const d=drag;if(d.moved){
 if(d.from==='hand'&&!(d.kind==='item'&&overUnitCard(e.clientX,e.clientY))){const slot=handSlotAt(e.clientX,e.clientY);if(slot!==null){drag=null;dragFeedback();ignoredClickPointer=e.pointerId;ignoredClickUntil=performance.now()+400;if(moveHandCardToSlot(d.kind,d.uid,slot)){state.inspect=null;save();notice('已调整手牌位置');}render();return;}}if(d.kind==='operator'&&overShop(e.clientX,e.clientY)){drag=null;dragFeedback();const u=state.game.s.units.find(x=>x.uid===d.uid);const name=u?(data.profiles[u.chessId]?.name||'干员'):'干员';if(state.game.perform('sell',d.uid)){state.selected=null;state.inspect=null;save();notice('已出售 '+name+'，资金 +'+(u?data.season.shopCharChessInfoData[u.rank][data.season.charChessDataDict[u.chessId].isGolden?1:0].chessSoldPrice:0)+' ◆');}else notice('当前阶段无法出售该干员。');render();return;}
 if(d.kind==='item'&&d.from==='hand'){const u=equipDropTarget(e.clientX,e.clientY);drag=null;dragFeedback();if(u){const name=data.profiles[u.chessId]?.name||'干员';const equipped=equipItemOnUnit(u.uid,d.uid);state.selected=u.uid;state.inspect={kind:'unit',uid:u.uid};save();render();if(equipped)notice('已为'+name+'装备。');return;}notice('请把装备拖到干员身上。');render();return;}ignoredClickPointer=e.pointerId;ignoredClickUntil=performance.now()+400;clearDrag();state.inspect=null;
@@ -996,7 +1001,7 @@ if(d.kind==='item'&&d.from==='hand'){const u=equipDropTarget(e.clientX,e.clientY
   if(t.id===e.pointerId&&t.b.isConnected&&!t.b.disabled)action(t.b);
  }
 });
-root.addEventListener('pointercancel',()=>{if(!drag&&!aim&&!state.preview&&!canvasPress)return;clearDrag();aim=null;state.preview=null;render();});
+root.addEventListener('pointercancel',()=>{benchTouchMoved=false;if(!drag&&!aim&&!state.preview&&!canvasPress)return;clearDrag();aim=null;state.preview=null;render();});
 document.addEventListener('keydown',e=>{if(root.querySelector('#wave-ed-test[open]')||root.querySelector('.native-choice-overlay'))return;if(e.target.matches('input,select,textarea'))return;if(e.key==='Escape'){clearDrag();aim=null;state.preview=null;state.selected=state.summonSelected=null;state.inspect=null;if(!requiredChoicePending())state.modal=null;render();}if(state.preview){const d={ArrowRight:0,ArrowDown:1,ArrowLeft:2,ArrowUp:3}[e.key];if(d!==undefined){e.preventDefault();state.preview.dir=d;draw();}if(e.key==='Enter')commitPreview();}});
 window.addEventListener('beforeunload',()=>{state.expiresAt??=Date.now()+86400000;save();});
 // 切走页面**不再自动暂停**（用户 2026-09-23 口径「网页切走时后台继续运行而不是暂停」）：隐藏标签页里

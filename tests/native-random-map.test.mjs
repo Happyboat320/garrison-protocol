@@ -54,7 +54,7 @@ test('大厅阵地下拉：第一项是随机地图且默认选中，选具体�
 test('开局接线：默认哨兵、按种子解析、会话与沙盒都拿到具体阵地',async()=>{
  const play=await read('native-play.js');
  assert.match(play,/map:RANDOM_MAP_ID,/,'state.map 默认是随机地图哨兵');
- assert.match(play,/const banConfig=loadBondBan\(data\),mapId=resolveMapId\(data,state\.map,waveRng\(\(seed\^0x9e3779b9\)>>>0\)\);state\.draft=\{modeId,mapId,seed,/,'开局时按本局种子把哨兵解析成具体阵地');
+ assert.match(play,/const banConfig=loadBondBan\(data\),mapId=resolveMapId\(data,state\.map,waveRng\(\(seed\^0x9e3779b9\)>>>0\),modeId\);state\.draft=\{modeId,mapId,seed,/,'开局时按本局种子和难度把哨兵解析成具体阵地');
  assert.match(play,/mapId:resolveMapId\(data,state\.map\),seed:1/,'技能测试场也要解析哨兵，不能把 random 传给会话');
  // 行为验证：解析出来的阵地真的能起一局，且同种子可复现。
  const first=pickFor(1),second=pickFor(1);

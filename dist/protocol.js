@@ -48,10 +48,11 @@ export function baseFunding(round){if(!Number.isInteger(round)||round<1)throw Er
 // 开局时按本局种子从可选阵地（weight>0）里等概率抽一个具体 stageId 写进 draft／会话——之后简报、波次、
 // 地图控制器都只看到具体阵地，认不出这个哨兵；阵地下拉里选中它只表示「本局开局再抽」。
 export const RANDOM_MAP_ID='random';
-export function selectableMaps(data){return (data?.maps||[]).filter(m=>Number(m?.weight)>0);}
-export function resolveMapId(data,id,random=Math.random){
+// 绝境与终极难度的随机池排除 act1autochess_m01；具体地图仍可由玩家手动指定。
+export function selectableMaps(data,modeId=null){const difficulty=data?.season?.modeDataDict?.[modeId]?.modeDifficulty,skipAct1M01=difficulty==='HARD'||difficulty==='ABYSS';return (data?.maps||[]).filter(m=>Number(m?.weight)>0&&(!skipAct1M01||m?.stageId!=='act1autochess_m01'));}
+export function resolveMapId(data,id,random=Math.random,modeId=null){
  if(id&&id!==RANDOM_MAP_ID)return id;
- const list=selectableMaps(data);
+ const list=selectableMaps(data,modeId);
  if(!list.length)return id||null;
  const index=Math.max(0,Math.min(list.length-1,Math.floor((Number(random())||0)*list.length)));
  return list[index].stageId;

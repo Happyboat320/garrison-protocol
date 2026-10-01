@@ -1176,3 +1176,6 @@ html.native-need-rotate .native-briefing.native-briefing-v2{overflow:hidden}
 .native-prep-item .native-prep-title{align-items:center}
 .native-prep-item-icon{width:34px;height:34px;flex:0 0 auto;object-fit:contain}
 .native-prep-item-icon-empty{visibility:hidden}
+.native-dossier-heading-name{display:inline-flex;align-items:center;gap:5px}
+.native-dossier-elite-badge{display:inline-flex;align-items:center;flex:0 0 auto;padding:2px 5px;border:1px solid #e4bc50;border-radius:3px;background:#3a2d10;color:#ffe89a;font-size:10px;font-weight:700;line-height:1.2;letter-spacing:.04em;white-space:nowrap}
+.native-bench .native-hand-card.is-elite img{box-sizing:border-box;padding:2px;border:1px solid #f0cf72;border-radius:4px;background:linear-gradient(145deg,#6b501d,#b78c2e 52%,#44310f);box-shadow:inset 0 0 0 1px #ffe7a055,0 0 8px #e9c35b66}
