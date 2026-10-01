@@ -13930,8 +13930,9 @@ class NativeSession extends NativeEconomy {
   if(r.kind==='item'){
    const pool=String(r.pool||''),fixedTier=r.tier||Number(pool.match(/shop_(\d)/)?.[1]),named=NAMED_POOLS[pool];
    const pooled=Boolean(named?.members||named?.bond);
-   // 带特殊词条的维式重锤只走维多利亚专属奖励池；1 阶基础版仍可进入常规商店。
-   const storePool=!pool,isVictoriaSpecial=item=>(item.normal?.giveBondId==='victoriaShip'||this.data.season.trapChessDataDict[item.id]?.giveBondId==='victoriaShip')&&Number(item.rank)>1,eligible=item=>itemAllowed(item,this)&&(!storePool||!isVictoriaSpecial(item));
+   // 突变细胞只由「不稳定要素」发放，不进商店刷新池。
+   // 带特殊词条的维式重锤仍只走维多利亚专属奖励池；1 阶基础版仍可进入常规商店。
+   const storePool=!pool,shopOffer=!!r.shop,isVictoriaSpecial=item=>(item.normal?.giveBondId==='victoriaShip'||this.data.season.trapChessDataDict[item.id]?.giveBondId==='victoriaShip')&&Number(item.rank)>1,isMutationCell=item=>item.id==='chess_item_5_08_e_a',eligible=item=>itemAllowed(item,this)&&(!storePool||!isVictoriaSpecial(item))&&(!shopOffer||!isMutationCell(item));
    let items=this.data.items.filter(i=>eligible(i)&&(pooled||i.rank<=this.s.level));
    if(fixedTier)items=this.data.items.filter(i=>eligible(i)&&i.rank===fixedTier);
    const bond=named?.bond||(pool.includes('equip_vict')?'victoriaShip':null);
@@ -13984,7 +13985,7 @@ class NativeSession extends NativeEconomy {
  // 商店候选取自「库存池」：每个干员按剩余库存占权重，整池无放回抽。
  // 库存 3/3/4 的三人等价于十张卡等权，同一家店也不会给出比库存更多的同名卡。
  rollOffers(preferBond=null){const required=runStrategyEvent(this,'refreshRequirements'),used={};const draw=extra=>{try{return this.drawFromPool({kind:'operator',maxTier:this.s.level,...extra},used);}catch{return null;}};const rows=Array.from({length:this.terms().operatorSlots},()=>preferBond?(draw({bond:preferBond})??draw({})):draw({}));for(const r of required){if(r.bond)for(let i=0;i<r.minCount;i++)rows[i]=draw({bond:r.bond})??rows[i];if(r.duplicateCount&&rows[0]){const cap=Number.isFinite(this.s.stock?.[rows[0]])?this.s.stock[rows[0]]:Infinity;for(let i=1;i<rows.length&&i<r.duplicateCount&&i<cap;i++)rows[i]=rows[0];}}return rows;}
- fillItems(){this.s.itemOffers=Array.from({length:this.terms().itemSlots},()=>this.drawFromPool({kind:'item'}));}
+ fillItems(){this.s.itemOffers=Array.from({length:this.terms().itemSlots},()=>this.drawFromPool({kind:'item',shop:true}));}
  ensureRewards(){const r=this.s.rewardPending;if(r?.tier&&!r.offers){r.offers=this.drawDistinct({kind:'operator',tier:r.tier},3);r.kind='operator';}}
  rewardFromBond(owner,count){const bonds=this.gainableBonds(owner,this.s.level).filter(Boolean);if(!bonds.length)return false;this.s.rewardPending={offers:this.drawDistinct({kind:'operator',bond:this.pick(bonds),maxTier:this.s.level},count),choice:1,kind:'operator'};return true;}
  rewardFromTier(tier,count){this.s.rewardPending={offers:this.drawDistinct({kind:'operator',tier:Math.min(6,tier)},count),choice:1,kind:'operator'};return true;}
@@ -14151,7 +14152,7 @@ class NativeSession extends NativeEconomy {
  bondLayerSnapshot(){const visible=id=>seesRun(this)||id!==SEES_BOND_ID&&id!==TARTARUS_BOND_ID,ids=new Set([...Object.keys(this.data.season.bondInfoDict||{}),SEES_BOND_ID,TARTARUS_BOND_ID,...Object.keys(this.s.bondLayers||{})]);return [...ids].filter(visible).map(id=>{const value=Number(this.s.bondLayers?.[id]);return {id,name:this.data.season.bondInfoDict[id]?.name||id,layers:Number.isFinite(value)?Math.max(0,Math.floor(value)):0};});}
  finishCurrentBattle(){if(!this.battle?.s.finished||this.s.phase!=='battle')return;const r=this.battle.s.result;r.finalBondLayers=this.bondLayerSnapshot();this.s.history.push(r);if(r.kind==='final-boss'){this.s.runResult=r;if(r.reason!=='boss-killed')this.s.hp=0;this.s.phase='finished';}else{const loss=Math.min(ROUND_LEAK_CAP,r.leaks);this.s.hp=Math.max(0,this.s.hp-loss);this.finishBattle({success:this.s.hp>0,leaks:r.leaks});this.s.lastBattle.loss=loss;if(!this.s.hp)this.s.runResult=r;}this.applyPostBattleTransforms();}
  tick(){if(this.s.phase==='battle'&&this.battle){this.battle.step();this.finishCurrentBattle();}}
- advanceRound(){if(this.s.phase!=='intermission')return false;const locked=this.s.locked,oldOffers=locked?this.s.offers.slice():null,oldItems=locked?this.s.itemOffers.slice():null;this.s.prepApplied=false;const ok=this.nextRound(locked?[]:this.rollOffers());if(!ok)return false;if(locked){const refillOffers=this.rollOffers();this.s.offers=Array.from({length:this.terms().operatorSlots},(_,i)=>oldOffers[i]??refillOffers[i]);const refillItems=Array.from({length:this.terms().itemSlots},()=>this.drawFromPool({kind:'item'}));this.s.itemOffers=Array.from({length:this.terms().itemSlots},(_,i)=>oldItems[i]??refillItems[i]);}else this.fillItems();this.addFunds(this.s.passiveIncome);this.applyProjectionUpgrades();
+ advanceRound(){if(this.s.phase!=='intermission')return false;const locked=this.s.locked,oldOffers=locked?this.s.offers.slice():null,oldItems=locked?this.s.itemOffers.slice():null;this.s.prepApplied=false;const ok=this.nextRound(locked?[]:this.rollOffers());if(!ok)return false;if(locked){const refillOffers=this.rollOffers();this.s.offers=Array.from({length:this.terms().operatorSlots},(_,i)=>oldOffers[i]??refillOffers[i]);const refillItems=Array.from({length:this.terms().itemSlots},()=>this.drawFromPool({kind:'item',shop:true}));this.s.itemOffers=Array.from({length:this.terms().itemSlots},(_,i)=>oldItems[i]??refillItems[i]);}else this.fillItems();this.addFunds(this.s.passiveIncome);this.applyProjectionUpgrades();
   // 进入新回合只做「按持有者/类型对账」，**不重置已放置的召唤物卡**：召唤物留在原位跨回合存在，
   // 只有持有者撤走（syncSummonCards 会把卡删掉）或主动撤回整备区（withdrawSummonCard）才会离场。
   if(this.s.phase==='prep')this.syncSummonCards();if(this.s.phase==='decision')this.prepareRoundDecision();return true;
