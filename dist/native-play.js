@@ -13,7 +13,7 @@ import {PASSCODE_MAX,applyPasscode} from './native-passcode.js';
 import {NATIVE_DATA} from './runtime-data.js';
 import {NativeSession} from './native-session.js';
 import {NativeBattle} from './native-battle.js';
-import {renderLobby,NATIVE_CHANGELOG} from './native-lobby.js';
+import {renderLobby,NATIVE_CHANGELOG,changelogHtml} from './native-lobby.js';
 import {buildPhasePlan,ensureStock,STOCK_BY_TIER,garrisonText,richText,battleBoardVisible,bondCurrentPreviewHtml,isolatedPlatform,tileLiftAmount,ROUND_LEAK_CAP,HAND_LIMIT,enemySprite,battleTally,RANDOM_MAP_ID,resolveMapId,directionOf,mapThumbnailHtml} from './protocol.js';
 // 特殊地块/地图装置的绘制只读环境层：气流格由 blowerCells 统一算，别在绘制里另算一遍。
 import {blowerCells} from './native-environment.js';
@@ -117,7 +117,7 @@ function recordRunIfOver(g){
 function notice(s){const t=document.getElementById('toast');t.textContent=eggOn()?rewrite325Text(s):s;t.classList.add('visible');clearTimeout(notice.timer);notice.timer=setTimeout(()=>t.classList.remove('visible'),4000);}
 function currentTurn(){return buildPhasePlan(data,state.game.s.modeId).find(t=>t.round===state.game.s.round);}
 function modal(html,meta=null){state.modal=html;state.modalMeta=meta;renderModal();}
-function showUpdateLog(){const log=NATIVE_CHANGELOG;modal(`<h2>更新日志</h2><div class="native-changelog-meta"><b>${esc(log.version)}</b><time datetime="${esc(log.publishedAt)}">${esc(log.displayTime)}</time></div><p class="native-changelog-intro">本次对话的修复与体验调整。</p>${log.sections.map(section=>`<section class="native-changelog-section"><h3>${esc(section.title)}</h3><ul>${section.items.map(item=>`<li>${esc(item)}</li>`).join('')}</ul></section>`).join('')}`);}
+function showUpdateLog(){const log=NATIVE_CHANGELOG;modal(`<h2>更新日志</h2><div class="native-changelog-meta"><b>${esc(log.version)}</b><time datetime="${esc(log.publishedAt)}">${esc(log.displayTime)}</time></div><p class="native-changelog-intro">本次对话的修复与体验调整。</p>${log.sections.map(section=>`<section class="native-changelog-section"><h3>${changelogHtml(section.title)}</h3><ul>${section.items.map(item=>`<li>${changelogHtml(item)}</li>`).join('')}</ul></section>`).join('')}`);}
 let painting=false;
 function eggOn(){return egg325Active(state);}
 // 海猫模式：整备资金视为无限，界面上以彩色 ALL 代替金额。
