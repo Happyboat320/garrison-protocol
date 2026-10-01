@@ -49,6 +49,7 @@ function syncPlayChrome(){
  if(!app)return;
  if(need){app.style.setProperty('width',innerHeight+'px','important');app.style.setProperty('height',innerWidth+'px','important');}
  else{app.style.removeProperty('width');app.style.removeProperty('height');}
+ const dossier=document.querySelector('.native-dossier'),top=document.querySelector('.native-top');if(dossier&&top)dossier.style.top=`${top.offsetTop+top.offsetHeight+8}px`;
 }
 async function enterPlayChrome(){
  if(!mobilePlay()||iosMobile())return;

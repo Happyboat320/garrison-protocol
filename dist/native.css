@@ -1090,7 +1090,7 @@ html.native-landscape-ui #native-modal .native-ban-entry{display:block;width:100
 html.native-landscape-ui .native-briefing-v2{display:flex;flex-direction:column;overflow:hidden}
 html.native-need-rotate .native-briefing.native-briefing-v2{overflow:hidden}
 
-.native-dossier .native-dossier-heading{display:flex;align-items:center;flex-wrap:wrap;gap:5px}
+.native-dossier .native-dossier-heading{display:flex;align-items:center;flex-wrap:wrap;gap:5px;padding-right:40px}
 .native-dossier-heading-name{min-width:0}
 .native-dossier-heading .native-dossier-name-bonds{margin-left:0}
 .native-dossier-heading .native-dossier-sell{flex:0 0 auto;margin:0 0 0 auto;padding:4px 7px!important;border-color:#c77370!important;background:#3c1b1d!important;color:#ffe0dc!important;font-size:11px!important;letter-spacing:0;white-space:nowrap}
