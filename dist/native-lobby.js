@@ -8,7 +8,7 @@ export function renderLobby({data,state,avatar,esc=escDefault}){
  const operatorCount=Object.keys(data.profiles).length;
  const enemyCount=Object.keys(data.enemies).length;
  const mapCount=data.maps.filter(m=>m.weight>0).length;
- const modes=Object.values(data.season.modeDataDict).filter(m=>m.modeType!=='MULTI');
+ const modes=Object.values(data.season.modeDataDict).filter(m=>m.modeType!=='MULTI'&&m.modeDifficulty!=='TRAINING');
  modes.push({modeId:EGG_MODE_ID,name:'325模式'});
  modes.push({modeId:CAT_MODE_ID,name:'海猫模式'});
  const maps=data.maps.filter(m=>m.weight>0);

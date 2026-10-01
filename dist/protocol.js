@@ -356,7 +356,8 @@ export function singleDecisionRounds(mode){if(mode?.modeType!=='SINGLE'||mode.mo
 export function shopTerms(data,modeId,level,discount=0){const s=data.season.shopLevelDataDict[modeId]?.[level];if(!s)throw Error('Unknown shop level');return {operatorSlots:s.charChessCount,itemSlots:s.itemCount,upgradeCost:level>=6?null:Math.max(0,s.initialUpgradePrice-discount),refreshCost:data.season.constData.shopRefreshPrice};}
 export function purchasePrice(data,chessId){const shop=data.season.charShopChessDatas[chessId];if(shop)return data.season.shopCharChessInfoData[shop.chessLevel][0].purchasePrice;const item=data.season.trapChessDataDict[chessId];if(item)return item.purchasePrice;throw Error('Unknown offer '+chessId);}
 export function activeBonds(data,units,modeId=null,band=null){
- const allowed=modeId?new Set(data.season.modeDataDict[modeId].activeBondIdList):null,rows={};
+ // 用户口径：标准模拟开放全部盟约；其他难度仍服从原表准入名单。
+ const allStandardBonds=modeId==='mode_single_funny'||modeId==='mode_multi_funny',allowed=modeId&&!allStandardBonds?new Set(data.season.modeDataDict[modeId].activeBondIdList):null,rows={};
  // S.E.E.S. 策略局：两条专属盟约不在 modeDataDict 的 activeBondIdList 里，按「本局策略」额外放行。
  // 【塔尔塔罗斯】是 0/0（阈值恒满足，激活与否只由这个策略决定）；【S.E.E.S.】仍按场上成员数判 3/3。
  const seesBand=isSeesBand(band),seesAllowed=id=>seesBand&&(id===SEES_BOND_ID||id===TARTARUS_BOND_ID);
