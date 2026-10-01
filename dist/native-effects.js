@@ -1399,7 +1399,7 @@ function onSkillStart(battle,u){
   if(u.id==='char_108_silent'&&idx===1){
   u.summonCtrl??={stock:0,cap:1,type:'drone'};
   if((u.summonCtrl.stock||0)<u.summonCtrl.cap)u.summonCtrl.stock++;
-  if(u.summonCtrl.stock>0){spawnSummon(battle,u,{type:'silent-drone',name:'医疗无人机',targetable:false,healable:false,canBlock:false,canAttack:false,canHeal:true,device:true,maxHp:1,atk:battle.stats(u).atk,duration:10,persistAfterSourceGone:true,healScale:.5});}
+  if(u.summonCtrl.stock>0&&!battle.s.summons.some(s=>s.ownerUid===u.uid&&s.type==='silent-drone'&&s.deployed)){const card=battle.economy?.s?.summonCards?.find(c=>c.ownerUid===u.uid&&c.type==='silent-drone'&&c.position),drone=spawnSummon(battle,u,{type:'silent-drone',name:'医疗无人机',...(card?{x:card.position.x,y:card.position.y,occupiesTile:true}:{}),targetable:false,healable:false,canBlock:false,canAttack:false,canHeal:true,device:true,maxHp:1,atk:battle.stats(u).atk,duration:10,persistAfterSourceGone:true,healScale:.5});if(drone&&card){drone.preparedCard=true;drone.tacticalCardUid=card.uid;}}
  }
  if(u.id==='char_1014_nearl2'&&idx===2){const token=spawnSummon(battle,u,{type:'nearl2-sun',name:'耀阳',targetable:true,canBlock:true,canAttack:false,occupiesTile:true,duration:u.skillLeft});if(token)for(const e of enemyActors(battle.s).filter(e=>Math.abs(e.x-token.x)+Math.abs(e.y-token.y)<=1)){dealDamage(battle,{source:u,target:e,amount:battle.stats(u).atk*(skillBB(battle,u).value??1),type:'true',cause:'skill'});applyStatus(e,'stun',skillBB(battle,u).value2??3,{source:u.uid});}}
  if(u.id==='char_171_bldsk'&&idx===1){

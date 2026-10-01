@@ -1,7 +1,7 @@
 import {bountyOffers,bountyOption,bountyDecisionOffers} from './native-bounty.js';
 import {NativeEconomy} from './native-economy.js';
 import {NativeBattle} from './native-battle.js';
-import {buildPhasePlan,singleDecisionRounds,blackboard,ensureStock,restoreStock,stockOf,INFINITE_FUNDS,ROUND_LEAK_CAP} from './protocol.js';
+import {buildPhasePlan,singleDecisionRounds,blackboard,ensureStock,restoreStock,stockOf,INFINITE_FUNDS,ROUND_LEAK_CAP,HAND_LIMIT} from './protocol.js';
 import {allowsHighlandPlacement} from './native-branches.js';
 import {AVAILABLE_FINAL_BOSS_IDS,DEFAULT_FINAL_BOSS_HP_MULTIPLIER,finalBossConfig,finalBossPlacementArea,finalBossPlacementContains,normalizeFinalBossHpMultiplier,rollFinalBoss} from './native-final-boss.js';
 import {runStrategyEvent} from './strategy.js';
@@ -13,7 +13,7 @@ import {TOKEN_IDS} from './native-effects.js';
 import {itemAllowed,operatorAllowed,seesRun,freeDeploy,settleFundsToLayers,grantCountForLayers,seesGrantCandidates,tartarusLayers} from './native-sees.js';
 
 // 召唤物落点不受主人攻击范围限制的类型（见 summonCardRange 的注释）。
-const SUMMON_FREE_PLACEMENT=new Set(['cathy-device','skadi2-seaborn']);
+const SUMMON_FREE_PLACEMENT=new Set(['cathy-device','skadi2-seaborn','silent-drone']);
 const SUMMON_ZERO_OCCUPANCY=new Set(['cathy-device']);
 const FINAL_BOSS_ROUND_CACHE=new WeakMap();
 function finalBossRound(data,modeId){let rounds=FINAL_BOSS_ROUND_CACHE.get(data);if(!rounds){rounds=new Map();FINAL_BOSS_ROUND_CACHE.set(data,rounds);}if(!rounds.has(modeId))rounds.set(modeId,buildPhasePlan(data,modeId).filter(t=>t.isBossTurn&&!t.isConditional).at(-1)?.round??null);return rounds.get(modeId);}
@@ -81,11 +81,13 @@ export class NativeSession extends NativeEconomy {
  summonCardSpecs(u){const p=this.data.profiles[u?.chessId],skillIndex=u?.skillIndex??p?.skillIndex??0,out=[];if(p?.branch==='tactician'){if(u.charId==='char_427_vigil')out.push({type:'vigil-wolf',name:'狼群',count:1,mode:'manual'});if(u.charId==='char_249_mlyss')out.push({type:'mlyss-fluid',name:'流形',count:1,mode:'manual'});}
   // 凯瑟琳「定向支援信号」：携带数量取天赋黑板 `cnt`（精英0 = 2，精英1/2 = 3），同时部署上限取 token 的 `maxDeployCount`（2）。
   if(u.charId==='char_4162_cathy'){const talent=(p?.activeTalents||[]).find(t=>t.name==='定向支援信号'),cnt=talent?Number(blackboard(talent.blackboard).cnt)||3:3;out.push({type:'cathy-device',name:'支援装置',count:cnt,mode:'manual'});}
-  if(u.charId==='char_108_silent'&&skillIndex===1)out.push({type:'silent-drone',name:'医疗无人机',count:1,mode:'skill'});
+  if(u.charId==='char_108_silent'&&skillIndex===1)out.push({type:'silent-drone',name:'医疗无人机',count:1,mode:'skill',placeable:true});
   // 浊心斯卡蒂的海嗣先由玩家在备战期选定布局点，开战与再部署转好后自动出现在该位置。
   if(u.charId==='char_1012_skadi2')out.push({type:'skadi2-seaborn',name:'海嗣',count:1,mode:'manual'});
   return out;}
- syncSummonCards({resetPlaced=false}={}){this.s.summonCards??=[];const owners=new Map(this.s.units.filter(u=>u.position&&this.summonCardSpecs(u).length).map(u=>[u.uid,u]));this.s.summonCards=this.s.summonCards.filter(card=>{const owner=owners.get(card.ownerUid),spec=owner&&this.summonCardSpecs(owner).find(x=>x.type===card.type);if(!spec)return false;if(resetPlaced)card.position=null;card.mode=spec.mode;return true;});for(const owner of owners.values())for(const spec of this.summonCardSpecs(owner)){const existing=this.s.summonCards.filter(card=>card.ownerUid===owner.uid&&card.type===spec.type);for(let i=existing.length;i<spec.count;i++)this.s.summonCards.push({uid:++this.s.seq,kind:'summon-card',type:spec.type,name:spec.name,mode:spec.mode,ownerUid:owner.uid,position:null,dir:0});}}
+ syncSummonCards({resetPlaced=false}={}){this.s.summonCards??=[];const owners=new Map(this.s.units.filter(u=>u.position&&this.summonCardSpecs(u).length).map(u=>[u.uid,u]));this.s.summonCards=this.s.summonCards.filter(card=>{const owner=owners.get(card.ownerUid),spec=owner&&this.summonCardSpecs(owner).find(x=>x.type===card.type);if(!spec)return false;if(resetPlaced)card.position=null;card.mode=spec.mode;card.placeable=!!spec.placeable;return true;});for(const owner of owners.values())for(const spec of this.summonCardSpecs(owner)){const existing=this.s.summonCards.filter(card=>card.ownerUid===owner.uid&&card.type===spec.type);for(let i=existing.length;i<spec.count;i++)this.s.summonCards.push({uid:++this.s.seq,kind:'summon-card',type:spec.type,name:spec.name,mode:spec.mode,placeable:!!spec.placeable,ownerUid:owner.uid,position:null,dir:0});}}
+ hand(){return super.hand().sort((a,b)=>(a.handSlot??Number.MAX_SAFE_INTEGER)-(b.handSlot??Number.MAX_SAFE_INTEGER));}
+ syncHandSlots(){const cards=super.hand(),active=new Set(cards),all=[...this.s.units,...this.s.items,...(this.s.summonCards||[])],used=new Set();for(const card of all)if(!active.has(card))delete card.handSlot;for(const card of cards){if(Number.isSafeInteger(card.handSlot)&&card.handSlot>=0&&card.handSlot<cards.length+HAND_LIMIT&&!used.has(card.handSlot))used.add(card.handSlot);else delete card.handSlot;}if(cards.length<=HAND_LIMIT)for(const card of cards.filter(x=>x.handSlot>=HAND_LIMIT).sort((a,b)=>a.handSlot-b.handSlot)){used.delete(card.handSlot);let slot=0;while(used.has(slot))slot++;card.handSlot=slot;used.add(slot);}for(const card of cards)if(!Number.isSafeInteger(card.handSlot)){let slot=0;while(used.has(slot))slot++;card.handSlot=slot;used.add(slot);}return cards.sort((a,b)=>a.handSlot-b.handSlot);}
  // 召唤卡的落点规则（PRTS 分开写，别再统一套一套）：
  //  * 战术家分支特性：「可以在攻击范围内选择一次战术点来召唤援军」→ 狼群／流形必须在主人当前攻击范围内；
  //  * 工匠的支援装置（爬行号·防护单元）：召唤物页写「部署位置：全部位、部署占用数 0、不会受到攻击」，

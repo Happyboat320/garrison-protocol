@@ -1111,3 +1111,50 @@ html.native-need-rotate .native-briefing.native-briefing-v2{overflow:hidden}
  html:not(.native-landscape-ui) .native-prep-no-skill{font-size:13px}
  html:not(.native-landscape-ui) .native-prep-skill-options button{font-size:13px}
 }
+
+/* 商店里购买后能凑齐同阶三合一的干员 */
+.native-shop-cards .native-shop-merge-ready{position:relative;border:2px solid #e9bd50!important;background:linear-gradient(145deg,#3b321b,#1d2c29)!important;box-shadow:inset 0 0 0 1px #e9bd5055,0 0 12px #e9bd5044}
+.native-shop-cards .native-shop-merge-ready::after{content:'三合一';position:absolute;top:4px;right:4px;padding:2px 5px;border:1px solid #f5d77d;background:#3a2d10;color:#ffe89a;font-size:10px;font-weight:700;line-height:1.2;letter-spacing:.04em}
+.native-shop-cards .native-shop-merge-ready:hover{border-color:#fff0a4!important;box-shadow:inset 0 0 0 1px #ffe89a88,0 0 16px #f6d66b77}
+.native-shop-cards .native-shop-frozen.native-shop-merge-ready{animation:none}
+.native-shop-cards .native-shop-merge-ready.chosen{outline:2px solid #ffe89a}
+
+/* 固定十格手牌；超过上限的临时卡牌排在右侧 */
+.native-hand-slot{position:relative;flex:0 0 74px;width:74px;height:94px;box-sizing:border-box;display:flex;padding:2px;border:1px solid #365750;background:#0d1c1b}
+.native-hand-slot.is-empty{border-style:dashed;background:linear-gradient(145deg,#18302b88,#0b171880)}
+.native-hand-slot.is-empty>span{align-self:center;width:100%;text-align:center;color:#567b70;font:600 12px/1 var(--mono,monospace);letter-spacing:.08em;pointer-events:none}
+.native-hand-slot.is-overflow-slot{border-color:#74613b;background:#251f1488}
+.native-hand-slot.is-overflow-slot.is-empty>span{color:#a18c5a}
+.native-hand-overflow-divider{flex:0 0 28px;align-self:stretch;display:grid;place-items:center;border-left:1px solid #8a7140;color:#d7b862;font-size:10px;writing-mode:vertical-rl}
+.native-hand-slot.drop-slot{outline:2px solid #79e8bd;outline-offset:1px;background:#214638!important;box-shadow:0 0 12px #79e8bd77}
+.native-hand-slot.is-overflow-slot.drop-slot{outline-color:#f2cf70;background:#473719!important;box-shadow:0 0 12px #f2cf7077}
+.native-bench .native-hand-slot>.native-hand-card{flex:1 1 auto!important;width:100%;height:100%;min-width:0;min-height:0;max-width:100%;box-sizing:border-box;margin:0;padding:2px;overflow:hidden;}
+.native-bench .native-hand-slot>.native-hand-card img{width:54px;height:55px;object-fit:contain}
+.native-bench .native-hand-slot>.native-hand-card b{max-width:100%;font-size:10px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.native-bench .native-hand-slot>.native-hand-card small{margin:0;font-size:8px;line-height:1}
+.native-bench .native-hand-slot>[data-act="item"]{position:relative;display:flex;flex:1 1 auto;width:100%;height:100%;min-width:0;min-height:0;box-sizing:border-box;margin:0;padding:2px;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;cursor:grab}
+.native-hand-slot .native-item-icon{min-height:54px;height:54px;font-size:34px}
+@media(max-width:600px){
+ .native-hand-slot{flex-basis:62px;width:62px;height:40px;min-height:40px;padding:1px}
+ .native-hand-overflow-divider{flex-basis:20px;font-size:8px}
+ .native-bench .native-hand-slot>.native-hand-card{display:grid;grid-template-columns:28px minmax(0,1fr);gap:2px;justify-content:stretch;text-align:left}
+ .native-bench .native-hand-slot>.native-hand-card img{grid-row:1/3;width:28px;height:36px}
+ .native-bench .native-hand-slot>.native-hand-card b{font-size:9px;text-align:left}
+ .native-bench .native-hand-slot>.native-hand-card small{display:none}
+ .native-hand-slot .native-summon-icon{min-height:0;height:32px;font-size:22px}
+ .native-hand-slot .native-item-icon{min-height:0;height:34px;font-size:24px}
+ .native-hand-slot.is-empty>span{font-size:9px}
+}
+@media(orientation:landscape) and (max-height:600px) and (max-width:1100px){
+ html.native-landscape-ui .native-hand-slot{flex-basis:62px;width:62px;height:40px;min-height:40px;padding:1px}
+ html.native-landscape-ui .native-hand-overflow-divider{flex-basis:20px;font-size:8px}
+}
+.native-result-bond-layers{margin:14px 0;padding:12px;border:1px solid #315451;background:#102225}
+.native-result-bond-layers h3{margin:0 0 8px;color:#cce7dd;font-size:14px}
+.native-result-bond-layers>div{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:5px}
+.native-result-bond-layers span{display:flex;align-items:center;justify-content:space-between;gap:5px;padding:4px 6px;border:1px solid #294442;background:#0c1c1e;color:#8ca9a2;font-size:10px}
+.native-result-bond-layers b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.native-result-bond-layers i{flex:0 0 auto;color:#86a69e;font-style:normal;font-variant-numeric:tabular-nums}
+.native-result-bond-layers .has-layers{border-color:#6d633e;background:#292619;color:#f3dfaa}
+.native-result-bond-layers .has-layers i{color:#f3d277;font-weight:700}
+@media(max-width:600px){.native-result-bond-layers>div{grid-template-columns:repeat(2,minmax(0,1fr))}.native-result-bond-layers{padding:8px}}
