@@ -178,7 +178,7 @@ export class NativeSession extends NativeEconomy {
  ensureRewards(){const r=this.s.rewardPending;if(r?.tier&&!r.offers){r.offers=this.drawDistinct({kind:'operator',tier:r.tier},3);r.kind='operator';}}
  rewardFromBond(owner,count){const bonds=this.gainableBonds(owner,this.s.level).filter(Boolean);if(!bonds.length)return false;this.s.rewardPending={offers:this.drawDistinct({kind:'operator',bond:this.pick(bonds),maxTier:this.s.level},count),choice:1,kind:'operator'};return true;}
  rewardFromTier(tier,count){this.s.rewardPending={offers:this.drawDistinct({kind:'operator',tier:Math.min(6,tier)},count),choice:1,kind:'operator'};return true;}
- applyPostBattleTransforms(){for(const u of this.s.units.filter(x=>x.transformAfterBattle)){const itemIndex=(u.equipment||[]).findIndex(item=>{const def=this.data.season.trapChessDataDict[item.chessId];return(this.data.season.effectBuffInfoDataDict[def?.effectId]||[]).some(e=>e.key==='char_chess_transformation_equip');});if(itemIndex<0){delete u.transformAfterBattle;continue;}const id=this.drawFromPool({kind:'operator',tier:Math.min(6,(u.rank||1)+1)}),shop=this.data.season.charShopChessDatas[id];u.chessId=id;u.charId=shop.charId;u.rank=shop.chessLevel;this.s.items.push(u.equipment.splice(itemIndex,1)[0]);delete u.transformAfterBattle;this.refreshEquipmentBonds(u);this.onOperatorGained(u);}}
+ applyPostBattleTransforms(){for(const u of this.s.units.filter(x=>x.transformAfterBattle)){if(!this.s.units.includes(u))continue;const itemIndex=(u.equipment||[]).findIndex(item=>{const def=this.data.season.trapChessDataDict[item.chessId];return(this.data.season.effectBuffInfoDataDict[def?.effectId]||[]).some(e=>e.key==='char_chess_transformation_equip');});if(itemIndex<0){delete u.transformAfterBattle;continue;}const id=this.drawFromPool({kind:'operator',tier:Math.min(6,(u.rank||1)+1)}),shop=this.data.season.charShopChessDatas[id];u.chessId=id;u.charId=shop.charId;u.rank=shop.chessLevel;this.s.items.push(u.equipment.splice(itemIndex,1)[0]);delete u.transformAfterBattle;this.refreshEquipmentBonds(u);this.onOperatorGained(u);}}
   // 装备增减后重算盟约：以干员自身盟约为底。**装备的 giveBondId 是它自己的盟约归属**（商店与具名池按它取货），
   // 不会让携带者变成该盟约干员——否则给谁都装一件「谢拉格不融冰」就能凑出谢拉格层数、触发 6 层寒风。
   // 只有 canGiveBond 的装备（变形同构体）才给携带者盟约，而且给的是「另一件携带装备」的盟约：
@@ -273,7 +273,7 @@ export class NativeSession extends NativeEconomy {
   // 策略／道具的固定点名发放、卫戍 SERVER_GAIN_CHAR、援军转让、精锐形态则在这里统一挡下——
   // 一个都不发、不记账（roundGainedChars 不加），只留一条事件与计数器给界面提示。
   onOperatorGained(unit){
-   super.onOperatorGained(unit);if(!unit)return unit;
+   unit=super.onOperatorGained(unit);if(!unit)return unit;
    // 「战前准备」里设置的默认技能：新获得的干员默认携带指定档位。只对齐**这名干员自己的**同名副本。
    applyPrepSkills(this.data,this.s.units.filter(v=>v.charId===unit.charId));
    if(this.s.roundGainedChars?.round!==this.s.round)this.s.roundGainedChars={round:this.s.round,count:0};

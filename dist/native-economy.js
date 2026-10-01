@@ -98,6 +98,7 @@ export class NativeEconomy extends PreparationState {
  }
  onOperatorGained(unit){
   if(!unit)return unit;
+  const previousReward=this.s.rewardPending,merged=this.mergeOperatorCopies(unit.chessId);if(merged){unit=merged;if(previousReward&&previousReward!==this.s.rewardPending){this.s.rewardQueue.push(this.s.rewardPending);this.s.rewardPending=previousReward;}}
   if(this.data.season.charChessDataDict[unit.chessId]?.garrisonIds.some(id=>this.data.season.garrisonDataDict[id]?.effectType==='SERVER_GAIN_BOND_LAYER_BY_REFRESH_CNT'))unit.garrisonRefreshBaseline={round:this.s.round,count:this.s.roundRefreshCount||0};
   this.s.roundGainCount++;this.settleBondRewards();this.triggerGarrisons('SERVER_GAIN',unit);return unit;
  }
