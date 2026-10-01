@@ -135,6 +135,7 @@ export function applySeesContent(source, content = loadSeesContent()) {
     shop.goldenChessId = op.goldenChessId;
     shop.chessLevel = op.chessLevel;
     shop.shopLevelSortId = op.chessLevel;
+    if (Number.isInteger(op.defaultSkillIndex)) shop.defaultSkillIndex = op.defaultSkillIndex;
     shop.sees = true;
     const chess = season.charChessDataDict[op.chessId] ??= {
       chessId: op.chessId, identifier: 0, isGolden: false, upgradeChessId: op.goldenChessId, upgradeNum: 3,

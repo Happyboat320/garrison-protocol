@@ -29,6 +29,14 @@ let normalizedCache={raw:null,data:null,map:null};
 function storage(){
  try{return typeof localStorage==='undefined'?null:localStorage;}catch{return null;}
 }
+const prepSkillDataCache=new WeakMap();
+function prepSkillData(data){
+ if(!data)return data;
+ if(Object.values(data.season?.charShopChessDatas||{}).some(row=>row?.sees===true&&!row.isHidden))return data;
+ const archive=loadArchive(storage());if(archive?.flags?.sees!==true)return data;
+ if(prepSkillDataCache.has(data))return prepSkillDataCache.get(data);
+ const page=dataForPrep(data,archive);prepSkillDataCache.set(data,page);return page;
+}
 // localStorage 里的原始覆盖表（不校验干员是否还存在、档位是否存在）。
 function prepRawSkills(){
  const store=storage(),raw=store?store.getItem(PREP_SKILL_KEY)||'':'';
@@ -48,7 +56,7 @@ function prepRawSkills(){
 // 按当前数据校验：干员必须还在名册里、档位必须是这名干员真有的技能档；不合法的条目直接丢掉。
 // 名册与档位数会随数据更新变化，校验放在这里就能避免配置把不存在的档位写进局内。
 export function normalizePrepSkills(raw,data){
- const index=prepOperatorIndex(data),source=raw&&typeof raw==='object'?(raw.skills&&typeof raw.skills==='object'?raw.skills:raw):{};
+ const index=prepOperatorIndex(prepSkillData(data)),source=raw&&typeof raw==='object'?(raw.skills&&typeof raw.skills==='object'?raw.skills:raw):{};
  const out={};
  for(const [charId,value] of Object.entries(source)){
   const row=index.get(charId);if(!row)continue;
@@ -59,10 +67,10 @@ export function normalizePrepSkills(raw,data){
  return out;
 }
 export function loadPrepSkills(data){
- const raw=prepRawSkills();
- if(normalizedCache.raw===rawCache.raw&&normalizedCache.data===data&&normalizedCache.map)return normalizedCache.map;
- const map=normalizePrepSkills(raw,data);
- normalizedCache={raw:rawCache.raw,data,map};
+ const raw=prepRawSkills(),roster=prepSkillData(data);
+ if(normalizedCache.raw===rawCache.raw&&normalizedCache.data===roster&&normalizedCache.map)return normalizedCache.map;
+ const map=normalizePrepSkills(raw,roster);
+ normalizedCache={raw:rawCache.raw,data:roster,map};
  return map;
 }
 export function savePrepSkills(skills,data){
@@ -101,16 +109,18 @@ function buildOperatorRows(data){
  return rows;
 }
 export function prepOperatorRows(data){
- if(data&&operatorCache.has(data))return operatorCache.get(data);
- const rows=buildOperatorRows(data);
- if(data)operatorCache.set(data,rows);
+ const roster=prepSkillData(data);
+ if(roster&&operatorCache.has(roster))return operatorCache.get(roster);
+ const rows=buildOperatorRows(roster);
+ if(roster)operatorCache.set(roster,rows);
  return rows;
 }
 const indexCache=new WeakMap();
 export function prepOperatorIndex(data){
- if(data&&indexCache.has(data))return indexCache.get(data);
- const map=new Map(prepOperatorRows(data).map(row=>[row.charId,row]));
- if(data)indexCache.set(data,map);
+ const roster=prepSkillData(data);
+ if(roster&&indexCache.has(roster))return indexCache.get(roster);
+ const map=new Map(prepOperatorRows(roster).map(row=>[row.charId,row]));
+ if(roster)indexCache.set(roster,map);
  return map;
 }
 export function prepOperatorRow(data,charId){return prepOperatorIndex(data).get(charId)||null;}

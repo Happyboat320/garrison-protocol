@@ -61,8 +61,8 @@
   "operators": [
     { "charId": "char_4220_kormr", "chessId": "chess_collab_kormr", "goldenChessId": "chess_collab_kormr_gold", "name": "虎狼丸", "chessLevel": 1, "garrisonId": "garrison_sees_kormr", "garrisonDesc": "不占用部署位；造成的物理与法术伤害转为弱点伤害（依据敌人的防御力与法术抗性选择伤害类型）" },
     { "charId": "char_4219_yukari", "chessId": "chess_collab_yukari", "goldenChessId": "chess_collab_yukari_gold", "name": "岳羽由加莉", "chessLevel": 2, "garrisonId": "garrison_sees_yukari", "garrisonDesc": "S.E.E.S.策略局的资金结算时，每名在场的岳羽由加莉使每点剩余资金额外转化为{uikariPerFund}层【塔尔塔洛斯】" },
-    { "charId": "char_4218_aigis", "chessId": "chess_collab_aigis", "goldenChessId": "chess_collab_aigis_gold", "name": "埃癸斯", "chessLevel": 3, "garrisonId": "garrison_sees_aigis", "garrisonDesc": "S.E.E.S.策略局战斗中，每层【塔尔塔洛斯】使攻击力与生命上限提高{aigisPerLayerPercent}%（{tartarusLayerCap}层时+{aigisAtCapPercent}%）" },
-    { "charId": "char_4217_makoto", "chessId": "chess_collab_makoto", "goldenChessId": "chess_collab_makoto_gold", "name": "结城理", "chessLevel": 6, "garrisonId": "garrison_sees_makoto", "garrisonDesc": "S.E.E.S.策略局战斗中，每击倒一名非衍生敌人或自身被击倒，使【塔尔塔洛斯】增加{makotoKillLayers}层" }
+    { "charId": "char_4218_aigis", "chessId": "chess_collab_aigis", "goldenChessId": "chess_collab_aigis_gold", "name": "埃癸斯", "chessLevel": 3, "defaultSkillIndex": 1, "garrisonId": "garrison_sees_aigis", "garrisonDesc": "S.E.E.S.策略局战斗中，每层【塔尔塔洛斯】使攻击力与生命上限提高{aigisPerLayerPercent}%（{tartarusLayerCap}层时+{aigisAtCapPercent}%）" },
+    { "charId": "char_4217_makoto", "chessId": "chess_collab_makoto", "goldenChessId": "chess_collab_makoto_gold", "name": "结城理", "chessLevel": 6, "defaultSkillIndex": 2, "garrisonId": "garrison_sees_makoto", "garrisonDesc": "S.E.E.S.策略局战斗中，每击倒一名非衍生敌人或自身被击倒，使【塔尔塔洛斯】增加{makotoKillLayers}层" }
   ],
   "equipment": [
     {
