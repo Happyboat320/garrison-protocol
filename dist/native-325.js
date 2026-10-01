@@ -943,7 +943,7 @@ export const homo = ((Nums) => {
 })
 
 export const EGG_MODE_ID='mode_egg_325';
-export const EGG_BASE_MODE='mode_single_normal';
+export const EGG_BASE_MODE='mode_single_abyss';
 
 const cache=new Map();
 export function format325(n){
@@ -985,6 +985,6 @@ export function apply325Display(root){
 
 export function egg325Active(state){
  if(!state||state.sandbox)return false;
- if(state.view==='lobby'||state.view==='editor')return false;
- return !!(state.draft?.egg325||state.game?.s?.egg325);
+ if(state.view==='lobby'||state.view==='editor'||state.view==='prepare')return false;
+ return state.view==='game'?!!state.game?.s?.egg325:!!state.draft?.egg325;
 }
