@@ -376,14 +376,32 @@ const ZONE_TONE={thunder:['#bcd8ff','#7fb2ff'],blade:['#ffe9c2','#ffb877'],gold:
 const FIELD_TINT={fill:'#4a4160',edge:'#8f86b8'};
 // `rangeUid` 圈（= 某名干员的攻击范围）在绘制时按它的当前范围格走；这里取持有者。
 function getZoneRangeOwner(s,fx){return (s.units||[]).find(u=>u.uid===fx.rangeUid)||null;}
+function drawInesShadow(c,point,z,battle,reduceFx){
+ const s=battle?.s;if(!s)return false;
+ const regions=new Map();
+ for(const sentry of s.revealSentries||[])regions.set(sentry.fromUid??`sentry:${sentry.x},${sentry.y}`,sentry);
+ for(const fx of s.logicEffects||[])if(fx.talentOrSkillId==='ines-shadow'&&(fx.endsAt==null||fx.endsAt>s.time)&&!regions.has(fx.sourceUid))regions.set(fx.sourceUid,fx);
+ for(const region of regions.values()){
+  if(region.endsAt!=null&&region.endsAt<=s.time)continue;
+  const p=point(region.x??0,region.y??0),radius=Math.max(.5,Number(region.radius)||2),rx=radius*z.tw,ry=radius*z.th,pulse=reduceFx?0:.5+.5*Math.sin(s.time*2.2);
+  c.save();c.globalCompositeOperation='source-over';
+  const gradient=c.createRadialGradient(p.x,p.y,0,p.x,p.y,Math.max(rx,ry));
+  gradient.addColorStop(0,'rgba(4,6,10,.5)');gradient.addColorStop(.58,'rgba(7,9,15,.32)');gradient.addColorStop(1,'rgba(9,11,18,0)');
+  c.fillStyle=gradient;c.beginPath();c.ellipse(p.x,p.y,rx,ry,0,0,Math.PI*2);c.fill();
+  c.strokeStyle=`rgba(87,94,109,${.26+.1*pulse})`;c.lineWidth=1.5;c.beginPath();c.ellipse(p.x,p.y,rx,ry,0,0,Math.PI*2);c.stroke();
+  if(!reduceFx){c.setLineDash([5,9]);c.lineDashOffset=-s.time*7;c.strokeStyle='rgba(137,148,169,.25)';c.beginPath();c.ellipse(p.x,p.y,rx*.76,ry*.76,0,0,Math.PI*2);c.stroke();c.setLineDash([]);}
+  c.restore();
+ }
+ return regions.size>0;
+}
 export function drawZones(c,point,z,battle,{reduceFx=false}={}){
  const s=battle?.s;if(!s)return false;
  // 敌方留下的持续伤害区域（kind:'field'：污染秽蚀、燃烧区域、毒雾）和我方技能区域共用这套绘制。
  // 例外：6 人谢拉格的寒风区域（bond-kjerag-storm）是全场常驻判定，但**不留常驻底色**——
  // 表现只有每 25 秒起风时的全屏冰风（'ice-wind' → drawIceWind）。
- const dominion=drawDominion(c,point,z,battle);
- const list=(s.logicEffects||[]).filter(fx=>fx.talentOrSkillId!=='bond-kjerag-storm'&&(fx.kind==='zone'||(fx.kind==='field'&&(Number(fx.values?.damage)>0||Number(fx.values?.atkScale)>0||Number(fx.values?.elementScale)>0)))&&(fx.endsAt==null||fx.endsAt>s.time));
- if(!list.length)return dominion;
+ const dominion=drawDominion(c,point,z,battle),inesShadow=drawInesShadow(c,point,z,battle,reduceFx);
+ const list=(s.logicEffects||[]).filter(fx=>fx.talentOrSkillId!=='bond-kjerag-storm'&&fx.talentOrSkillId!=='ines-shadow'&&(fx.kind==='zone'||(fx.kind==='field'&&(Number(fx.values?.damage)>0||Number(fx.values?.atkScale)>0||Number(fx.values?.elementScale)>0)))&&(fx.endsAt==null||fx.endsAt>s.time));
+ if(!list.length)return dominion||inesShadow;
  for(const fx of list){
   const visual=fx.values?.mouseSand?{shape:'square',tone:'gold'}:fx.values?.enemyWineBuff?{shape:'circle',tone:'gold'}:battle.zoneVisual?battle.zoneVisual(fx.talentOrSkillId,fx.values||{}):{shape:'circle',tone:'arts'};
   const [light,deep]=ZONE_TONE[visual.tone]||ZONE_TONE.arts;
@@ -668,6 +686,17 @@ export function drawSeesCoreScreenFx(c,battle,width,height,{reduceFx=false}={}){
  c.restore();
  return true;
 }
+function drawEgirReviveRings(c,point,z,battle,reduce){
+ const {s}=battle;
+ for(const e of recent(s.events,s.time,'revive',1)){
+  if(e.reason!=='egir-revive')continue;
+  const age=s.time-e.t,fade=1-age,actor=s.units.find(u=>u.uid===e.uid),p=point(actor?.x??e.x,actor?.y??e.y),cx=p.x,cy=p.y-z.th*.28,scale=.82+.24*age;
+  c.save();c.lineWidth=Math.max(1.5,z.tw*.025);c.strokeStyle=rgba([120,205,255],.4*fade);c.beginPath();c.ellipse(cx,cy,z.tw*.43*scale,z.th*.33*scale,0,0,Math.PI*2);c.stroke();
+  if(reduce){c.strokeStyle=rgba([120,205,255],.8*fade);c.beginPath();c.ellipse(cx,cy,z.tw*.34*scale,z.th*.25*scale,0,0,Math.PI*2);c.stroke();}
+  else for(let i=0;i<2;i++){const direction=i?-1:1,phase=direction*age*Math.PI*3+i*Math.PI;c.strokeStyle=rgba(i?[190,237,255]:[77,181,255],.9*fade);c.lineWidth=Math.max(2,z.tw*.035);c.beginPath();c.ellipse(cx,cy,z.tw*(i?.32:.4)*scale,z.th*(i?.24:.3)*scale,phase*.06,phase,phase+Math.PI*1.1);c.stroke();}
+  c.restore();
+ }
+}
 export function drawFx(c,point,z,battle,opts={}){ const s=battle.s,t=s.time,reduce=!!opts.reduceFx;
  drawCombatFx(c,point,z,battle,reduce);
  drawZones(c,point,z,battle,{reduceFx:reduce});
@@ -680,6 +709,7 @@ export function drawFx(c,point,z,battle,opts={}){ const s=battle.s,t=s.time,redu
  drawEnemyProjectiles(c,point,z,battle,{reduceFx:reduce});
  drawIceWind(c,z,battle,{reduceFx:reduce});
  drawSeesCore(c,point,z,battle,{reduceFx:reduce,formatText:opts.formatText});
+ drawEgirReviveRings(c,point,z,battle,reduce);
  for(const e of s.effects||[]){
   if(e.type!=='healing'&&e.type!=='evade'&&e.type!=='block')continue;
   const p=point(e.x,e.y);c.fillStyle=e.type==='healing'?'#8fe8b5':'#f6e7c8';c.font='12px sans-serif';c.textAlign='center';c.fillText(opts.formatText?opts.formatText(e.text):e.text,p.x,p.y-24-(.6-e.life)*30);
