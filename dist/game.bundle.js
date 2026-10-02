@@ -10684,6 +10684,7 @@ function tickActiveOriginium(battle){
  for(const actor of terrainActors(battle)){
   const on=room&&standsOn(battle,actor,TERRAIN_TILES.originium);
   if(on)actor.originium=true;
+  if(actor.originium&&battle.s.enemies.includes(actor)&&!actor.originiumAtkApplied){const scale=1+(Number(cfg.atk)||0);actor.baseAtk??=actor.atk;actor.atk*=scale;actor.baseAtk*=scale;actor.originiumAtkApplied=true;}
   if(!actor.originium){actor.originiumNextAt=null;actor.originiumLastAt=null;actor.originiumDamageCarry=0;continue;}
   const last=Number.isFinite(actor.originiumLastAt)?actor.originiumLastAt:now-frame;
   actor.originiumDamageCarry=Math.max(0,Number(actor.originiumDamageCarry)||0)+Math.max(0,now-last)*Math.max(0,Number(cfg.damage)||0);
@@ -10769,8 +10770,9 @@ function tickBlower(battle){
 function syncEnvModifiers(battle){
  const cfg=battle.map.environment||{};
  for(const actor of terrainActors(battle)){
+  const enemy=battle.s.enemies.includes(actor);
   const originium=actor.originium&&cfg.originium?cfg.originium:null,mireStacks=Math.max(0,actor.mireStacks||0);
-  actor.envAtkRatio=(originium?Number(originium.atk)||0:0)+(actor.windAtkRatio||0);
+  actor.envAtkRatio=enemy?0:(originium?Number(originium.atk)||0:0)+(actor.windAtkRatio||0);
   actor.envAttackSpeed=originium?Number(originium.attackSpeed)||0:0;
   actor.envAttackSpeedScale=1+mireStacks*(Number(cfg.mire?.attackSpeed)||0);
   actor.envMoveScale=(1+mireStacks*(Number(cfg.mire?.moveSpeed)||0))*(actor.windMoveScale??1);
