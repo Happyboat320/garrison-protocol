@@ -299,6 +299,7 @@ function removeStatus(target,kind,source){
 }
 function tickStatuses(target,dt){if(!Number.isFinite(dt)||dt<0)throw Error('Invalid status delta');target.statuses??=[];for(const s of target.statuses)s.remaining-=dt;target.statuses=target.statuses.filter(s=>s.remaining>1e-9);target.invisible=target.formInvisible===true||(target.statuses.some(s=>['invisible','camouflage'].includes(s.kind))&&!target.revealed);target.levitated=target.statuses.some(s=>s.kind==='levitate');target.fragile=target.statuses.filter(s=>s.kind==='fragile').reduce((v,s)=>Math.max(v,s.value||1),1);}
 function permissions(target){const denied=new Set(target.shift?['attack','skill','block']:[]);if(target.type==='neutral-miner'&&target.waiting)denied.add('move');for(const s of target.statuses||[])for(const k of CONTROL[s.kind]||[])denied.add(k);return {beBlocked:!target.shift&&!(target.statuses||[]).some(s=>['sleep','levitate','fear','selfFear'].includes(s.kind)),retreat:!denied.has('retreat'),sleeping:(target.statuses||[]).some(s=>s.kind==='sleep'),attack:!denied.has('attack'),move:!denied.has('move'),block:!denied.has('block'),skill:!denied.has('skill'),silenced:(target.statuses||[]).some(s=>s.kind==='silence')};}
+function effectiveWeight(target){return (target.statuses||[]).some(s=>s.kind==='weightless')?0:Math.max(0,Number(target.weight)||0);}
 function statusAttributeChanges(target){const s=target.statuses||[];return {attackSpeed:(-30*new Set(s.filter(s=>s.kind==='cold').map(s=>s.frostSide||'ally')).size)+s.filter(s=>s.kind==='attackSpeedDown'||s.kind==='attackSpeedUp').reduce((n,s)=>n+(s.value||0),0),resistance:s.some(s=>s.kind==='frozen'&&s.frostSide!=='enemy')?-15:0,attack:s.filter(s=>s.kind==='attackDown').reduce((v,x)=>Math.min(v,x.value??0),0),defense:s.filter(s=>s.kind==='defDown').reduce((v,x)=>Math.min(v,x.value??0),0),magicResistance:s.filter(s=>s.kind==='resDown').reduce((v,x)=>Math.min(v,x.value??0),0)};}
 function abilityEnabled(target,{silenceable=false}={}){return !silenceable||!permissions(target).silenced;}
 function isIsolated(target){
@@ -315,7 +316,7 @@ function yinYangAttackScale(source,target){
  const scale=a.attribute===b.attribute?a.sameScale:a.differentScale;return Number.isFinite(scale)&&scale>=0?scale:1;
 }
 
-return {applyStatus,removeStatus,tickStatuses,permissions,statusAttributeChanges,abilityEnabled,isIsolated,wakeOnHit,enemyMovementSpeed,yinYangAttackScale};
+return {applyStatus,removeStatus,tickStatuses,permissions,effectiveWeight,statusAttributeChanges,abilityEnabled,isIsolated,wakeOnHit,enemyMovementSpeed,yinYangAttackScale};
 },
 "targeting.js": function(load) {
 // Range geometry does not select targets or cause damage. Local +x is forward.
@@ -7522,7 +7523,7 @@ return {spTypeOf,usesSp,skillKind,ammoCount,spIncrement,initSpOf,spCap,spBlocked
 },
 "native-combat.js": function(load) {
 const {attribute,FPS} = load("combat.js");
-const {enemyMovementSpeed,permissions} = load("status.js");
+const {enemyMovementSpeed,effectiveWeight,permissions} = load("status.js");
 const {skillKind} = load("native-sp.js");
 // Tentative adapters — not original animation tables. Do not treat as restored data.
 const TENTATIVE_WINDUP_RATIO=.3;
@@ -7912,7 +7913,7 @@ function remainingDistance(e){
 function specialPriority(a,b,priority){
  if(priority==='air')return Number(!!b.flying)-Number(!!a.flying);
  if(priority==='defense')return (a.def||0)-(b.def||0);
- if(priority==='weight')return (b.weight||0)-(a.weight||0);
+ if(priority==='weight')return effectiveWeight(b)-effectiveWeight(a);
  return 0;
 }
 function compareOperatorTargets(a,b,uid,priority,position){
@@ -8055,7 +8056,7 @@ function windupSeconds(interval,override){
 return {TENTATIVE_WINDUP_RATIO,TENTATIVE_PROJECTILE_SPEED,TENTATIVE_HIT_GAP,enemyChainTargets,ENEMY_MOVEMENT_POLICIES,inferDeathZone,inferAttackZone,inferSelfField,inferToxicZone,enemyBehaviorProfile,enemyTargetValid,enemyRayHitDistance,enemyTargetInRange,enemyShouldHoldPosition,remainingDistance,specialPriority,compareOperatorTargets,compareEnemyTargets,enemyBlockCost,canStayBlocked,resolveBlocks,compileRoute,advanceEnemy,enemySpecialTraitId,enemyBleedingTraitId,skillFlow,combineStat,emitEvent,pruneEvents,scheduleStrikes,dueStrikes,windupSeconds};
 },
 "native-operator-effects.js": function(load) {
-const {applyStatus,removeStatus} = load("status.js");
+const {applyStatus,removeStatus,effectiveWeight} = load("status.js");
 const {directionOf} = load("protocol.js");
 const {containsTarget} = load("targeting.js");
 // 联动干员（S.E.E.S. 四人组）的专属实现走独立派发，避免继续往下面几个大函数里堆逐名分支。
@@ -8294,7 +8295,7 @@ function attackModifier(battle,source,target,value){
   else if(has(text,/被阻挡|阻挡的/)&&target.block!=null)out*=scale;
   if(has(text,/攻击空中目标|攻击飞行目标/)&&target.flying)out*=scale;
   if(has(text,/攻击.*沉睡|沉睡目标/)&&(target.statuses||[]).some(s=>s.kind==='sleep'))out*=scale;
-  const weightLimit=text.match(/重量小于等于\s*(\d+)/);if(weightLimit&&Number(target.weight||0)<=Number(weightLimit[1]))out*=scale;
+  const weightLimit=text.match(/重量小于等于\s*(\d+)/);if(weightLimit&&effectiveWeight(target)<=Number(weightLimit[1]))out*=scale;
   const drop=Number(bb.hp_ratio_drop),up=Number(bb.atk_scale_up);if(Number.isFinite(drop)&&drop>0&&Number.isFinite(up)&&/生命.*每降低|每降低.*生命/.test(text)&&target.maxHp>0){const steps=Math.max(0,Math.floor((1-target.hp/target.maxHp+1e-9)/drop));out*=1+steps*up;}
   const hpMatch=text.match(/生命值(?:低于|不高于|少于)\s*(\d+)%/);
   if(hpMatch&&target.maxHp>0&&target.hp/target.maxHp<=Number(hpMatch[1])/100)out*=scale;
@@ -8316,7 +8317,7 @@ function attackPenetration(battle,source,target){
  let fixed=0,ratio=0,magicFixed=0;
  for(const talent of activeTalents(battle,source)){
   const text=talent.description||'',bb=talentValues(talent);
-  const weight=text.match(/重量大于等于\s*(\d+)/);if(weight&&Number(target.weight||0)<Number(weight[1]))continue;
+  const weight=text.match(/重量大于等于\s*(\d+)/);if(weight&&effectiveWeight(target)<Number(weight[1]))continue;
   if(/被狼群阻挡/.test(text)&&target.block==null)continue;
   if(/无视.*防御/.test(text)){if(Number.isFinite(Number(bb.defPenetrateFixed)))fixed=Math.max(fixed,Number(bb.defPenetrateFixed));if(Number.isFinite(Number(bb.defPenetrateRatio)))ratio=Math.max(ratio,Number(bb.defPenetrateRatio));}if(Number.isFinite(Number(bb.magic_resist_penetrate_fixed)))magicFixed=Math.max(magicFixed,Number(bb.magic_resist_penetrate_fixed));
  }
@@ -8443,7 +8444,9 @@ function operatorSkillStart(battle,u,ctx){
   }
  }
  if(profile.charId==='char_4196_reckpr'&&skillIndex===1){u.reckprBuffUntil=battle.s.time+(Number(bb['attack@buff_duration'])||10);u.reckprHealValue=Number(bb['attack@fixed_heal_value'])||80;}
- if(profile.charId==='char_291_aglina'&&skillIndex===2){for(const e of battle.s.enemies.filter(e=>e.hp>0).filter(e=>e.hp>0&&!e.hidden))applyStatus(e,'levitate',profile.skill.duration>0?profile.skill.duration:5,{source:u.uid,resistible:false});}
+ // Angelina S3 grants weightlessness, not levitation: it must not suspend enemies,
+ // release blockers, or make blocked invisible enemies untargetable again.
+ if(profile.charId==='char_291_aglina'&&skillIndex===2){for(const e of battle.s.enemies.filter(e=>e.hp>0&&!e.hidden))applyStatus(e,'weightless',profile.skill.duration>0?profile.skill.duration:5,{source:u.uid,resistible:false});}
  if(profile.charId==='char_341_sntlla'&&skillIndex===1){const spot=battle.targets(u)[0]||u;ctx.addEffect(battle,{kind:'zone',sourceUid:u.uid,sourceDeployGen:u.deployGen,talentOrSkillId:'sntlla-s2',x:spot.x,y:spot.y,radius:1,randomTileUid:u.uid,interval:Math.max(.1,Number(bb.base_attack_time)||1),nextAt:battle.s.time+1,endsAt:battle.s.time+(profile.skill.duration>0?profile.skill.duration:6),trackArea:true,trackSide:'enemy',values:{dot:true,sluggish:true,cold:Number(bb['attack@cold'])||1,elementScale:.2,type:'arts'},snapshot:{damage:battle.stats(u).atk*(Number(bb.atkScale)||.65)},refKind:'owner',persistAfterSourceGone:false});return true;}
  if(profile.charId==='char_1046_sbell2'&&(skillIndex===0||skillIndex===2)){for(const e of allTargets(battle,u,true)){ctx.dealDamage(battle,{source:u,target:e,amount:battle.stats(u).atk*(Number(bb.atkScale)||Number(bb['attack@atk_scale_s3'])||3.9),type:'arts',cause:'skill',skill:true});if(skillIndex===0){applyStatus(e,'cold',Number(bb.cold)||3.5,{source:u.uid,resistible:false});ctx.moveActor(battle,e,u,'推动');}else ctx.moveActor(battle,e,u,'拖拽');}return true;}
  if(profile.charId==='char_1046_sbell2'&&skillIndex===1){const target=battle.targets(u)[0]||u;ctx.addEffect(battle,{kind:'zone',sourceUid:u.uid,sourceDeployGen:u.deployGen,talentOrSkillId:'sbell2-s2',x:target.x,y:target.y,radius:2,interval:1,nextAt:battle.s.time+1,endsAt:null,trackArea:true,trackSide:'enemy',values:{dot:true,sluggish:true,shape:'circle',elementScale:Number(bb['talent@s2_magic_scale'])||.2,type:'arts'},snapshot:{damage:battle.stats(u).atk*(Number(bb['attack@atk_scale_s2'])||3.1)},refKind:'owner',persistAfterSourceGone:false});return true;}
@@ -10587,7 +10590,7 @@ function tickSummons(battle,dt){
 function newAttackId(battle){return battle.s.settle.nextAttackId++;}
 
 function blockingActors(battle){
- return attackableAllies(battle.s).filter(u=>u.canBlock!==false&&(u.kind!=='summon'||u.canBlock));
+ return attackableAllies(battle.s,{includeInvisible:true}).filter(u=>u.canBlock!==false&&(u.kind!=='summon'||u.canBlock));
 }
 
 return {BATTLE_SCHEMA_VERSION,EFFECT_KINDS,ELEMENT_TYPES,emptySettle,ensureBattleShape,migrateBattle,validateBattle,getActor,enemyWineBuffs,operators,alliedActors,enemyActors,enemyOpponents,attackableAllies,lifeKey,chebyshev,activeTalentsOf,operatorSkillConfig,enqueue,drainQueue,commitExit,reviveActor,dealDamage,applyHeal,applyRegen,applyLoss,elementBurstActive,applyElementDamage,addDamageRedirect,queueDelayedDamage,addEffect,tickLogic,revealEnemy,settleEgirSwallow,tickDoll,zoneContains,thorn2AreaContains,effectStatMods,teleportActor,moveActor,canRelocateTo,nearbySpots,projectSpot,dispatch,grantShield,grantGuard,TOKEN_IDS,spawnWhitwEyes,tickWhitwEyes,spawnSummon,summonLifecycle,summonInRange,cathyDeviceValues,tickCathyDevices,newAttackId,blockingActors};
@@ -17623,13 +17626,14 @@ return {};
 "native-shift.js": function(load) {
 const {advanceEnemy} = load("native-combat.js");
 const {directionOf} = load("protocol.js");
+const {effectiveWeight} = load("status.js");
 // PRTS推与拉、失衡位移机制：质量1，g=9.81，默认动摩擦系数0.5。
 const SPEEDS=[0,1,2,4,4.5,5.3,5.8];
 const PULL_FORCES=[0,2,10,40,42,44,46];
 const actor=(battle,uid)=>[...battle.s.units,...battle.s.enemies,...(battle.s.summons||[])].find(a=>a.uid===uid);
 function startEnemyPush(battle,target,source,{forceLevel,directional=false,fixedDirection=false,projectile=false,reverse=false}={}){
  if(!battle.s.enemies.includes(target)||target.hp<=0||target.hidden||target.shiftImmune||target.levitated||target.statuses?.some(s=>s.kind==='levitate')||!Number.isFinite(forceLevel))return false;
- let dx=target.x-source.x,dy=target.y-source.y,length=Math.hypot(dx,dy),level=forceLevel-(target.weight||0);
+ let dx=target.x-source.x,dy=target.y-source.y,length=Math.hypot(dx,dy),level=forceLevel-effectiveWeight(target);
  const forward=directionOf(source.dir??0);
  if(directional){if(!fixedDirection&&(length<.25||(dx*forward[0]+dy*forward[1])/length<Math.SQRT1_2))level-=2;else{dx=forward[0];dy=forward[1];length=1;}}
  if(length<1e-9){dx=forward[0];dy=forward[1];length=1;}
@@ -17644,7 +17648,7 @@ function startEnemyPush(battle,target,source,{forceLevel,directional=false,fixed
 function startEnemyPull(battle,target,source,{forceLevel,anchorOffset=.5,stopRadius=.6708,stopImmediately=false}={}){
  if(!battle.s.enemies.includes(target)||target.hp<=0||target.hidden||target.shiftImmune||target.levitated||target.statuses?.some(s=>s.kind==='levitate')||!Number.isFinite(forceLevel))return false;
  const owner=source.uid==null?null:actor(battle,source.uid);if(source.uid!=null&&(!owner||owner.hp<=0||owner.deployed===false))return false;
- const level=forceLevel-(target.weight||0),force=PULL_FORCES[Math.max(0,Math.min(6,Math.floor(level)+3))];if(!(force>0))return false;
+ const level=forceLevel-effectiveWeight(target),force=PULL_FORCES[Math.max(0,Math.min(6,Math.floor(level)+3))];if(!(force>0))return false;
  const [dx,dy]=directionOf(source.dir??owner?.dir??0),x=source.x+dx*anchorOffset,y=source.y+dy*anchorOffset,initialDistance=Math.hypot(target.x-x,target.y-y);if(initialDistance<1e-9)return false;
  const previous=target.shift;target.shift??={vx:0,vy:0,hardUntil:battle.s.time+.1,startedAt:battle.s.time,sourceUid:source.uid??null,projectile:false,fresh:false,nextDamageAt:battle.s.time+Number(target.enemyTalent?.['unbalanced_bleed.interval']||1)};
  if(target.staticRigid)target.shift.vx=target.shift.vy=0;

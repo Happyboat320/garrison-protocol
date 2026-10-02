@@ -1,4 +1,4 @@
-import {applyStatus,removeStatus} from './status.js';
+import {applyStatus,removeStatus,effectiveWeight} from './status.js';
 import {directionOf} from './protocol.js';
 import {containsTarget} from './targeting.js';
 // 联动干员（S.E.E.S. 四人组）的专属实现走独立派发，避免继续往下面几个大函数里堆逐名分支。
@@ -238,7 +238,7 @@ export function attackModifier(battle,source,target,value){
   else if(has(text,/被阻挡|阻挡的/)&&target.block!=null)out*=scale;
   if(has(text,/攻击空中目标|攻击飞行目标/)&&target.flying)out*=scale;
   if(has(text,/攻击.*沉睡|沉睡目标/)&&(target.statuses||[]).some(s=>s.kind==='sleep'))out*=scale;
-  const weightLimit=text.match(/重量小于等于\s*(\d+)/);if(weightLimit&&Number(target.weight||0)<=Number(weightLimit[1]))out*=scale;
+  const weightLimit=text.match(/重量小于等于\s*(\d+)/);if(weightLimit&&effectiveWeight(target)<=Number(weightLimit[1]))out*=scale;
   const drop=Number(bb.hp_ratio_drop),up=Number(bb.atk_scale_up);if(Number.isFinite(drop)&&drop>0&&Number.isFinite(up)&&/生命.*每降低|每降低.*生命/.test(text)&&target.maxHp>0){const steps=Math.max(0,Math.floor((1-target.hp/target.maxHp+1e-9)/drop));out*=1+steps*up;}
   const hpMatch=text.match(/生命值(?:低于|不高于|少于)\s*(\d+)%/);
   if(hpMatch&&target.maxHp>0&&target.hp/target.maxHp<=Number(hpMatch[1])/100)out*=scale;
@@ -260,7 +260,7 @@ export function attackPenetration(battle,source,target){
  let fixed=0,ratio=0,magicFixed=0;
  for(const talent of activeTalents(battle,source)){
   const text=talent.description||'',bb=talentValues(talent);
-  const weight=text.match(/重量大于等于\s*(\d+)/);if(weight&&Number(target.weight||0)<Number(weight[1]))continue;
+  const weight=text.match(/重量大于等于\s*(\d+)/);if(weight&&effectiveWeight(target)<Number(weight[1]))continue;
   if(/被狼群阻挡/.test(text)&&target.block==null)continue;
   if(/无视.*防御/.test(text)){if(Number.isFinite(Number(bb.defPenetrateFixed)))fixed=Math.max(fixed,Number(bb.defPenetrateFixed));if(Number.isFinite(Number(bb.defPenetrateRatio)))ratio=Math.max(ratio,Number(bb.defPenetrateRatio));}if(Number.isFinite(Number(bb.magic_resist_penetrate_fixed)))magicFixed=Math.max(magicFixed,Number(bb.magic_resist_penetrate_fixed));
  }
@@ -387,7 +387,9 @@ export function operatorSkillStart(battle,u,ctx){
   }
  }
  if(profile.charId==='char_4196_reckpr'&&skillIndex===1){u.reckprBuffUntil=battle.s.time+(Number(bb['attack@buff_duration'])||10);u.reckprHealValue=Number(bb['attack@fixed_heal_value'])||80;}
- if(profile.charId==='char_291_aglina'&&skillIndex===2){for(const e of battle.s.enemies.filter(e=>e.hp>0).filter(e=>e.hp>0&&!e.hidden))applyStatus(e,'levitate',profile.skill.duration>0?profile.skill.duration:5,{source:u.uid,resistible:false});}
+ // Angelina S3 grants weightlessness, not levitation: it must not suspend enemies,
+ // release blockers, or make blocked invisible enemies untargetable again.
+ if(profile.charId==='char_291_aglina'&&skillIndex===2){for(const e of battle.s.enemies.filter(e=>e.hp>0&&!e.hidden))applyStatus(e,'weightless',profile.skill.duration>0?profile.skill.duration:5,{source:u.uid,resistible:false});}
  if(profile.charId==='char_341_sntlla'&&skillIndex===1){const spot=battle.targets(u)[0]||u;ctx.addEffect(battle,{kind:'zone',sourceUid:u.uid,sourceDeployGen:u.deployGen,talentOrSkillId:'sntlla-s2',x:spot.x,y:spot.y,radius:1,randomTileUid:u.uid,interval:Math.max(.1,Number(bb.base_attack_time)||1),nextAt:battle.s.time+1,endsAt:battle.s.time+(profile.skill.duration>0?profile.skill.duration:6),trackArea:true,trackSide:'enemy',values:{dot:true,sluggish:true,cold:Number(bb['attack@cold'])||1,elementScale:.2,type:'arts'},snapshot:{damage:battle.stats(u).atk*(Number(bb.atkScale)||.65)},refKind:'owner',persistAfterSourceGone:false});return true;}
  if(profile.charId==='char_1046_sbell2'&&(skillIndex===0||skillIndex===2)){for(const e of allTargets(battle,u,true)){ctx.dealDamage(battle,{source:u,target:e,amount:battle.stats(u).atk*(Number(bb.atkScale)||Number(bb['attack@atk_scale_s3'])||3.9),type:'arts',cause:'skill',skill:true});if(skillIndex===0){applyStatus(e,'cold',Number(bb.cold)||3.5,{source:u.uid,resistible:false});ctx.moveActor(battle,e,u,'推动');}else ctx.moveActor(battle,e,u,'拖拽');}return true;}
  if(profile.charId==='char_1046_sbell2'&&skillIndex===1){const target=battle.targets(u)[0]||u;ctx.addEffect(battle,{kind:'zone',sourceUid:u.uid,sourceDeployGen:u.deployGen,talentOrSkillId:'sbell2-s2',x:target.x,y:target.y,radius:2,interval:1,nextAt:battle.s.time+1,endsAt:null,trackArea:true,trackSide:'enemy',values:{dot:true,sluggish:true,shape:'circle',elementScale:Number(bb['talent@s2_magic_scale'])||.2,type:'arts'},snapshot:{damage:battle.stats(u).atk*(Number(bb['attack@atk_scale_s2'])||3.1)},refKind:'owner',persistAfterSourceGone:false});return true;}
