@@ -13834,7 +13834,7 @@ const {bondBanIds,loadBondBan,normalizeBondBan} = load("native-bond-ban.js");
 // 干员默认技能（「战前准备」页保存的配置）：购买时按它决定新干员携带哪一档，读档时用来补齐/对齐副本。
 const {applyPrepSkills} = load("native-prep.js");
 const {TOKEN_IDS} = load("native-effects.js");
-const {itemAllowed,operatorAllowed,seesRun,freeDeploy,settleFundsToLayers,grantCountForLayers,seesGrantCandidates,tartarusLayers,SEES_BOND_ID,TARTARUS_BOND_ID} = load("native-sees.js");
+const {itemAllowed,operatorAllowed,seesRun,freeDeploy,settleFundsToLayers,grantCountForLayers,seesGrantCandidates,tartarusLayers,tartarusCap,SEES_BOND_ID,TARTARUS_BOND_ID} = load("native-sees.js");
 // 召唤物落点不受主人攻击范围限制的类型（见 summonCardRange 的注释）。
 const SUMMON_FREE_PLACEMENT=new Set(['cathy-device','skadi2-seaborn','silent-drone']);
 const SUMMON_ZERO_OCCUPANCY=new Set(['cathy-device']);
@@ -14147,15 +14147,17 @@ class NativeSession extends NativeEconomy {
   if(!seesRun(this))return 0;
   const gained=settleFundsToLayers(this.data,this,this.s.units);
   this.setFunds(0);
-  const want=grantCountForLayers(this.data,tartarusLayers(this)),have=Number(this.s.seesGrants)||0;
+  const maxGrants=grantCountForLayers(this.data,tartarusCap(this.data)),want=Math.min(maxGrants,grantCountForLayers(this.data,tartarusLayers(this))),stored=Number(this.s.seesGrants),have=Number.isFinite(stored)?Math.max(0,Math.min(maxGrants,Math.floor(stored))):0;
   let issued=0;
-  for(let n=have;n<want;n++){
+  for(let remaining=Math.max(0,want-have);remaining>0;remaining--){
    const {pool,fresh}=seesGrantCandidates(this.data,this,{exclude:this.s.units.map(u=>u.charId)});
    const list=fresh.length?fresh:pool;
    if(!list.length)break;
    const row=list[Math.min(list.length-1,Math.floor(this.random()*list.length))];
-   if(!this.gain(row.id))break;
+   const before=structuredClone(this.s);
+   try{if(!this.gain(row.id))break;}catch(error){this.s=before;this.s.events??=[];this.s.events.push({type:'sees-grant-deferred',chessId:row.id,round:this.s.round,reason:String(error?.message||error)});break;}
    issued++;
+   if(this.s.rewardPending)break;
   }
   this.s.seesGrants=have+issued;
   return gained;
