@@ -12710,11 +12710,12 @@ const {enemyMovementSpeed,permissions} = load("status.js");
 const {advanceEnemy,remainingDistance} = load("native-combat.js");
 const key=p=>p.x+','+p.y;
 const cell=e=>({x:Math.round(e.x),y:Math.round(e.y)});
+// 喷气人等地面导航飞行单位仍按地面路径寻路；仅自由飞行者绕开地形路径。
 const flies=e=>e.flying&&!e.groundNavigation;
 const FEAR=new Set(['fear','selfFear']);
 function passable(b,e,p){
  const t=b.map.grid[p.y]?.[p.x];
- return !!t&&t.passableMask!=='NONE'&&(e.flying||t.passableMask!=='FLY_ONLY')&&t.tileKey!=='tile_hole';
+ return !!t&&t.passableMask!=='NONE'&&(flies(e)||t.passableMask!=='FLY_ONLY')&&t.tileKey!=='tile_hole';
 }
 function reach(b,e,from){
  const queue=[from],seen=new Map([[key(from),{p:from,parent:null,distance:0}]]),closed=new Set();
@@ -12740,7 +12741,7 @@ function rebuild(b,e,status,signature){
  const origin={x:e.x,y:e.y},source=getActor(b.s,status.source),goal=[...(e.route||[])].reverse().find(p=>p.kind==='move');
  const state={signature,candidates:[],path:[],index:0};
  if(source&&source!==e&&Math.hypot(origin.x-source.x,origin.y-source.y)>1e-9&&goal){
-  const reachable=e.flying?b.map.grid.flatMap((row,y)=>row.map((_,x)=>({p:{x,y}}))):[...reach(b,e,cell(goal)).values()],dx=origin.x-source.x,dy=origin.y-source.y,len=Math.hypot(dx,dy);
+  const reachable=flies(e)?b.map.grid.flatMap((row,y)=>row.map((_,x)=>({p:{x,y}}))):[...reach(b,e,cell(goal)).values()],dx=origin.x-source.x,dy=origin.y-source.y,len=Math.hypot(dx,dy);
   for(const {p}of reachable){
    const x=p.x-origin.x,y=p.y-origin.y,d=Math.hypot(x,y),tile=b.map.grid[p.y]?.[p.x];
    if(passable(b,e,p)&&d>0&&d<=10&&(x*dx+y*dy)/(d*len)>=Math.SQRT1_2-1e-9&&tile?.tileKey!=='tile_end')state.candidates.push(p);
@@ -12749,13 +12750,13 @@ function rebuild(b,e,status,signature){
  e.fearMovement=state;
 }
 function choosePath(b,e,state,forceCurrent=false){
- const start=cell(e),tree=e.flying?null:reach(b,e,start),near=state.candidates.filter(p=>(e.flying?Math.hypot(p.x-e.x,p.y-e.y):tree.get(key(p))?.distance??Infinity)<=5);
+ const start=cell(e),freeFlight=flies(e),tree=freeFlight?null:reach(b,e,start),near=state.candidates.filter(p=>(freeFlight?Math.hypot(p.x-e.x,p.y-e.y):tree.get(key(p))?.distance??Infinity)<=5);
  const chosen=!forceCurrent&&near.length?near[Math.floor(b.economy.random()*near.length)]:start;
  const offset={x:chosen.x+(b.economy.random()-.5)*.5,y:chosen.y+(b.economy.random()-.5)*.5};
- state.targetCenter=chosen;state.targetOffset=offset;state.path=e.flying?[]:pathTo(tree,chosen);state.path.push(offset);state.index=0;
+ state.targetCenter=chosen;state.targetOffset=offset;state.path=freeFlight?[]:pathTo(tree,chosen);state.path.push(offset);state.index=0;
 }
 function rejoin(b,e){
- if(e.flying)return;
+ if(flies(e))return;
  let index=e.cmd;
  if(e.route?.[index]?.kind==='wait')index++;
  const goal=e.route?.[index];if(goal?.kind!=='move')return;
@@ -12776,9 +12777,9 @@ function advanceEnemyFear(b,e,dt){
  const state=e.fearMovement;
  // 外部位移/路径点传送后重新寻路；超过5格的旧目标从本次候选集淘汰。
  if(state.lastPosition&&state.targetCenter&&Math.hypot(e.x-state.lastPosition.x,e.y-state.lastPosition.y)>1e-7){
-  const tree=e.flying?null:reach(b,e,cell(e)),distance=e.flying?Math.hypot(e.x-state.targetCenter.x,e.y-state.targetCenter.y):tree.get(key(state.targetCenter))?.distance??Infinity;
+  const freeFlight=flies(e),tree=freeFlight?null:reach(b,e,cell(e)),distance=freeFlight?Math.hypot(e.x-state.targetCenter.x,e.y-state.targetCenter.y):tree.get(key(state.targetCenter))?.distance??Infinity;
   if(distance>5){state.candidates=state.candidates.filter(p=>key(p)!==key(state.targetCenter));choosePath(b,e,state,true);}
-  else{state.path=e.flying?[]:pathTo(tree,state.targetCenter);state.path.push(state.targetOffset);state.index=0;}
+  else{state.path=freeFlight?[]:pathTo(tree,state.targetCenter);state.path.push(state.targetOffset);state.index=0;}
  }
  if(state.index>=state.path.length)choosePath(b,e,state);
  let distance=Math.max(0,enemyMovementSpeed(e)*(e.moveSpeedMod??1)*(e.waterMoveScale??1)*(e.sandMoveScale??1)*(e.envMoveScale??1)*dt*((e.statuses||[]).some(s=>s.kind==='sluggish')?.2:1));
