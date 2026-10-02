@@ -109,9 +109,9 @@ html.native-play-lock,html.native-play-lock body{height:100%;margin:0;background
 html.native-need-rotate,html.native-need-rotate body{overflow:hidden;position:fixed;inset:0;width:100%;height:100%}
 html.native-need-rotate #app{position:absolute;top:0;left:100%;overflow:hidden;min-width:0;min-height:0;transform:rotate(90deg);transform-origin:top left}
 html.native-landscape-ui{
- .native-game{--dock-height:140px;position:relative;height:100vh;height:100dvh;max-width:none;margin:0;padding:0;overflow:hidden}
- .native-game.is-supply-collapsed{--dock-height:82px}
- .native-game.is-battle{--dock-height:44px}
+ .native-game{--dock-height:152px;position:relative;height:100vh;height:100dvh;max-width:none;margin:0;padding:0;overflow:hidden}
+ .native-game.is-supply-collapsed{--dock-height:94px}
+ .native-game.is-battle{--dock-height:56px}
  .native-top{position:absolute;z-index:10;top:max(6px,env(safe-area-inset-top));left:max(10px,env(safe-area-inset-left));border:0;padding:0;gap:5px;justify-content:flex-start;flex-wrap:nowrap}
  .native-top strong{display:none}
  /* 手机横屏的顶部已经被状态条（生命/时间/资金/波次）和操作按钮占满，计数器不在这里显示，避免遮挡。 */
@@ -136,14 +136,14 @@ html.native-landscape-ui{
  .native-controls,.native-game.is-battle .native-controls{position:absolute;z-index:2;top:60px;right:max(10px,env(safe-area-inset-right));width:132px;padding:0;gap:4px;flex-wrap:wrap;align-content:start;align-items:start;justify-content:flex-start;font-size:10px}
  .native-controls button{padding:3px 7px;white-space:nowrap}.native-controls label{display:none}
  .native-controls .native-primary{margin:0;width:100%;min-width:100px}
- .native-bench-label{position:fixed;z-index:12;left:max(6px,env(safe-area-inset-left));right:auto;width:80px;bottom:calc(96px + env(safe-area-inset-bottom));height:44px;padding:4px 6px;font-size:11px;background:#1b332eed;border-top:1px solid #62d7b2}.native-bench-label span,.native-bench-label #native-drop-hint{display:none}
- .native-bench{position:fixed;z-index:12;left:calc(86px + env(safe-area-inset-left));right:max(6px,env(safe-area-inset-right));bottom:calc(96px + env(safe-area-inset-bottom));min-height:0;height:44px;padding:2px 6px;gap:5px;overflow-x:hidden;scrollbar-width:none;scrollbar-gutter:auto;background:#152b27f5;border-bottom:1px solid #577b6c}.native-bench:empty::after{content:"暂无待部署干员 · 可从商店调配";align-self:center;color:#a2c4b6;font-size:11px;padding-left:4px}
+ .native-bench-label{position:fixed;z-index:12;left:max(6px,env(safe-area-inset-left));right:auto;width:80px;bottom:calc(96px + env(safe-area-inset-bottom));height:56px;padding:4px 6px;font-size:11px;background:#1b332eed;border-top:1px solid #62d7b2}.native-bench-label span,.native-bench-label #native-drop-hint{display:none}
+ .native-bench{position:fixed;z-index:12;left:calc(86px + env(safe-area-inset-left));right:max(6px,env(safe-area-inset-right));bottom:calc(96px + env(safe-area-inset-bottom));min-height:0;height:56px;padding:2px 6px;gap:5px;overflow-x:hidden;scrollbar-width:none;scrollbar-gutter:auto;background:#152b27f5;border-bottom:1px solid #577b6c}.native-bench:empty::after{content:"暂无待部署干员 · 可从商店调配";align-self:center;color:#a2c4b6;font-size:11px;padding-left:4px}
  .native-bench.has-scroll-arrows{left:calc(112px + env(safe-area-inset-left));right:calc(32px + env(safe-area-inset-right))}
- .native-hand-scroll-controls:not([hidden]){position:fixed;z-index:13;left:calc(86px + env(safe-area-inset-left));right:max(6px,env(safe-area-inset-right));bottom:calc(96px + env(safe-area-inset-bottom));height:44px;display:flex;align-items:center;justify-content:space-between;pointer-events:none}
+ .native-hand-scroll-controls:not([hidden]){position:fixed;z-index:13;left:calc(86px + env(safe-area-inset-left));right:max(6px,env(safe-area-inset-right));bottom:calc(96px + env(safe-area-inset-bottom));height:56px;display:flex;align-items:center;justify-content:space-between;pointer-events:none}
  .native-hand-scroll-controls[hidden]{display:none!important}
  .native-hand-scroll-controls button{display:grid;place-items:center;flex:0 0 24px;width:24px;height:36px;min-height:36px;margin:0;padding:0;border:1px solid #579f8c;background:#102b27;color:#a8f2db;font:700 17px/1 var(--mono,monospace);pointer-events:auto;box-shadow:0 2px 8px #0006}
  .native-hand-scroll-controls button:disabled{opacity:.35}
- .native-bench button{flex:0 0 62px;height:40px;min-height:40px;padding:1px;display:grid;grid-template-columns:28px 1fr;gap:2px}
+ .native-bench button{flex:0 0 62px;height:56px;min-height:56px;padding:1px;display:grid;grid-template-columns:28px 1fr;gap:2px}
  .native-bench img{width:28px;height:36px}.native-bench b{font-size:10px}.native-bench small{display:none}
  .native-bench .native-item-icon{font-size:24px;min-height:0}
  .native-shop{position:fixed;z-index:12;left:max(6px,env(safe-area-inset-left));right:max(6px,env(safe-area-inset-right));bottom:env(safe-area-inset-bottom);height:96px;margin:0;padding:4px 6px;display:grid;background:#101f1bf5;grid-template-columns:minmax(0,1fr);grid-template-rows:30px minmax(0,1fr);gap:4px;border:0;min-height:0}
@@ -1173,7 +1173,7 @@ html.native-need-rotate .native-briefing.native-briefing-v2{overflow:hidden}
 .native-bench .native-hand-slot>[data-act="item"]{position:relative;display:flex;flex:1 1 auto;width:100%;height:100%;min-width:0;min-height:0;box-sizing:border-box;margin:0;padding:2px;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;cursor:grab}
 .native-hand-slot .native-item-icon{min-height:54px;height:54px;font-size:34px}
 @media(max-width:600px){
- .native-hand-slot{flex-basis:62px;width:62px;height:40px;min-height:40px;padding:1px}
+ .native-hand-slot{flex-basis:62px;width:62px;height:56px;min-height:56px;padding:1px}
  .native-hand-overflow-divider{flex-basis:20px;font-size:8px}
  .native-bench .native-hand-slot>.native-hand-card{display:grid;grid-template-columns:28px minmax(0,1fr);gap:2px;justify-content:stretch;text-align:left}
  .native-bench .native-hand-slot>.native-hand-card img{grid-row:1/3;width:28px;height:36px}
@@ -1184,7 +1184,7 @@ html.native-need-rotate .native-briefing.native-briefing-v2{overflow:hidden}
  .native-hand-slot.is-empty>span{font-size:9px}
 }
 @media(orientation:landscape) and (max-height:600px) and (max-width:1100px){
- html.native-landscape-ui .native-hand-slot{flex-basis:62px;width:62px;height:40px;min-height:40px;padding:1px}
+ html.native-landscape-ui .native-hand-slot{flex-basis:62px;width:62px;height:56px;min-height:56px;padding:1px}
  html.native-landscape-ui .native-hand-overflow-divider{flex-basis:20px;font-size:8px}
 }
 .native-result-bond-layers{margin:14px 0;padding:12px;border:1px solid #315451;background:#102225}
