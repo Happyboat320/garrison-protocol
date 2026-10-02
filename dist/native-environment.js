@@ -81,9 +81,8 @@ export function standsOn(battle,actor,key){
 export function terrainActors(battle){return [...alliedActors(battle.s),...battle.s.enemies];}
 
 // 活性源石（#04，tile_infection 黑板 damage/atk/attack_speed/duration）：
-// 站在上面的**我方与敌方**单位每秒受 70 真实伤害，攻击力 +20%、攻击速度 +20。
-// 窗口取原表 duration（300 秒＝PRTS 写的「5 分钟内」）从开战计时；本客户端单场战斗远短于它，
-// 所以等价于「站在上面就有」。
+// 首次踩中时获得本场战斗永久增益：每秒 70 真实伤害、攻击力 +20%、攻击速度 +20；离开地块后不清除。
+// duration 限制可获得增益的时间窗，已经获得的增益持续至本场战斗结束。
 // 伤害按 0.1 秒结算并累计不足一个周期的暴露时间，避免快速经过时只吃到一次整秒脉冲。
 const ORIGINIUM_DAMAGE_TICK=.1;
 export function tickActiveOriginium(battle){
@@ -92,8 +91,8 @@ export function tickActiveOriginium(battle){
  const now=battle.s.time,room=!cfg.duration||now<cfg.duration,frame=battle.s.frame>0?now/battle.s.frame:0;
  for(const actor of terrainActors(battle)){
   const on=room&&standsOn(battle,actor,TERRAIN_TILES.originium);
-  if(!on){const carry=Math.max(0,Number(actor.originiumDamageCarry)||0);actor.originium=false;actor.originiumNextAt=null;actor.originiumLastAt=null;actor.originiumDamageCarry=0;if(carry>0&&cfg.damage>0&&actor.hp>0)dealDamage(battle,{target:actor,amount:carry,type:'true',cause:'dot',environmental:true});continue;}
-  actor.originium=true;
+  if(on)actor.originium=true;
+  if(!actor.originium){actor.originiumNextAt=null;actor.originiumLastAt=null;actor.originiumDamageCarry=0;continue;}
   const last=Number.isFinite(actor.originiumLastAt)?actor.originiumLastAt:now-frame;
   actor.originiumDamageCarry=Math.max(0,Number(actor.originiumDamageCarry)||0)+Math.max(0,now-last)*Math.max(0,Number(cfg.damage)||0);
   actor.originiumLastAt=now;
