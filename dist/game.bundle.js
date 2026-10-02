@@ -16549,6 +16549,7 @@ function syncPlayChrome(){
  if(need){app.style.setProperty('width',innerHeight+'px','important');app.style.setProperty('height',innerWidth+'px','important');}
  else{app.style.removeProperty('width');app.style.removeProperty('height');}
  const dossier=document.querySelector('.native-dossier'),top=document.querySelector('.native-top');if(dossier&&top)dossier.style.top=`${top.offsetTop+top.offsetHeight+8}px`;
+ syncHandScrollControls();
 }
 async function enterPlayChrome(){
  if(!mobilePlay()||iosMobile())return;
@@ -16874,6 +16875,7 @@ function showResult(){const g=state.game,r=g.s.runResult||g.s.history.at(-1);if(
 function action(button,anchor=null){const a=button.dataset.act,g=state.game,uid=Number(button.dataset.uid);if(button.disabled)return;if(['home','new','begin','resume','sandbox','sandbox-exit'].includes(a))runtimeFault=null;if(['sandbox','home','sandbox-exit','new'].includes(a))rememberView('lobby');if(['begin','resume','import'].includes(a))rememberView('game');
  if(a==='result-unit'){state.resultUnitUid=uid;showResult();return;}
  if(a==='update-log'){showUpdateLog();return;}
+ if(a==='hand-scroll'){scrollHandByHalfSlot(button.dataset.direction);return;}
  if(a==='fullscreen'){enterPlayChrome().then(()=>{if(!(document.fullscreenElement||document.webkitFullscreenElement))notice('未能进入全屏，请再次点击或检查浏览器全屏设置。');});return;}
  if(a==='ban-list'){showBannedOperators();return;}
  if(a==='archive'&&state.view==='lobby'){modal(renderArchiveWindow(archiveNow(),esc));return;}
@@ -16951,7 +16953,9 @@ function handCards(game){if(game.s.phase==='prep')game.syncSummonCards?.();retur
 function handCardKind(game,card){return game.s.units.includes(card)?'operator':game.s.items.includes(card)?'item':'summon-card';}
 function handCardHtml(game,card){const kind=handCardKind(game,card),slot=card.handSlot;if(kind==='operator')return `<button data-act="select" data-uid="${card.uid}" data-hand-card="true" class="native-hand-card${data.profiles[card.chessId].isGolden?' is-elite':''}${state.selected===card.uid||inspectSame('unit',card.uid)?' chosen':''}" aria-label="${esc(data.profiles[card.chessId].name)}，手牌格 ${slot+1}">${avatar(card.charId)}<b>${esc(data.profiles[card.chessId].name)}</b>${data.profiles[card.chessId].isGolden?'<small>精锐</small>':''}</button>`;if(kind==='item')return `<div role="button" tabindex="0" data-act="item" data-uid="${card.uid}" data-hand-card="true" class="native-hand-card${state.item===card.uid||inspectSame('pack',card.uid)?' chosen':''}" aria-label="${esc(itemName(card.chessId))}，手牌格 ${slot+1}">${itemIcon(card.chessId)}<b>${esc(itemName(card.chessId))}</b></div>`;const hint=card.mode==='skill'?'技能转好后自动出现':card.mode==='auto'?'开战时自动出现':'可拖动放置并选择朝向';return `<button data-act="summon-select" data-uid="${card.uid}" data-mode="${card.mode||'manual'}" data-placeable="${String(!!card.placeable)}" data-hand-card="true" class="native-hand-card native-summon-card${state.summonSelected===card.uid?' chosen':''}"${card.mode!=='manual'&&!card.placeable?' disabled':''} aria-label="${esc(card.name)}，手牌格 ${slot+1}"><span class="native-summon-icon">◈</span><b>${esc(card.name)}</b><small>${hint}</small></button>`;}
 function handView(game){const cards=handCards(game),signature=cards.map(card=>`${handCardKind(game,card)}:${card.uid}@${card.handSlot}`).join('|');if(game.s.phase!=='prep')return {signature,html:cards.map(card=>handCardHtml(game,card)).join('')};const bySlot=new Map(cards.map(card=>[card.handSlot,card])),slot=(index,overflow=false)=>{const card=bySlot.get(index);return `<div class="native-hand-slot${overflow?' is-overflow-slot':''}${card?'':' is-empty'}" data-hand-slot="${index}" aria-label="${overflow?'临时超额':'手牌'}${card?'':'空位'} ${overflow?index-HAND_LIMIT+1:index+1}">${card?handCardHtml(game,card):`<span>${overflow?'+':String(index+1).padStart(2,'0')}</span>`}</div>`;},overflowMax=cards.reduce((max,card)=>Math.max(max,card.handSlot),HAND_LIMIT-1),temporary=overflowMax>=HAND_LIMIT?`<span class="native-hand-overflow-divider" aria-hidden="true">临时</span>${Array.from({length:overflowMax-HAND_LIMIT+1},(_,i)=>slot(HAND_LIMIT+i,true)).join('')}`:'';return {signature,html:Array.from({length:HAND_LIMIT},(_,i)=>slot(i)).join('')+temporary};}
-function renderSummonCards(){const game=state.game,bench=document.getElementById('native-hand');if(!game||!bench)return;const view=handView(game);if(!drag&&bench.dataset.layout!==view.signature){bench.innerHTML=view.html;bench.dataset.layout=view.signature;}}
+function syncHandScrollControls(){const bench=document.getElementById('native-hand');if(!bench)return;let controls=root.querySelector('.native-hand-scroll-controls');if(!controls){bench.insertAdjacentHTML('afterend','<div class="native-hand-scroll-controls" role="group" aria-label="横向翻动手牌" hidden><button type="button" data-act="hand-scroll" data-direction="-1" aria-label="向左翻动手牌" aria-controls="native-hand">‹</button><button type="button" data-act="hand-scroll" data-direction="1" aria-label="向右翻动手牌" aria-controls="native-hand">›</button></div>');controls=root.querySelector('.native-hand-scroll-controls');}const visible=(mobilePlay()||document.documentElement.classList.contains('native-landscape-ui'))&&!state.sandbox&&bench.scrollWidth>bench.clientWidth+1;controls.hidden=!visible;bench.classList.toggle('has-scroll-arrows',visible);if(visible){controls.querySelector('[data-direction="-1"]').disabled=bench.scrollLeft<=1;controls.querySelector('[data-direction="1"]').disabled=bench.scrollLeft+bench.clientWidth>=bench.scrollWidth-1;}}
+function scrollHandByHalfSlot(direction){const bench=document.getElementById('native-hand');if(!bench)return;const item=bench.querySelector('.native-hand-slot,.native-hand-card'),gap=parseFloat(getComputedStyle(bench).gap)||0,step=(item?.getBoundingClientRect().width||62)+gap,behavior=matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth';bench.scrollBy({left:(Number(direction)<0?-1:1)*step/2,behavior});}
+function renderSummonCards(){const game=state.game,bench=document.getElementById('native-hand');if(!game||!bench)return;const view=handView(game);if(!drag&&bench.dataset.layout!==view.signature){bench.innerHTML=view.html;bench.dataset.layout=view.signature;}syncHandScrollControls();}
 // ── 回合结束演出 ────────────────────────────────────────────────────────────
 // 暗屏 + 拉出横幅「波次结束 / WAVE END」→ 停留 1 秒 → 收横幅 → 「损失生命」从 0 快速累加到位。
 // 纯表现层：只读 s.lastBattle（loss = 上限后的真实扣血，leaks = 真值），不写任何战斗状态，
@@ -17369,7 +17373,7 @@ function paneLocal(scroller,x,y){
 }
 function scrollerAtPoint(x,y){
  const hit=document.elementFromPoint(x,y);
- const panes=[...root.querySelectorAll('.native-strategy-catalog, .native-strategy-pane, .native-dossier, .native-modal>section, .native-prep-list, .native-bench, .native-lobby')].reverse();
+ const handArrows=mobilePlay()||document.documentElement.classList.contains('native-landscape-ui'),panes=[...root.querySelectorAll('.native-strategy-catalog, .native-strategy-pane, .native-dossier, .native-modal>section, .native-prep-list, .native-bench, .native-lobby')].filter(pane=>!(handArrows&&pane.matches('.native-bench'))).reverse();
  for(const pane of panes){
   if(paneMax(pane)<=0)continue;
   const p=paneLocal(pane,x,y);
@@ -17408,7 +17412,7 @@ function hitInScroller(scroller,x,y){
 function paneScroller(start){
  let node=start?.nodeType===1?start:start?.parentElement;
  while(node&&node!==root){
-  if(node.matches?.('.native-strategy-catalog, .native-strategy-pane, .native-dossier, .native-modal>section, .native-prep-list, .native-bench, .native-lobby')&&paneMax(node)>0)return node;
+  if(node.matches?.('.native-strategy-catalog, .native-strategy-pane, .native-dossier, .native-modal>section, .native-prep-list, .native-bench, .native-lobby')&&!(node.matches('.native-bench')&&(mobilePlay()||document.documentElement.classList.contains('native-landscape-ui')))&&paneMax(node)>0)return node;
   node=node.parentElement;
  }
  return null;
@@ -17448,6 +17452,7 @@ root.addEventListener('wheel',e=>{
  e.preventDefault();
  setShift(scroller,shiftOf(scroller)+(scroller.matches('.native-prep-list, .native-bench')?(e.deltaX||e.deltaY):e.deltaY));
 },{passive:false});
+root.addEventListener('scroll',e=>{if(e.target?.id==='native-hand')syncHandScrollControls();},true);
 root.addEventListener('click',e=>{
   if(dossierDismissedAt>0&&performance.now()-dossierDismissedAt<500){dossierDismissedAt=0;e.preventDefault();return;}
   const dossierButton=e.target.closest?.('.native-dossier button[data-act]');
