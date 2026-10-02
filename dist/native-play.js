@@ -121,7 +121,7 @@ function recordRunIfOver(g){
 function notice(s){const t=document.getElementById('toast');t.textContent=eggOn()?rewrite325Text(s):s;t.classList.add('visible');clearTimeout(notice.timer);notice.timer=setTimeout(()=>t.classList.remove('visible'),4000);}
 function currentTurn(){return buildPhasePlan(data,state.game.s.modeId).find(t=>t.round===state.game.s.round);}
 function modal(html,meta=null){state.modal=html;state.modalMeta=meta;renderModal();}
-function showUpdateLog(){const log=NATIVE_CHANGELOG;modal(`<h2>更新日志</h2><div class="native-changelog-meta"><b>${esc(log.version)}</b><time datetime="${esc(log.publishedAt)}">${esc(log.displayTime)}</time></div><p class="native-changelog-intro">本次对话的修复与体验调整。</p>${log.sections.map(section=>`<section class="native-changelog-section"><h3>${changelogHtml(section.title)}</h3><ul>${section.items.map(item=>`<li>${changelogHtml(item)}</li>`).join('')}</ul></section>`).join('')}`);}
+function showUpdateLog(){const log=NATIVE_CHANGELOG;modal(`<h2>更新日志</h2><div class="native-changelog-meta"><b>${esc(log.version)}</b><time datetime="${esc(log.publishedAt)}">${esc(log.displayTime)}</time></div><p class="native-changelog-intro">本期功能更新与修复记录。</p>${log.sections.map(section=>`<section class="native-changelog-section"><h3>${changelogHtml(section.title)}</h3><ul>${section.items.map(item=>`<li>${changelogHtml(item)}</li>`).join('')}</ul></section>`).join('')}`);}
 let painting=false;
 function eggOn(){return egg325Active(state);}
 // 海猫模式：整备资金视为无限，界面上以彩色 ALL 代替金额。
