@@ -355,7 +355,7 @@ export function tickEnemySkills(battle,enemy,dt){
   const skill=enemy.enemySkills[cast.index];
   if(!cast.fired&&battle.s.time+1e-9>=cast.fireAt){
    cast.fired=true;
-   const target=attackableAllies(battle.s).filter(t=>enemyTargetValid(t)&&!permissions(t).sleeping&&(!t.invisible||t.statuses?.some(s=>s.kind==='camouflage'))).map(t=>({target:t,distance:enemyRayHitDistance(enemy,t,cast.direction)})).filter(r=>Number.isFinite(r.distance)).sort((a,b)=>a.distance-b.distance||a.target.uid-b.target.uid)[0]?.target;
+   const target=attackableAllies(battle.s,{includeInvisible:true}).filter(t=>enemyTargetValid(t)&&!permissions(t).sleeping&&(!t.invisible||t.statuses?.some(s=>s.kind==='camouflage'))).map(t=>({target:t,distance:enemyRayHitDistance(enemy,t,cast.direction)})).filter(r=>Number.isFinite(r.distance)).sort((a,b)=>a.distance-b.distance||a.target.uid-b.target.uid)[0]?.target;
    if(target){battle.resolveEnemyStrike(enemy,target,{scale:Number(skill.bb.atk_scale),type:'arts',cause:'skill',attackId:cast.attackId});applyStatus(target,'stun',Number(skill.bb.stun),{source:enemy.uid});}
    battle.emit('strike',{uid:enemy.uid,x:enemy.x,y:enemy.y,targetX:target?.x??enemy.x+cast.direction.x*10,targetY:target?.y??enemy.y+cast.direction.y*10,ranged:true,enemy:true,type:'arts',style:'cross-shot'});
   }

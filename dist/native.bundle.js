@@ -8958,7 +8958,8 @@ function operators(s){return s.units||[];}
 function alliedActors(s){return [...(s.units||[]),...(s.summons||[]).filter(x=>x.allied!==false&&!x.neutral)];}
 function enemyActors(s){return (s.enemies||[]).filter(e=>e.hp>0);}
 function enemyOpponents(s){return [...alliedActors(s),...(s.summons||[]).filter(u=>u.neutral)];}
-function attackableAllies(s){return enemyOpponents(s).filter(u=>u.deployed&&u.hp>0&&u.targetable!==false);}
+// 敌方范围伤害与索敌共用这份可攻击目标表，隐匿单位默认不受击；仅需要保留阻挡目标的直接索敌入口显式传 includeInvisible。
+function attackableAllies(s,{includeInvisible=false}={}){return enemyOpponents(s).filter(u=>u.deployed&&u.hp>0&&u.targetable!==false&&(includeInvisible||!u.invisible));}
 function lifeKey(u){return u.uid+':'+(u.deployGen||0);}
 function chebyshev(a,b){return Math.max(Math.abs((a.x??0)-(b.x??0)),Math.abs((a.y??0)-(b.y??0)));}
 function activeTalentsOf(battle,u){
@@ -9755,7 +9756,8 @@ function convexHull(points){
 }
 function zoneActors(battle,fx,side){
  const pool=side==='enemy'?enemyActors(battle.s):side==='all'?[...enemyActors(battle.s),...alliedActors(battle.s).filter(u=>u.deployed&&u.hp>0)]:alliedActors(battle.s).filter(u=>u.deployed&&u.hp>0);
- const inside=pool.filter(a=>zoneContains(battle,fx,a));
+ const hostile=battle.s.enemies.some(e=>e.uid===fx.sourceUid),allies=hostile?new Set(alliedActors(battle.s).map(a=>a.uid)):null;
+ const inside=pool.filter(a=>zoneContains(battle,fx,a)&&!(hostile&&allies.has(a.uid)&&a.invisible));
  // groundOnly：原表写「地面敌人」的圈不吃飞行单位（友方一侧不受这个开关影响）。
  return side==='ally'||!fx.values?.groundOnly?inside:inside.filter(a=>!a.flying);
 }
@@ -11153,7 +11155,7 @@ function tickEnemySkills(battle,enemy,dt){
   const skill=enemy.enemySkills[cast.index];
   if(!cast.fired&&battle.s.time+1e-9>=cast.fireAt){
    cast.fired=true;
-   const target=attackableAllies(battle.s).filter(t=>enemyTargetValid(t)&&!permissions(t).sleeping&&(!t.invisible||t.statuses?.some(s=>s.kind==='camouflage'))).map(t=>({target:t,distance:enemyRayHitDistance(enemy,t,cast.direction)})).filter(r=>Number.isFinite(r.distance)).sort((a,b)=>a.distance-b.distance||a.target.uid-b.target.uid)[0]?.target;
+   const target=attackableAllies(battle.s,{includeInvisible:true}).filter(t=>enemyTargetValid(t)&&!permissions(t).sleeping&&(!t.invisible||t.statuses?.some(s=>s.kind==='camouflage'))).map(t=>({target:t,distance:enemyRayHitDistance(enemy,t,cast.direction)})).filter(r=>Number.isFinite(r.distance)).sort((a,b)=>a.distance-b.distance||a.target.uid-b.target.uid)[0]?.target;
    if(target){battle.resolveEnemyStrike(enemy,target,{scale:Number(skill.bb.atk_scale),type:'arts',cause:'skill',attackId:cast.attackId});applyStatus(target,'stun',Number(skill.bb.stun),{source:enemy.uid});}
    battle.emit('strike',{uid:enemy.uid,x:enemy.x,y:enemy.y,targetX:target?.x??enemy.x+cast.direction.x*10,targetY:target?.y??enemy.y+cast.direction.y*10,ranged:true,enemy:true,type:'arts',style:'cross-shot'});
   }
@@ -12178,7 +12180,7 @@ const {attackableAllies,getActor} = load("native-effects.js");
 const {onVentTile} = load("native-environment.js");
 const {compareEnemyTargets,enemyTargetValid,enemyTargetInRange,scheduleStrikes,TENTATIVE_HIT_GAP,enemyChainTargets} = load("native-combat.js");
 const {endEnemySkill} = load("native-enemy-skills.js");
-function enemyAttackTargets(battle,e,alive=attackableAllies(battle.s)){
+function enemyAttackTargets(battle,e,alive=attackableAllies(battle.s,{includeInvisible:true})){
  if(e.hidden)return [];
  const spec=e.enemyAttack||{},blocker=alive.find(u=>u.uid===e.block&&enemyTargetValid(u)&&!spec.excludeIds?.includes(u.id));
  // 排气格栅（#07）：站在格栅上的干员不会成为**远程**攻击的目标（被它阻挡的近战目标照旧）。
@@ -13469,7 +13471,7 @@ class NativeBattle {
      // （毒雾 = 攻击力的 15%，敌人被击倒后原本会算成 0）。
      const liveAtk=source&&Number.isFinite(Number(source.atk))?Number(source.atk):null;
      const sourceAtk=liveAtk??(Number(fx.sourceAtk)||0);
-     for(const ally of (values.ignoreTargetability?enemyOpponents(this.s).filter(a=>a.deployed&&a.hp>0):attackableAllies(this.s))){if(values.groundOnly&&ally.flying)continue;if((values.shape==='circle'?Math.hypot(fx.x-ally.x,fx.y-ally.y):chebyshev(fx,ally))>fx.radius+1e-9)continue;
+     for(const ally of (values.ignoreTargetability?enemyOpponents(this.s).filter(a=>a.deployed&&a.hp>0&&!a.invisible):attackableAllies(this.s))){if(values.groundOnly&&ally.flying)continue;if((values.shape==='circle'?Math.hypot(fx.x-ally.x,fx.y-ally.y):chebyshev(fx,ally))>fx.radius+1e-9)continue;
       const fixed=values.damageHigh!=null&&this.map.grid[Math.round(ally.y)]?.[Math.round(ally.x)]?.heightType==='HIGHLAND'?values.damageHigh:values.damage;
       const base=values.atkScale>0?sourceAtk*values.atkScale:fixed;
       if(base>0)this.applyEnemyZoneDamage(ally,base,values.damageType,fx.nextAt,Math.max(.45,(Number(fx.interval)||1)*.9));
@@ -13796,7 +13798,7 @@ u.skillRangeHold=sk.rangeId||null;u.skillRangeHoldAt=this.s.time;const skillAir=
   tickEnemyParasites(this);
   for(const e of this.s.enemies)tickPompeiiExplosion(this,e,dt);
   for(const e of this.s.enemies)tickEnemyLancer(this,e);
-  for(const e of this.s.enemies){if(e.hp<=0||e.trainingDummy||e.carriedBy!=null)continue;tickEnemyForm(this,e);this.ensureEnemySelfField(e);tickEnemySkills(this,e,0);let control=permissions(e);const alive=attackableAllies(this.s);
+  for(const e of this.s.enemies){if(e.hp<=0||e.trainingDummy||e.carriedBy!=null)continue;tickEnemyForm(this,e);this.ensureEnemySelfField(e);tickEnemySkills(this,e,0);let control=permissions(e);const alive=attackableAllies(this.s,{includeInvisible:true});
    if(Number(e.burstUntil)>0&&this.s.time>=e.burstUntil)e.burstUntil=0;if(e.invisibleRecoverAt!=null&&this.s.time>=e.invisibleRecoverAt&&!e.action){e.formInvisible=true;e.invisible=true;e.invisibleRecoverAt=null;}
    if(e.movementPolicy===ENEMY_MOVEMENT_POLICIES.SCHEDULED_STOP){if(Number(e.stanceUntil)>0&&this.s.time>=e.stanceUntil)e.stanceUntil=0;if(!e.stanceUntil&&e.stanceInterval>0&&e.stanceDuration>0&&this.s.time>=e.nextStanceAt){e.stanceUntil=this.s.time+e.stanceDuration;e.nextStanceAt=this.s.time+e.stanceInterval;this.emit('enemy-stance',{uid:e.uid,x:e.x,y:e.y,until:e.stanceUntil});}}
    syncEnemyConcealMarker(e);

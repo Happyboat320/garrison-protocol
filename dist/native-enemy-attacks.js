@@ -4,7 +4,7 @@ import {onVentTile} from './native-environment.js';
 import {compareEnemyTargets,enemyTargetValid,enemyTargetInRange,scheduleStrikes,TENTATIVE_HIT_GAP,enemyChainTargets} from './native-combat.js';
 import {endEnemySkill} from './native-enemy-skills.js';
 
-export function enemyAttackTargets(battle,e,alive=attackableAllies(battle.s)){
+export function enemyAttackTargets(battle,e,alive=attackableAllies(battle.s,{includeInvisible:true})){
  if(e.hidden)return [];
  const spec=e.enemyAttack||{},blocker=alive.find(u=>u.uid===e.block&&enemyTargetValid(u)&&!spec.excludeIds?.includes(u.id));
  // 排气格栅（#07）：站在格栅上的干员不会成为**远程**攻击的目标（被它阻挡的近战目标照旧）。

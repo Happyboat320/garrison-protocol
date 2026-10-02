@@ -99,7 +99,8 @@ export function operators(s){return s.units||[];}
 export function alliedActors(s){return [...(s.units||[]),...(s.summons||[]).filter(x=>x.allied!==false&&!x.neutral)];}
 export function enemyActors(s){return (s.enemies||[]).filter(e=>e.hp>0);}
 export function enemyOpponents(s){return [...alliedActors(s),...(s.summons||[]).filter(u=>u.neutral)];}
-export function attackableAllies(s){return enemyOpponents(s).filter(u=>u.deployed&&u.hp>0&&u.targetable!==false);}
+// 敌方范围伤害与索敌共用这份可攻击目标表，隐匿单位默认不受击；仅需要保留阻挡目标的直接索敌入口显式传 includeInvisible。
+export function attackableAllies(s,{includeInvisible=false}={}){return enemyOpponents(s).filter(u=>u.deployed&&u.hp>0&&u.targetable!==false&&(includeInvisible||!u.invisible));}
 export function lifeKey(u){return u.uid+':'+(u.deployGen||0);}
 export function chebyshev(a,b){return Math.max(Math.abs((a.x??0)-(b.x??0)),Math.abs((a.y??0)-(b.y??0)));}
 export function activeTalentsOf(battle,u){
@@ -896,7 +897,8 @@ function convexHull(points){
 }
 function zoneActors(battle,fx,side){
  const pool=side==='enemy'?enemyActors(battle.s):side==='all'?[...enemyActors(battle.s),...alliedActors(battle.s).filter(u=>u.deployed&&u.hp>0)]:alliedActors(battle.s).filter(u=>u.deployed&&u.hp>0);
- const inside=pool.filter(a=>zoneContains(battle,fx,a));
+ const hostile=battle.s.enemies.some(e=>e.uid===fx.sourceUid),allies=hostile?new Set(alliedActors(battle.s).map(a=>a.uid)):null;
+ const inside=pool.filter(a=>zoneContains(battle,fx,a)&&!(hostile&&allies.has(a.uid)&&a.invisible));
  // groundOnly：原表写「地面敌人」的圈不吃飞行单位（友方一侧不受这个开关影响）。
  return side==='ally'||!fx.values?.groundOnly?inside:inside.filter(a=>!a.flying);
 }

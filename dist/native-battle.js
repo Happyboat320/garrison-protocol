@@ -616,7 +616,7 @@ export class NativeBattle {
      // （毒雾 = 攻击力的 15%，敌人被击倒后原本会算成 0）。
      const liveAtk=source&&Number.isFinite(Number(source.atk))?Number(source.atk):null;
      const sourceAtk=liveAtk??(Number(fx.sourceAtk)||0);
-     for(const ally of (values.ignoreTargetability?enemyOpponents(this.s).filter(a=>a.deployed&&a.hp>0):attackableAllies(this.s))){if(values.groundOnly&&ally.flying)continue;if((values.shape==='circle'?Math.hypot(fx.x-ally.x,fx.y-ally.y):chebyshev(fx,ally))>fx.radius+1e-9)continue;
+     for(const ally of (values.ignoreTargetability?enemyOpponents(this.s).filter(a=>a.deployed&&a.hp>0&&!a.invisible):attackableAllies(this.s))){if(values.groundOnly&&ally.flying)continue;if((values.shape==='circle'?Math.hypot(fx.x-ally.x,fx.y-ally.y):chebyshev(fx,ally))>fx.radius+1e-9)continue;
       const fixed=values.damageHigh!=null&&this.map.grid[Math.round(ally.y)]?.[Math.round(ally.x)]?.heightType==='HIGHLAND'?values.damageHigh:values.damage;
       const base=values.atkScale>0?sourceAtk*values.atkScale:fixed;
       if(base>0)this.applyEnemyZoneDamage(ally,base,values.damageType,fx.nextAt,Math.max(.45,(Number(fx.interval)||1)*.9));
@@ -943,7 +943,7 @@ u.skillRangeHold=sk.rangeId||null;u.skillRangeHoldAt=this.s.time;const skillAir=
   tickEnemyParasites(this);
   for(const e of this.s.enemies)tickPompeiiExplosion(this,e,dt);
   for(const e of this.s.enemies)tickEnemyLancer(this,e);
-  for(const e of this.s.enemies){if(e.hp<=0||e.trainingDummy||e.carriedBy!=null)continue;tickEnemyForm(this,e);this.ensureEnemySelfField(e);tickEnemySkills(this,e,0);let control=permissions(e);const alive=attackableAllies(this.s);
+  for(const e of this.s.enemies){if(e.hp<=0||e.trainingDummy||e.carriedBy!=null)continue;tickEnemyForm(this,e);this.ensureEnemySelfField(e);tickEnemySkills(this,e,0);let control=permissions(e);const alive=attackableAllies(this.s,{includeInvisible:true});
    if(Number(e.burstUntil)>0&&this.s.time>=e.burstUntil)e.burstUntil=0;if(e.invisibleRecoverAt!=null&&this.s.time>=e.invisibleRecoverAt&&!e.action){e.formInvisible=true;e.invisible=true;e.invisibleRecoverAt=null;}
    if(e.movementPolicy===ENEMY_MOVEMENT_POLICIES.SCHEDULED_STOP){if(Number(e.stanceUntil)>0&&this.s.time>=e.stanceUntil)e.stanceUntil=0;if(!e.stanceUntil&&e.stanceInterval>0&&e.stanceDuration>0&&this.s.time>=e.nextStanceAt){e.stanceUntil=this.s.time+e.stanceDuration;e.nextStanceAt=this.s.time+e.stanceInterval;this.emit('enemy-stance',{uid:e.uid,x:e.x,y:e.y,until:e.stanceUntil});}}
    syncEnemyConcealMarker(e);
