@@ -137,7 +137,12 @@ html.native-landscape-ui{
  .native-controls button{padding:3px 7px;white-space:nowrap}.native-controls label{display:none}
  .native-controls .native-primary{margin:0;width:100%;min-width:100px}
  .native-bench-label{position:fixed;z-index:12;left:max(6px,env(safe-area-inset-left));right:auto;width:80px;bottom:calc(96px + env(safe-area-inset-bottom));height:44px;padding:4px 6px;font-size:11px;background:#1b332eed;border-top:1px solid #62d7b2}.native-bench-label span,.native-bench-label #native-drop-hint{display:none}
- .native-bench{position:fixed;z-index:12;left:calc(86px + env(safe-area-inset-left));right:max(6px,env(safe-area-inset-right));bottom:calc(96px + env(safe-area-inset-bottom));min-height:0;height:44px;padding:2px 6px;gap:5px;scrollbar-width:thin;scrollbar-gutter:auto;background:#152b27f5;border-bottom:1px solid #577b6c}.native-bench:empty::after{content:"暂无待部署干员 · 可从商店调配";align-self:center;color:#a2c4b6;font-size:11px;padding-left:4px}
+ .native-bench{position:fixed;z-index:12;left:calc(86px + env(safe-area-inset-left));right:max(6px,env(safe-area-inset-right));bottom:calc(96px + env(safe-area-inset-bottom));min-height:0;height:44px;padding:2px 6px;gap:5px;overflow-x:hidden;scrollbar-width:none;scrollbar-gutter:auto;background:#152b27f5;border-bottom:1px solid #577b6c}.native-bench:empty::after{content:"暂无待部署干员 · 可从商店调配";align-self:center;color:#a2c4b6;font-size:11px;padding-left:4px}
+ .native-bench.has-scroll-arrows{left:calc(112px + env(safe-area-inset-left));right:calc(32px + env(safe-area-inset-right))}
+ .native-hand-scroll-controls:not([hidden]){position:fixed;z-index:13;left:calc(86px + env(safe-area-inset-left));right:max(6px,env(safe-area-inset-right));bottom:calc(96px + env(safe-area-inset-bottom));height:44px;display:flex;align-items:center;justify-content:space-between;pointer-events:none}
+ .native-hand-scroll-controls[hidden]{display:none!important}
+ .native-hand-scroll-controls button{display:grid;place-items:center;flex:0 0 24px;width:24px;height:36px;min-height:36px;margin:0;padding:0;border:1px solid #579f8c;background:#102b27;color:#a8f2db;font:700 17px/1 var(--mono,monospace);pointer-events:auto;box-shadow:0 2px 8px #0006}
+ .native-hand-scroll-controls button:disabled{opacity:.35}
  .native-bench button{flex:0 0 62px;height:40px;min-height:40px;padding:1px;display:grid;grid-template-columns:28px 1fr;gap:2px}
  .native-bench img{width:28px;height:36px}.native-bench b{font-size:10px}.native-bench small{display:none}
  .native-bench .native-item-icon{font-size:24px;min-height:0}
@@ -153,7 +158,9 @@ html.native-landscape-ui{
  .native-game.is-supply-collapsed .native-shop{height:38px;grid-template-rows:30px}
  .native-game.is-supply-collapsed .native-shop-cards,.native-game.is-supply-collapsed .native-shop>div:first-child>button:not(.native-supply-toggle){display:none}
  .native-game.is-supply-collapsed .native-bench{bottom:calc(38px + env(safe-area-inset-bottom))}
+ .native-game.is-supply-collapsed .native-hand-scroll-controls:not([hidden]){bottom:calc(38px + env(safe-area-inset-bottom))}
  .native-game.is-battle .native-bench{display:flex;bottom:env(safe-area-inset-bottom)}
+ .native-game.is-battle .native-hand-scroll-controls:not([hidden]){bottom:env(safe-area-inset-bottom)}
  .native-game.is-supply-collapsed .native-bench-label{bottom:calc(38px + env(safe-area-inset-bottom))}
  .native-game.is-battle .native-bench-label{display:flex;bottom:env(safe-area-inset-bottom)}
  .native-game.is-battle .native-shop{display:none}
@@ -1220,4 +1227,12 @@ html.native-need-rotate .native-briefing.native-briefing-v2{overflow:hidden}
  .native-hero-panel{grid-row:4;justify-self:stretch;width:100%;max-width:1320px;min-height:490px;margin:0 auto}
  .native-database{grid-row:5;justify-self:stretch;width:100%;max-width:1320px;margin:0 auto}
  .native-lobby-footer{grid-row:6;margin-top:6px}
+}
+
+@media(max-width:820px) and (orientation:portrait) and (hover:none) and (pointer:coarse){
+ .native-bench{overflow-x:hidden}
+ .native-bench.has-scroll-arrows{padding-left:36px;padding-right:36px}
+ .native-hand-scroll-controls:not([hidden]){position:relative;z-index:13;display:flex;align-items:center;justify-content:space-between;height:98px;margin-top:-98px;pointer-events:none}
+ .native-hand-scroll-controls button{display:grid;place-items:center;flex:0 0 28px;width:28px;height:38px;min-height:38px;margin:0;padding:0;border:1px solid #579f8c;background:#102b27;color:#a8f2db;font:700 18px/1 var(--mono,monospace);pointer-events:auto;box-shadow:0 2px 8px #0006}
+ .native-hand-scroll-controls button:disabled{opacity:.35}
 }
