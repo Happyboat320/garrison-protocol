@@ -8,7 +8,7 @@
 html.native-landscape-ui .native-board.online-split canvas{height:100%!important}
 
 /* 网络控件浮在原生游戏之上，只有标题栏可拖动，头像/按钮仍可点击。 */
-#online-app #online-social.floating{position:fixed;z-index:60;width:340px;max-width:calc(100vw - 16px);max-height:calc(100dvh - 16px);overflow:auto;background:#101e29f2;border:1px solid #5e8e96;border-radius:12px;box-shadow:0 8px 30px #0008;padding:10px;box-sizing:border-box}
+#online-app #online-social.floating{position:fixed;z-index:60;width:300px;max-width:calc(100vw - 16px);max-height:calc(100dvh - 16px);overflow:auto;background:#101e29f2;border:1px solid #5e8e96;border-radius:12px;box-shadow:0 8px 30px #0008;padding:10px;box-sizing:border-box}
 #online-app .social-drag-handle{cursor:move;touch-action:none;user-select:none;padding:5px 4px 10px;color:#98dcd3;font-weight:600}
 #online-app #online-social .players{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 #online-app #online-social .player{min-width:0;padding:6px;font-size:12px;overflow:visible}
@@ -28,9 +28,9 @@ html.native-landscape-ui .native-board.online-split canvas{height:100%!important
 
 /* 本地游戏表情：分类下拉 + 有限高度网格，避免素材数量撑满浮框。 */
 #online-app .emote-category-label{font-size:12px;margin:8px 0}
-#online-app #online-social .emotes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;max-height:190px;overflow-y:auto}
-#online-app #online-social .emotes button{padding:3px;min-width:0;aspect-ratio:1}
-#online-app .emotes button img{display:block;width:100%;height:100%;max-height:64px;object-fit:contain;pointer-events:none}
+#online-app #online-social .emotes{display:grid;grid-template-columns:repeat(5,48px);gap:5px;max-height:154px;overflow-y:auto}
+#online-app #online-social .emotes button{padding:2px;min-width:0;width:48px;height:48px;box-sizing:border-box}
+#online-app .emotes button img{display:block;width:100%;height:100%;max-height:42px;object-fit:contain;pointer-events:none}
 #online-app .player-avatar-wrap .emote-bubble{left:24px;top:-30px;width:76px;height:76px;padding:3px;box-shadow:0 3px 10px #0006}
 #online-app .emote-bubble img{width:100%;height:100%;object-fit:contain}
 #online-app .player-avatar-wrap .emote-bubble:empty{display:none}
