@@ -1,7 +1,7 @@
 # 独立 GitHub Pages 与联机服务发布
 
 更新：2026-10-02。本仓库为 [Happyboat320/garrison-protocol](https://github.com/Happyboat320/garrison-protocol)，单机上游为 [Yilegendoflink/garrison-protocol](https://github.com/Yilegendoflink/garrison-protocol)。
-当前网站：[happyboat.tech/garrison-protocol/](https://happyboat.tech/garrison-protocol/)。博客不再检出或复制本项目，旧 `/ark/` 已删除。
+当前网站地址以仓库 Pages 设置为准，项目路径为 `/garrison-protocol/`。博客不再检出或复制本项目，旧 `/ark/` 已删除。
 
 ## 静态网页发布
 
@@ -20,7 +20,7 @@ npm run build
 npm run build:pages --prefix multiplayer
 ```
 
-换联机端域名时，构建可设置 `MULTIPLAYER_PUBLIC_URL=wss://你的域名/socket`；默认使用 `wss://23-238-114-57.sslip.io/socket`。
+换联机端域名时，构建可设置 `MULTIPLAYER_PUBLIC_URL=wss://你的域名/socket`；网站暂保留现有默认连接地址，文档不记录具体部署地址。
 表情已随仓库保存，构建不请求 BWIKI。
 
 ## 自动同步上游

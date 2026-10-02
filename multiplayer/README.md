@@ -14,7 +14,7 @@ flowchart LR
 
 浏览器执行原单机的商店、部署、战斗与绘制，发送结果和只读视角快照。Node.js 校验玩家身份、房间阶段、任务和重复消息，协调独立生命、串行联防、公共决策与共享 Boss；服务端不重新演算每次攻击，不提供完整防作弊。
 
-GitHub Pages 只托管静态网页。VPS 由 Caddy 提供 HTTPS/WSS 和自动续证，转发到只监听 `127.0.0.1:8080` 的 Node 服务；服务端也能分发联机网页及允许访问的游戏资源。
+GitHub Pages 只托管静态网页。VPS 由 Caddy 提供 HTTPS/WSS 和自动续证，转发到只监听 本机回环地址的 8080 端口 的 Node 服务；服务端也能分发联机网页及允许访问的游戏资源。
 房间、恢复点与视角快照存在进程内存中，没有数据库或账号系统，重启会清空。单机与联机用同一源码构建，网页与服务器通过规则指纹拒绝不匹配版本。
 
 当前生产使用 systemd `garrison-multiplayer`、目录 `/opt/garrison-protocol`，最多 10 房、56 连接，内存硬限 768 MiB。每 6 小时自动同步上游只更新静态网站，VPS 需单独维护。
@@ -40,9 +40,9 @@ npm run build
 npm run build:pages --prefix multiplayer
 ```
 
-构建生成 `.pages/`，本仓库 `.github/workflows/pages.yml` 独立部署这个目录，所有任务固定 Ubuntu 24.04 LTS。**不再由博客构建或复制游戏**。独立项目地址是 `https://happyboat320.github.io/garrison-protocol/`；当前账号根 Pages 已绑定 `happyboat.tech`，线上地址为 `https://happyboat.tech/garrison-protocol/`。路径是仓库名，`/ark` 不再使用。
+构建生成 `.pages/`，本仓库 `.github/workflows/pages.yml` 独立部署这个目录，所有任务固定 Ubuntu 24.04 LTS。**不再由博客构建或复制游戏**。具体站点地址以仓库 Pages 设置为准，可使用账号默认域名或绑定的自定义域名。路径是仓库名，`/ark` 不再使用。
 
-默认联机地址 `23-238-114-57.sslip.io`、端口 `443`、WSS。静态清单记录网页规则指纹；服务端指纹不一致时拒绝入房，避免前后端玩法不一致。换自有服务域名可在构建时设置 `MULTIPLAYER_PUBLIC_URL=wss://域名/socket`。
+网站暂保留现有默认联机地址，使用端口 `443`、WSS；文档不记录具体部署域名或 IP。静态清单记录网页规则指纹；服务端指纹不一致时拒绝入房，避免前后端玩法不一致。换自有服务域名可在构建时设置 `MULTIPLAYER_PUBLIC_URL=wss://域名/socket`。
 
 ## 如何复用单机
 

@@ -4,7 +4,7 @@
 
 本仓库：[Happyboat320/garrison-protocol](https://github.com/Happyboat320/garrison-protocol) · 单机上游：[Yilegendoflink/garrison-protocol](https://github.com/Yilegendoflink/garrison-protocol)
 
-在线试玩：[单机 / 联机入口](https://happyboat.tech/garrison-protocol/) · [上游单机](https://yilegendoflink.github.io/garrison-protocol/)
+在线试玩：从本仓库 GitHub Pages 部署入口进入单机或联机。站点路径为 `/garrison-protocol/`，具体地址以仓库 Pages 设置为准。
 
 给后续开发者的当前事实见 [AGENTS.md](AGENTS.md)。
 
@@ -45,7 +45,7 @@ S.E.E.S. 联动四人（虎狼丸／埃癸斯／岳羽由加莉／结城理）�
 
 ## 本地运行与构建
 
-直接打开根目录 `index.html`，或运行 `npm run dev` 后访问 http://127.0.0.1:5502 。开发需要 Node.js 22+（Pages 使用 24）。`npm run build` 只编译；推送 `main` 会自动构建独立 Pages，普通发布工作流不运行测试。上游自动同步流程会先运行构建和联机检查，详见 [发布说明](PUBLISHING.md)。
+直接打开根目录 `index.html`，或运行 `npm run dev` 后访问 http://localhost:5502 。开发需要 Node.js 22+（Pages 使用 24）。`npm run build` 只编译；推送 `main` 会自动构建独立 Pages，普通发布工作流不运行测试。上游自动同步流程会先运行构建和联机检查，详见 [发布说明](PUBLISHING.md)。
 
 ## 本仓库联机扩展
 

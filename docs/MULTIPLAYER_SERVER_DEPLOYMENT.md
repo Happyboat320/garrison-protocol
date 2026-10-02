@@ -2,9 +2,9 @@
 
 架构与模块分层见 [联机 README](../multiplayer/README.md#运行架构)。
 
-以下命令用于新服务器，需有 sudo 权限。已有服务器部署在 `/opt/garrison-protocol`，Node.js 24.21.0，服务名 `garrison-multiplayer`；已有机器直接看下方更新步骤。房间与恢复点均在内存中，重启会清空。
+以下命令用于新服务器，需有 sudo 权限。`game.example.com` 与 `site.example.com` 是示例占位域名，部署时替换为自己的联机端与静态站点域名；`localhost` 表示本机回环地址。已有服务器部署在 `/opt/garrison-protocol`，Node.js 24.21.0，服务名 `garrison-multiplayer`；已有机器直接看下方更新步骤。房间与恢复点均在内存中，重启会清空。
 
-生产链路为 `浏览器 → WSS :443 → Caddy → 127.0.0.1:8080 Node.js`。客户端战斗计算在浏览器，Node 负责房间、同步、轮选与跨玩家结算；GitHub Pages 只提供静态网页。
+生产链路为 `浏览器 → WSS :443 → Caddy → localhost:8080 Node.js`。客户端战斗计算在浏览器，Node 负责房间、同步、轮选与跨玩家结算；GitHub Pages 只提供静态网页。
 
 ## 1. 安装环境
 
@@ -49,10 +49,10 @@ npm run build:native --prefix multiplayer
 首次可以前台启动，确认构建正常，再按 Ctrl+C 停止：
 
 ```bash
-HOST=127.0.0.1 PORT=8080 npm start --prefix multiplayer -- --max-rooms 10 --max-connections 56
+HOST=localhost PORT=8080 npm start --prefix multiplayer -- --max-rooms 10 --max-connections 56
 ```
 
-在服务器另一个终端执行 `curl -fsS http://127.0.0.1:8080/health`，应返回 `ok: true` 与 `rulesHash`。这里监听本机，远程浏览器暂时无法直接访问；局域网临时测试可改 `HOST=0.0.0.0` 并从 HTTP 网页使用 WS，公网正式部署继续使用回环监听与 Caddy。
+在服务器另一个终端执行 `curl -fsS http://localhost:8080/health`，应返回 `ok: true` 与 `rulesHash`。这里监听本机，远程浏览器暂时无法直接访问；局域网临时测试可改 HOST 绑定局域网接口地址 并从 HTTP 网页使用 WS，公网正式部署继续使用回环监听与 Caddy。
 
 ## 3. 设置 systemd 自动启动与资源限制
 
@@ -68,7 +68,7 @@ sudo systemctl status garrison-multiplayer --no-pager
 sudo journalctl -u garrison-multiplayer -n 30 --no-pager
 ```
 
-模板设置最多 **10 房、56 连接**，Node 监听 `127.0.0.1:8080`，崩溃自动重启。使用 DynamicUser、NoNewPrivileges、PrivateTmp 与只读文件系统，内存软限 512 MiB、硬限 768 MiB，TasksMax=64、文件描述符上限 4096。内存硬限可能导致进程退出和房间丢失。
+模板设置最多 **10 房、56 连接**，Node 监听 `localhost:8080`，崩溃自动重启。使用 DynamicUser、NoNewPrivileges、PrivateTmp 与只读文件系统，内存软限 512 MiB、硬限 768 MiB，TasksMax=64、文件描述符上限 4096。内存硬限可能导致进程退出和房间丢失。
 
 | 启动参数 | 环境变量 | 默认值 |
 | --- | --- | --- |
@@ -93,7 +93,7 @@ ExecStart=/opt/node-v24.21.0-linux-x64/bin/node multiplayer/server/index.js --ma
 
 准备一个域名，例如 `game.example.com`，添加指向 VPS 公网 IP 的 A 记录；有 IPv6 才添加对应 AAAA。公网 DNS 解析应正确，云安全组需允许 TCP 80/443，SSH 按管理需要放行；Node 的 8080 不需要对公网开放。
 
-当前服务器使用 `23-238-114-57.sslip.io`，由 sslip.io 将域名中的 IP 解析到本机。部署到另一台服务器时必须换成自己的域名或对应 IP 的 sslip.io 地址。域名不隐藏 IP，也不提供抗 DDoS。
+当前临时域名通过公共 DNS 服务解析到服务器 IP。部署到另一台服务器时必须配置自己的域名与解析记录。域名不隐藏 IP，也不提供抗 DDoS。
 
 通过 [Caddy 官方 Debian/Ubuntu 软件源](https://caddyserver.com/docs/install#debian-ubuntu-raspbian) 安装；已有 Caddy 的服务器跳过安装：
 
@@ -110,7 +110,7 @@ sudo apt install -y caddy
 
 ```caddyfile
 game.example.com {
-    reverse_proxy 127.0.0.1:8080
+    reverse_proxy localhost:8080
 }
 ```
 
@@ -132,16 +132,16 @@ cd /opt/garrison-protocol
 MULTIPLAYER_PUBLIC_URL=wss://game.example.com/socket npm run build:pages --prefix multiplayer
 ```
 
-此命令只生成 `.pages/`，不直接发布。若使用本仓库 GitHub Pages，在 `.github/workflows/pages.yml` 的「组装单机与联机入口」步骤设置同名环境变量，再推送并等待 Actions 成功。默认配置连接当前生产 sslip.io 地址；不需要改域名时保留默认值。
+此命令只生成 `.pages/`，不直接发布。若使用本仓库 GitHub Pages，在 `.github/workflows/pages.yml` 的「组装单机与联机入口」步骤设置同名环境变量，再推送并等待 Actions 成功。网站暂保留现有默认连接地址；不需要改域名时保留默认值。
 
 站点部署与域名路径说明见 [PUBLISHING.md](../PUBLISHING.md)。HTTPS 网页必须使用 WSS；在连接表单中输入 `game.example.com`、端口 `443`，勾选加密连接，创建房间后把房间号发给队友。
 
 ## 6. 验证部署与排障
 
 ```bash
-curl -fsS http://127.0.0.1:8080/health
+curl -fsS http://localhost:8080/health
 curl -fsS https://game.example.com/health
-curl -fsS https://happyboat.tech/garrison-protocol/multiplayer/version.json
+curl -fsS https://site.example.com/garrison-protocol/multiplayer/version.json
 sudo systemctl is-active garrison-multiplayer caddy
 sudo journalctl -u garrison-multiplayer -n 30 --no-pager
 sudo ss -ltnp
@@ -182,7 +182,7 @@ sudo cp -a /opt/garrison-protocol "/opt/garrison-backup-$(date -u +%Y%m%dT%H%M%S
 sudo rsync -a --delete dist/ /opt/garrison-protocol/dist/
 sudo rsync -a --delete multiplayer/ /opt/garrison-protocol/multiplayer/
 sudo systemctl start garrison-multiplayer
-curl -fsS http://127.0.0.1:8080/health
+curl -fsS http://localhost:8080/health
 ```
 
 `rsync --delete` 只作用于明确的游戏 dist 与 multiplayer 目录，清理被删除的旧模块；本例连同安装好的运行依赖和生成模块一起复制。它不更新 `/etc` 下的服务覆盖配置或 Caddy 配置，配置变更要另行核对。不要将自己的私钥、环境文件放进这两个会被替换的目录。
