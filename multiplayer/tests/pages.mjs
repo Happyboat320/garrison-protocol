@@ -34,6 +34,7 @@ try {
     await page.locator('#room-code').waitFor();
   }
   await pages[0].locator('[data-action="start-room"]').click();
+  for(const page of pages){await page.locator('.online-briefing').waitFor();await page.locator('[data-action="briefing-ready"]').click();}
   for(const page of pages)await page.locator('.strategy-card:not([disabled])').first().click();
   for(const page of pages)await page.locator('#native-canvas').waitFor();
   assert.deepEqual(errors,[]);console.log('Pages /garrison-protocol 子路径、跨服务连接、两人选策略验收通过');

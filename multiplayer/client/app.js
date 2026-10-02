@@ -4,7 +4,7 @@ import {richText} from '../../dist/protocol.js';
 import {loadArchive} from '../../dist/native-archive.js';
 import {visibleBands} from '../../dist/native-sees.js';
 import {loadWaveTable} from '../../dist/native-wave-fill.js';
-import {loadBondBan} from '../../dist/native-bond-ban.js';
+import {loadBondBan, bondBanBriefingHtml, bannedOperatorsHtml} from '../../dist/native-bond-ban.js';
 import {EMOTES, MODES} from '../shared/rules.js';
 import {Connection, endpoint} from './connection.js';
 import {MultiplayerSession} from './session.js';
@@ -19,6 +19,25 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;',
 const state = {room:null, playerId:null, game:null, snapshots:{}, view:null, selected:null, item:null, cell:null,
   fault:null, supportTask:null, clockOffset:0, ack:null, pendingTransfers:[], emotes:{}, profile:readProfile()};
 let toastTimer;
+// 浮框位置只在本地保存；重绘/观战切换保持位置，不占游戏棋盘布局。
+let socialPosition;
+try { socialPosition=JSON.parse(localStorage.getItem('garrison-online-social-position')); } catch {}
+function positionSocial() {
+  const panel=document.getElementById('online-social');if(!panel?.classList.contains('floating'))return;
+  const x=Math.max(0,Math.min((Number.isFinite(socialPosition?.x)?socialPosition.x:12),Math.max(0,innerWidth-panel.offsetWidth)));
+  const y=Math.max(0,Math.min((Number.isFinite(socialPosition?.y)?socialPosition.y:80),Math.max(0,innerHeight-panel.offsetHeight)));
+  panel.style.left=x+'px';panel.style.top=y+'px';socialPosition={x,y};
+}
+window.addEventListener('resize',positionSocial);
+root.addEventListener('pointerdown',event=>{
+  const handle=event.target.closest('.social-drag-handle');if(!handle||event.button!==0)return;
+  const panel=handle.closest('#online-social'),rect=panel.getBoundingClientRect();
+  const origin={x:event.clientX,y:event.clientY,left:rect.left,top:rect.top};
+  handle.setPointerCapture(event.pointerId);event.preventDefault();
+  const move=e=>{socialPosition={x:origin.left+e.clientX-origin.x,y:origin.top+e.clientY-origin.y};positionSocial();};
+  const finish=()=>{handle.removeEventListener('pointermove',move);handle.removeEventListener('pointerup',finish);handle.removeEventListener('pointercancel',finish);try{localStorage.setItem('garrison-online-social-position',JSON.stringify(socialPosition));}catch{}};
+  handle.addEventListener('pointermove',move);handle.addEventListener('pointerup',finish);handle.addEventListener('pointercancel',finish);
+});
 function notify(text) { const el=document.getElementById('online-toast');el.textContent=text;el.classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('visible'),4500); }
 function readProfile() { try {return JSON.parse(localStorage.getItem('garrison-online-profile-v1')) || {name:'指挥官',avatar:'🫡'};}catch{return {name:'指挥官',avatar:'🫡'};} }
 function me() { return state.room?.players.find(p=>p.id===state.playerId); }
@@ -53,7 +72,7 @@ function receive(message) {
       state.room=message.room; reconcile(); render();
     } else if(message.type==='snapshot') {state.snapshots[message.playerId]=message.snapshot;if(state.view===message.playerId||state.room?.phase==='support'&&state.room.task.playerId===message.playerId)syncNativeView();}
     else if(message.type==='boss') {if(state.room){state.room.boss=message.boss;state.game?.updateBoss(message.boss);}}
-    else if(message.type==='emote') {state.emotes[message.playerId]={emote:message.emote,until:Date.now()+3500};renderPlayers();}
+    else if(message.type==='emote') {state.emotes[message.playerId]={emote:message.emote,until:Date.now()+5000};renderPlayers();}
     else if(message.type==='result-ack') {state.ack=message.taskId;}
     else if(message.type==='transfer') {if(state.game)state.game.receiveFangTransfer(message.record);else state.pendingTransfers.push(message.record);}
     else if(message.type==='transfer-ack') {const record=state.game?.s.transferOutbox.find(r=>r.transferId===message.transferId);if(record)record.sent=true;}
@@ -112,25 +131,31 @@ function renderConnect() {
 }
 function playersHtml() {
   return state.room.players.map(p=>`<button class="player ${p.id===state.view?'viewed':''} ${p.eliminated?'eliminated':''}" data-action="view" data-id="${p.id}">
-    ${avatar(p)}<span><b>${esc(p.name)}${p.id===state.playerId?' · 我':''}</b><small>${p.hp===null?'待选策略':`${p.hp}/${p.maxHp} 生命`} · ${p.eliminated?'已淘汰':p.connected?(p.ready?'已准备':'在线'):'重连中'}</small></span>
-    <span class="emote-bubble">${state.emotes[p.id]?.until>Date.now()?esc(state.emotes[p.id].emote):''}</span></button>`).join('');
+    <span class="player-avatar-wrap">${avatar(p)}<span class="emote-bubble">${state.emotes[p.id]?.until>Date.now()?esc(state.emotes[p.id].emote):''}</span></span><span><b>${esc(p.name)}${p.id===state.playerId?' · 我':''}</b><small>${p.hp===null?'待选策略':`${p.hp}/${p.maxHp} 生命`} · ${p.eliminated?'已淘汰':p.connected?(p.ready?'已准备':'在线'):'重连中'}</small></span>
+    </button>`).join('');
 }
 function renderPlayers(){const el=document.getElementById('players');if(el&&state.room){const markup=playersHtml();if(el._markup!==markup){el.innerHTML=markup;el._markup=markup;}}}
 function render() {
   if(!state.room){renderConnect();return;}
   const room=state.room,p=me();
   root.innerHTML=`<div class="room-heading"><div><p class="eyebrow">联合模拟</p><h1>房间 <span id="room-code">${esc(room.id)}</span></h1></div><div class="actions">${button('copy','复制房间号')}${button('leave','离开房间')}</div></div>
-    <div id="players" class="players">${playersHtml()}</div>
+
     ${state.fault?`<p class="error">${esc(state.fault)} ${button('reload','重新加载并恢复')}</p>`:''}
     <section id="phase-panel">${phaseHtml(room,p)}</section>
-    <section class="social"><div class="emotes">${EMOTES.map(e=>button('emote',e,`data-emote="${e}" aria-label="发送表情 ${e}"`)).join('')}</div><p class="muted" id="phase-status"></p></section>
+    <aside id="online-social" class="${['prep','main','support','boss'].includes(room.phase)?'floating':''}" aria-label="队友视角与表情"><div class="social-drag-handle" title="拖动移动">⠿ 队友视角 / 表情</div><div id="players" class="players">${playersHtml()}</div><section class="social"><div class="emotes">${EMOTES.map(e=>button('emote',e,`data-emote="${e}" aria-label="发送表情 ${e}"`)).join('')}</div><p class="muted" id="phase-status"></p></section></aside>
     <details class="room-log"><summary>房间记录</summary>${room.log.map(row=>`<p>${esc(row.text)}</p>`).join('')}</details>`;
+  positionSocial();
   syncNativeView();
   draw();
 }
 // UI 按服务端阶段生成；淘汰者不显示可操作的准备界面，仍保留观战与表情。
 function phaseHtml(room,p) {
-  if(room.phase==='waiting')return `<section class="panel"><h2>等待队友加入 · ${room.players.length}/4</h2><div class="config-grid"><label>行动难度<select id="mode">${MODES.map(id=>`<option value="${id}" ${id==='mode_single_normal'?'selected':''}>${esc(data.season.modeDataDict[id].name)}</option>`).join('')}</select></label><label>作战阵地<select id="map"><option value="random">随机地图</option>${data.maps.filter(m=>m.weight>0).map(m=>`<option value="${m.stageId}">${esc(m.label||m.stageId)}</option>`).join('')}</select></label></div><p class="muted">房主的敌人波次与盟约禁用配置在开局时固定进本局。</p>${p?.id===room.hostId?button('start-room','开始选择策略','class="primary"',room.players.length<2):'<p>等待房主开始。</p>'}</section>`;
+  if(room.phase==='waiting')return `<section class="panel"><h2>等待队友加入 · ${room.players.length}/4</h2><div class="config-grid"><label>行动难度<select id="mode">${MODES.map(id=>`<option value="${id}" ${id==='mode_single_normal'?'selected':''}>${esc(data.season.modeDataDict[id].name)}</option>`).join('')}</select></label><label>作战阵地<select id="map"><option value="random">随机地图</option>${data.maps.filter(m=>m.weight>0).map(m=>`<option value="${m.stageId}">${esc(m.label||m.stageId)}</option>`).join('')}</select></label></div><p class="muted">房主的敌人波次与盟约禁用配置在开局时固定进本局。</p>${p?.id===room.hostId?button('start-room','开始游戏','class="primary"',room.players.length<2):'<p>等待房主开始。</p>'}</section>`;
+  if(room.phase==='briefing') {
+    // 复用单机禁用预览与干员名单，展示服务端已冻结的本局结果。
+    const briefing=bondBanBriefingHtml(data,room.config.bondBan,{esc});
+    return `<section class="online-briefing">${briefing||'<h2>本局没有禁用盟约</h2>'}<div class="briefing-operators" hidden>${bannedOperatorsHtml(data,room.config.bondBan,{esc,avatar:portrait})}</div><div class="actions">${button('briefing-ready',p.briefingSeen?'等待队友确认':'已了解，进入策略选择','class="primary"',p.briefingSeen)}</div></section>`;
+  }
   if(room.phase==='strategy') {
     const current=room.players.find(p=>p.id===room.strategyOrder[0]);
     const can=room.strategyOrder[0]===state.playerId;
@@ -162,7 +187,7 @@ function observedGame(id=state.view){
  const game=restorePresentation(data,snapshot);state.peerViews[id]={snapshot,game};return game;
 }
 function syncNativeView(){
-  const visible=state.game&&state.room&&!['waiting','strategy','decision'].includes(state.room.phase);
+  const visible=state.game&&state.room&&!['waiting','briefing','strategy','decision'].includes(state.room.phase);
   const app=document.getElementById('app');app.hidden=!visible;
   if(!visible){nativeUI.clear();return;}
   const ids=state.room.phase==='support'&&state.room.supportPlayers.length===2?[state.room.task.playerId,...state.room.supportPlayers.filter(id=>id!==state.room.task.playerId)]:null;
@@ -229,6 +254,10 @@ for(const name of ['pointerdown','pointerup','click','keydown'])nativeRoot.addEv
  event.preventDefault();event.stopImmediatePropagation();
 },true);
 root.addEventListener('click',async event=>{
+ const closeList=event.target.closest('.briefing-operators [data-act="close"]');
+ if(closeList){closeList.closest('.briefing-operators').hidden=true;return;}
+ const banButton=event.target.closest('[data-act="ban-list"]');
+ if(banButton){const list=root.querySelector('.briefing-operators');if(list)list.hidden=!list.hidden;return;}
  const target=event.target.closest('[data-action]');if(!target)return;
  const {action,id}=target.dataset;
  try{
@@ -238,6 +267,7 @@ root.addEventListener('click',async event=>{
   else if(action==='view'){state.view=id;render();}
   else if(action==='emote')connection.send({type:'emote',emote:target.dataset.emote});
   else if(action==='start-room')connection.send({type:'start',config:{modeId:document.getElementById('mode').value,mapId:document.getElementById('map').value,waveTable:loadWaveTable(),bondBan:loadBondBan(data)}});
+  else if(action==='briefing-ready')connection.send({type:'briefing-ready'});
   else if(action==='strategy')connection.send({type:'strategy',bandId:id});
   else if(action==='choice')connection.send({type:'choice',id});
   else if(action==='ready')ready();

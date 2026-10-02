@@ -29,10 +29,31 @@ try {
   }
   await pages[0].waitForFunction(()=>window.__garrisonOnline.state.room.players.length===4);
   await pages[0].locator('[data-action="start-room"]').click();
+  for(const page of pages){await page.locator('.online-briefing').waitFor();await page.locator('[data-action="briefing-ready"]').click();}
   for(const page of pages) {await page.locator('.strategy-card:not([disabled])').first().click();}
   for(const page of pages)await page.locator('#native-canvas').waitFor();
   await pages[0].locator('[data-action="emote"][data-emote="🎉"]').click();
   await pages[1].waitForFunction(()=>document.querySelector('.emote-bubble')?.textContent==='🎉');
+  // 表情从发送者头像旁出现，实际计时五秒；拖动浮框不影响棋盘或点击。
+  const bubble=pages[1].locator('.player-avatar-wrap .emote-bubble').filter({hasText:'🎉'});
+  assert.equal(await bubble.count(),1);
+  await pages[1].waitForTimeout(4200);
+  assert.equal(await bubble.count(),1);
+  await pages[1].waitForFunction(()=>![...document.querySelectorAll('.emote-bubble')].some(el=>el.textContent==='🎉'));
+  const handle=await pages[0].locator('.social-drag-handle').boundingBox();
+  const before=await pages[0].locator('#online-social').boundingBox();
+  await pages[0].mouse.move(handle.x+15,handle.y+10);await pages[0].mouse.down();
+  await pages[0].mouse.move(handle.x+215,handle.y+160,{steps:10});await pages[0].mouse.up();
+  const moved=await pages[0].locator('#online-social').boundingBox();
+  assert.ok(moved.x>before.x+150&&moved.y>before.y+100);
+  await pages[0].locator('[data-action="view"]').first().click();
+  const retained=await pages[0].locator('#online-social').boundingBox();
+  assert.equal(retained.x,moved.x);assert.equal(retained.y,moved.y);
+  // 返回左上方，避免后续部署测试被浮框覆盖。
+  await pages[0].evaluate(()=>{localStorage.removeItem('garrison-online-social-position');});
+  const relocated=await pages[0].locator('.social-drag-handle').boundingBox();
+  await pages[0].mouse.move(relocated.x+15,relocated.y+10);await pages[0].mouse.down();
+  await pages[0].mouse.move(relocated.x-185,relocated.y-140,{steps:10});await pages[0].mouse.up();
   // 买牌、选择落点和朝向均通过 UI，不直接改干员布阵。
   await pages[0].locator('[data-act="buy"]').first().click();
   await pages[0].locator('[data-act="buy"]').first().click();

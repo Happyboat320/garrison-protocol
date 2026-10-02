@@ -23,7 +23,7 @@ export class RoomManager {
       phase: room.phase, hostId: room.hostId, round: room.round, config: room.config,
       players: room.players.map(p => ({id: p.id, seat: p.seat, ...p.profile, connected: !!p.connection,
         bandId: p.bandId, hp: p.hp, maxHp: p.maxHp, ready: p.ready, next: p.next, eliminated: p.eliminated,
-        flags: p.flags})),
+        flags: p.flags, briefingSeen: !!p.briefingSeen})),
       strategyOrder: room.strategyOrder, choice: room.choice, picked: room.picked,
       task: room.task, supportPlayers: room.supportPlayers, losses: room.losses, rewards: room.rewards,
       boss: room.boss, lastSettlement: room.lastSettlement, success: room.success, log: room.log.slice(-30)};
@@ -49,8 +49,16 @@ export class RoomManager {
       requireValue(room.phase === 'waiting' && room.hostId === player.id, '只有房主可开始');
       requireValue(room.players.length >= 2 && room.players.every(p => p.connection), '需要2–4名在线玩家');
       room.config = this.makeConfig(message.config, room.players.length);
-      room.phase = 'strategy'; room.strategyOrder = rotateOrder(room.players.map(p => p.id), 1);
-      this.log(room, '开始选择策略'); this.broadcast(room);
+      room.phase = 'briefing'; room.strategyOrder = rotateOrder(room.players.map(p => p.id), 1);
+      this.log(room, '查看本局盟约禁用'); this.broadcast(room);
+    } else if (message.type === 'briefing-ready') {
+      // 每位玩家都确认同一份开局禁用记录之后，才允许轮流选策略。
+      requireValue(room.phase === 'briefing', '当前不在禁用预览阶段');
+      player.briefingSeen = true;
+      if (room.players.every(p => p.briefingSeen)) {
+        room.phase = 'strategy'; this.log(room, '开始选择策略');
+      }
+      this.broadcast(room);
     } else if (message.type === 'strategy') {
       requireValue(room.phase === 'strategy' && room.strategyOrder[0] === player.id, '还未轮到你选择策略');
       requireValue(this.data.season.bandDataListDict[message.bandId] && !room.players.some(p => p.bandId === message.bandId), '策略无效或已被选择');
@@ -264,7 +272,7 @@ export class RoomManager {
   }
   expirePlayer(room, player) {
     if (room.phase === 'waiting') { room.players = room.players.filter(p => p !== player); if (room.hostId === player.id) room.hostId = room.players[0]?.id; return; }
-    if (room.phase === 'strategy') { this.finish(room, false); return; }
+    if (['briefing', 'strategy'].includes(room.phase)) { this.finish(room, false); return; }
     // 战斗断线超时无法证明本地结果。明确淘汰缺席者并记录原因，不伪造完美/击倒报告。
     player.eliminated = true; player.hp = 0;
     this.log(room, `${player.profile.name} 重连超时，淘汰`);

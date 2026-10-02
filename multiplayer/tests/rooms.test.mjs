@@ -7,7 +7,7 @@ import {RECONNECT_WINDOW_MS} from '../shared/protocol.js';
 import {finalBossConfig} from '../../dist/native-final-boss.js';
 
 function socket() {return {messages:[],send(text){this.messages.push(JSON.parse(text));},close(){}};}
-async function setup(count=4) {
+async function setup(count=4, confirm=true) {
   let now=100000;
   const manager=new RoomManager(data,'test-hash',{now:()=>now});
   const sockets=Array.from({length:count},socket);
@@ -16,6 +16,10 @@ async function setup(count=4) {
   const room=[...manager.rooms.values()][0];
   for(let i=1;i<count;i++)await manager.handle(sockets[i],{...hello,roomId:room.id});
   await manager.handle(sockets[0],{type:'start',config:{modeId:'mode_single_normal'}});
+  if(!confirm)return {manager,room,sockets,setTime:value=>now=value};
+  assert.equal(room.phase,'briefing');
+  await assert.rejects(manager.handle(sockets[0],{type:'strategy',bandId:'band_bldsk'}));
+  for(let i=0;i<count;i++){await manager.handle(sockets[i],{type:'briefing-ready'});assert.equal(room.phase,i===count-1?'strategy':'briefing');}
   const bands=['band_bldsk','band_kalts','band_chen','band_excu'];
   const actual=Object.keys(data.season.bandDataListDict).filter(id=>id!=='band_sees');
   for(let i=0;i<count;i++)await manager.handle(sockets[i],{type:'strategy',bandId:actual[i]});
@@ -95,4 +99,27 @@ test('联防者断线超时后，原漏怪继续交给下一名；没有后续�
   f.manager.disconnect(f.sockets[2]);f.setTime(100000+RECONNECT_WINDOW_MS+1);f.manager.sweep();
   assert.equal(f.room.players[2].eliminated,true);assert.equal(f.room.task.playerId,f.room.players[3].id);
   await report(f,3,[]);assert.equal(f.room.phase,'settlement');assert.equal(f.room.losses[f.room.players[0].id],0);
+});
+
+
+test('禁用预览冻结配置，确认重发与短期重连不会重抽禁用或卡住流程',async()=>{
+  const f=await setup(2,false),{manager,room,sockets}=f;
+  const frozen=JSON.stringify(room.config.bondBan);
+  await manager.handle(sockets[0],{type:'briefing-ready'});
+  await manager.handle(sockets[0],{type:'briefing-ready'});
+  assert.equal(room.phase,'briefing');
+  assert.equal(manager.publicRoom(room).players[0].briefingSeen,true);
+  manager.disconnect(sockets[0]);
+  await manager.handle(sockets[1],{type:'briefing-ready'});
+  assert.equal(room.phase,'strategy');
+  const returning=socket();
+  await manager.handle(returning,{type:'hello',protocol:PROTOCOL_VERSION,rulesHash:'test-hash',roomId:room.id,resumeToken:room.players[0].resumeToken});
+  assert.equal(manager.publicRoom(room).players[0].briefingSeen,true);
+  assert.equal(JSON.stringify(room.config.bondBan),frozen);
+});
+
+test('玩家在禁用预览主动退出时结束房间，避免永久等待确认',async()=>{
+  const f=await setup(2,false);
+  await f.manager.handle(f.sockets[0],{type:'leave'});
+  assert.equal(f.room.phase,'finished');
 });
