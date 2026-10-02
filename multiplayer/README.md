@@ -46,6 +46,8 @@ npm run build:pages --prefix multiplayer
 
 ## 生产服务
 
+网站已配置[上游自动同步](../docs/UPSTREAM_AUTO_SYNC.md)：每 6 小时检查、无冲突合并，经构建和联机检查后自动发布独立 Pages。此任务不自动重启联机服务器。
+
 生产目录 `/opt/garrison-protocol`；Node.js 24.21.0，systemd `garrison-multiplayer` 开机启动；Node 监听回环 `127.0.0.1:8080`，Caddy 提供公网 HTTPS/WSS 和自动续证。配置模板在 `deploy/`，临时公共域名解析到 `23.238.114.57`。
 
 更新时先完成现有房间，用与 Pages 完全相同的构建复制 `dist/` 和 `multiplayer/` 到生产目录，安装依赖并运行 `npm run build:native --prefix multiplayer`，再 `systemctl restart garrison-multiplayer`。生成文件必须提前构建，服务以只读权限运行。房间暂存内存，重启会清空。

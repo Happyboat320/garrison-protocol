@@ -4,6 +4,13 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # GITHUB_TOKEN 推送不会触发 push 工作流，同步任务需直接调用发布。
+  workflow_call:
+    inputs:
+      source_commit:
+        description: 已通过同步检查的完整提交 SHA
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -18,6 +25,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ inputs.source_commit || github.sha }}
       - uses: actions/setup-node@v7.0.0
         with:
           node-version: '24'
@@ -30,7 +39,7 @@ jobs:
           node --input-type=module <<'NODE'
           import {writeFileSync} from 'node:fs';
           writeFileSync('.pages/deployment.json', JSON.stringify({
-            sourceCommit: process.env.GITHUB_SHA,
+            sourceCommit: (await import('node:child_process')).execFileSync('git', ['rev-parse', 'HEAD'], {encoding: 'utf8'}).trim(),
             deployedAt: new Date().toISOString(),
             testsRun: false,
             runUrl: `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`

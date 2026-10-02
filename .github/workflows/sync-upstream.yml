@@ -1,0 +1,76 @@
+name: 检查上游并自动更新网站
+
+on:
+  schedule:
+    # UTC 00:23、06:23、12:23、18:23，避开整点；GitHub 调度可能延迟。
+    - cron: '23 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-upstream-main
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.repository == 'Happyboat320/garrison-protocol' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    outputs:
+      changed: ${{ steps.merge.outputs.changed }}
+      commit: ${{ steps.merge.outputs.commit }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: '24'
+      - name: 检查并尝试合并上游
+        id: merge
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          node multiplayer/scripts/sync-upstream.mjs
+      - name: 安装联机检查依赖
+        if: steps.merge.outputs.changed == 'true'
+        run: |
+          npm ci --prefix multiplayer
+          ./multiplayer/node_modules/.bin/playwright install --with-deps chromium
+      - name: 构建并检查原生接线、联机流程和静态入口
+        if: steps.merge.outputs.changed == 'true'
+        run: |
+          npm run build
+          npm test --prefix multiplayer
+          npm run test:browser --prefix multiplayer
+          npm run test:pages --prefix multiplayer
+      - name: 检查成功后推送合并提交
+        if: steps.merge.outputs.changed == 'true'
+        env:
+          SYNC_COMMIT: ${{ steps.merge.outputs.commit }}
+        run: |
+          # 仅推送构建之前的提交，构建生成的工作区变动不会混入仓库。
+          # 不强推：检查期间有人更新 main 时，正常 push 会拒绝覆盖。
+          git push origin "$SYNC_COMMIT:refs/heads/main"
+          echo '合并及检查成功，开始独立 Pages 发布。' >> "$GITHUB_STEP_SUMMARY"
+      - name: 失败说明
+        if: failure()
+        run: |
+          echo '自动更新失败。合并冲突、检查失败或推送失败时不会调用 Pages；请查看失败步骤。修复后可手动重新运行。若推送已成功但后续 Pages 失败，可单独重跑 Pages 工作流。' >> "$GITHUB_STEP_SUMMARY"
+
+  publish:
+    needs: sync
+    if: needs.sync.outputs.changed == 'true'
+    # 直接复用本仓库发布流程，不依赖 bot 的 push 事件，也不改博客仓库。
+    uses: ./.github/workflows/pages.yml
+    with:
+      source_commit: ${{ needs.sync.outputs.commit }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
