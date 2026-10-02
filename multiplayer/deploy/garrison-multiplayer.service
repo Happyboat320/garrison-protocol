@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=/opt/garrison-protocol
-ExecStart=/opt/node-v24.21.0-linux-x64/bin/node multiplayer/server/index.js
+ExecStart=/opt/node-v24.21.0-linux-x64/bin/node multiplayer/server/index.js --max-rooms 10 --max-connections 56
 Environment=HOST=127.0.0.1
 Environment=PORT=8080
 Restart=on-failure
@@ -15,5 +15,10 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=read-only
+# 资源上限保护宿主机；触顶可能重启服务并清空内存房间，不代替网络抗 DDoS。
+MemoryHigh=512M
+MemoryMax=768M
+TasksMax=64
+LimitNOFILE=4096
 [Install]
 WantedBy=multi-user.target

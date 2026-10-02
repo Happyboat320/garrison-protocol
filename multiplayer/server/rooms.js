@@ -11,13 +11,20 @@ import {normalizeWaveTable, defaultWaveTable} from '../../dist/native-wave-fill.
 import {normalizeBondBan, bondBanIds} from '../../dist/native-bond-ban.js';
 import {resolveMapId} from '../../dist/protocol.js';
 import {rollFinalBoss, finalBossConfig} from '../../dist/native-final-boss.js';
+import {positiveInteger} from './limits.js';
 
 const token = () => randomBytes(24).toString('hex');
 export class RoomManager {
-  constructor(data, rulesHash, {now = Date.now} = {}) {
+  constructor(data, rulesHash, {now = Date.now, maxRooms = 10} = {}) {
     this.data = data; this.rulesHash = rulesHash; this.now = now; this.rooms = new Map();
+    this.maxRooms = positiveInteger(maxRooms, 'maxRooms');
   }
-  send(connection, message) { connection?.send(JSON.stringify(message)); }
+  send(connection, message) {
+    if (!connection || connection.readyState !== undefined && connection.readyState !== 1) return;
+    // 慢接收者的发送队列不能无限增长；断开后仍保留正常的短期重连窗口。
+    if (connection.bufferedAmount > 4 * 1024 * 1024) { connection.terminate(); return; }
+    connection.send(JSON.stringify(message));
+  }
   publicRoom(room) {
     return {id: room.id, protocol: PROTOCOL_VERSION, rulesHash: this.rulesHash, revision: room.revision,
       phase: room.phase, hostId: room.hostId, round: room.round, config: room.config,
@@ -33,7 +40,7 @@ export class RoomManager {
     const message = {type: 'room', room: this.publicRoom(room), serverTime: this.now()};
     for (const p of room.players) this.send(p.connection, message);
   }
-  log(room, text) { room.log.push({at: this.now(), text}); }
+  log(room, text) { room.log.push({at: this.now(), text}); if (room.log.length > 100) room.log.splice(0, room.log.length - 100); }
   alive(room) { return room.players.filter(p => !p.eliminated); }
   async handle(connection, message) {
     requireValue(message && typeof message.type === 'string', '消息格式错误');
@@ -118,16 +125,22 @@ export class RoomManager {
       requireValue(player && (player.connection || this.now() - player.disconnectedAt < RECONNECT_WINDOW_MS), '重连凭证无效或已过期');
       if (player.connection && player.connection !== connection) player.connection.close(4001, '已从另一窗口重连');
     } else {
+      // 校验昵称/头像先于建房；错误请求不能占用空房名额。
+      const profile = profileOf(message.profile);
+      requireValue(!message.roomId || typeof message.roomId === 'string', '房间号格式错误');
       room = message.roomId ? this.rooms.get(message.roomId.toUpperCase()) : null;
       if (message.create) {
-        const id = randomBytes(3).toString('hex').toUpperCase();
+        this.sweep(); // 先释放已到期的断线房间；现有房间不驱逐、不抢占。
+        requireValue(this.rooms.size < this.maxRooms, `服务器房间已满（最多 ${this.maxRooms} 个），请加入已有房间或稍后再试`);
+        let id;
+        do { id = randomBytes(3).toString('hex').toUpperCase(); } while (this.rooms.has(id));
         room = {id, phase: 'waiting', revision: 0, round: 1, players: [], log: [], transfers: {}, reports: {}, picked: {}};
         this.rooms.set(id, room);
       }
       requireValue(room?.phase === 'waiting', '房间不存在或已经开始');
       requireValue(room.players.length < MAX_PLAYERS, '房间已满');
       player = {id: token().slice(0, 16), resumeToken: token(), seat: [1,2,3,4].find(seat => !room.players.some(p => p.seat === seat)),
-        profile: profileOf(message.profile), flags: {sees: message.flags?.sees === true}, bandId: null,
+        profile, flags: {sees: message.flags?.sees === true}, bandId: null,
         ready: false, next: false, hp: null, maxHp: null, eliminated: false};
       room.players.push(player); room.hostId ??= player.id;
     }

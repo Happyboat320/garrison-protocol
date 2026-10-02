@@ -11,6 +11,8 @@ npm ci --prefix multiplayer
 npm start --prefix multiplayer
 ```
 
+默认最多 10 个房间。可用 `npm start --prefix multiplayer -- --max-rooms 10 --max-connections 56` 或 `MAX_ROOMS=10` 配置容量；消息频率、流量参数与架构/防护说明见[服务端安全文档](../docs/MULTIPLAYER_SERVER_SECURITY.md)。
+
 访问 `http://服务端IP:8080/`，输入 IP/端口，创建房间后分享房间号。HOST/PORT 可以覆盖监听地址；本机 HTTP 页面能使用 WS，HTTPS 页面必须使用 WSS。
 
 ```bash
