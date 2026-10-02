@@ -16438,9 +16438,9 @@ const {RANDOM_MAP_ID} = load("protocol.js");
 const CAT_MODE_ID='mode_cat_all';
 
 const NATIVE_CHANGELOG={
- version:'v0.9',publishedAt:'2026-10-01T19:24:24+08:00',displayTime:'2026-10-01 19:24 (UTC+8)',dateLabel:'10.01',
+ version:'0.9-a',publishedAt:'2026-10-02T09:32:57+08:00',displayTime:'2026-10-02 09:32 (UTC+8)',dateLabel:'10.02',
  preview:[
-  {topic:'反馈修复',summary:'根据反馈修复了大量 BUG。'},
+  {topic:'反馈修复',summary:'修复了手机版整备区操作冲突问题。'},
   {topic:'作战界面',summary:'调整了作战界面与交互。'},
   {topic:'道具图标',summary:'实装道具图标。'},
   {topic:'325模式',summary:'已修复数字效果无法解除的问题。'},
@@ -16471,8 +16471,10 @@ const NATIVE_CHANGELOG={
    '调整首页提示，尝试解决325模式不易被发现的问题。'
   ]},
   {title:'整备区、显示与部署',items:[
-   '整备区按现有卡牌顺排，出售或消耗后自动填补空位，溢出干员不会漏下。',
-   '临时手牌格只在发生溢出时显示，数量不限；临时手牌过多时可左右滚动。',
+   '保留整备区卡牌原有槽位；基础区有几个空位就下放几张溢出卡，不强制压缩手牌。',
+   '临时手牌格只在发生溢出时显示，数量不限；桌面支持横向滚动，手机端用左右翻动箭头查看溢出卡。',
+   '手机端翻动箭头每次移动约半个卡槽，避免与干员拖动操作冲突。',
+   '增高手机版整备区卡槽以完整显示头像；调整已满提示的布局，避免遮挡左翻按钮。',
    '进阶干员详情名旁标注“进阶”，手牌头像使用金色底色，手机版同步；实装道具图标。',
    '干员不能再放置到已存在的凯瑟琳支援装置格；装置仍不占部署名额。'
   ]}
@@ -16871,7 +16873,7 @@ function requiredChoicePending(){const s=state.game?.s;return !!(s&&(s.rewardPen
 function reportCurve(samples){const values=(samples||[]).map(v=>Math.max(0,Number(v)||0)),w=320,h=120,p=8,peak=Math.max(0,...values),scale=peak||1,points=values.map((v,i)=>`${p+(w-2*p)*(values.length<2?0:i/(values.length-1))},${h-p-(h-2*p)*v/scale}`).join(' ');return `<svg class="native-dps-chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="每秒伤害变化曲线"><path d="M ${p} ${h-p} H ${w-p} M ${p} ${h-p} V ${p}"/><polyline points="${points}"/></svg><small>战斗时间（秒） · 峰值 ${Math.round(peak).toLocaleString()} DPS</small>`;}
 function finalBondLayerRows(g,r){const sees=isSeesBand(g.s.bandId),visible=id=>sees||id!==SEES_BOND_ID&&id!==TARTARUS_BOND_ID,ids=[...new Set([...Object.keys(data.season.bondInfoDict||{}),SEES_BOND_ID,TARTARUS_BOND_ID,...Object.keys(g.s.bondLayers||{})])].filter(visible),rows=Array.isArray(r.finalBondLayers)?r.finalBondLayers.filter(row=>visible(row.id)):ids.map(id=>({id,name:data.season.bondInfoDict[id]?.name||id,layers:g.s.bondLayers?.[id]||0}));return rows.map(row=>{const value=Number(row.layers);return {id:row.id,name:row.name||data.season.bondInfoDict[row.id]?.name||row.id,layers:Number.isFinite(value)?Math.max(0,Math.floor(value)):0};});}
 function bondLayerReport(rows){return '<section class="native-result-bond-layers"><h3>盟约最终层数</h3><div role="list">'+rows.map(row=>'<span role="listitem" class="'+(row.layers?'has-layers':'')+'"><b>'+esc(row.name)+'</b><i>'+row.layers+' 层</i></span>').join('')+'</div></section>';}
-function showResult(){const g=state.game,r=g.s.runResult||g.s.history.at(-1);if(!r)return;const archived=state.archive?.runs?.length||archiveNow().runs.length,units=(r.units||[]).slice().sort((a,b)=>b.damage-a.damage),selected=units.find(u=>u.uid===state.resultUnitUid)||units[0],bossName=r.bossName||'最终 Boss';modal(`<h2>${r.kind==='final-boss'?(r.reason==='boss-killed'?'Boss 击破 · 挑战成功':'Boss 未能击破 · 挑战结束'):'作战报告'}</h2>${r.kind==='final-boss'?`<p class="native-boss-result-heading">${esc(bossName)} · ${r.elapsed.toFixed(1)} 秒</p>`:''}<p>总伤害</p><strong class="native-total">${Math.round(r.totalDamage||0).toLocaleString()}</strong><p>${r.elapsed.toFixed(2)} 秒 · DPS ${(r.dps??(r.elapsed>0?r.totalDamage/r.elapsed:0)).toFixed(2)}${r.kind==='final-boss'?` · 红门漏怪 ${r.timePenalty||0} 次`:''}</p>${archived?`<p class="muted small">已记入本地战绩：最近 ${archived} 场，可在「战前准备」页查看并随存档导出。</p>`:''}<div class="native-result-dps"><h3>角色全程 DPS</h3><div class="native-result-unit-list">${units.map(u=>{const source=g.s.units.find(x=>x.uid===u.uid),name=source?data.profiles[source.chessId].name:u.id||'其他来源';return `<button data-act="result-unit" data-uid="${u.uid}" class="${selected?.uid===u.uid?'chosen':''}">${esc(name)}<b>${Math.round(u.damage).toLocaleString()}</b></button>`;}).join('')||'<p>本次没有造成伤害。</p>'}</div>${selected?reportCurve(selected.dpsSamples):''}</div>${bondLayerReport(finalBondLayerRows(g,r))}<div class="native-result-actions"><button data-act="export">导出本次记录</button><button class="native-primary" data-act="home">回到大厅</button></div>`);}
+function showResult(){const g=state.game,r=g.s.runResult||g.s.history.at(-1);if(!r)return;const archived=state.archive?.runs?.length||archiveNow().runs.length,units=(r.units||[]).slice().sort((a,b)=>b.damage-a.damage),selected=units.find(u=>u.uid===state.resultUnitUid)||units[0],bossName=r.bossName||'最终 Boss';modal(`<h2>${r.kind==='final-boss'?(r.reason==='boss-killed'?'Boss 击破 · 挑战成功':'Boss 未能击破 · 挑战结束'):'作战报告'}</h2>${r.kind==='final-boss'?`<p class="native-boss-result-heading">${esc(bossName)} · ${r.elapsed.toFixed(1)} 秒</p>`:''}<p>总伤害</p><strong class="native-total">${Math.round(r.totalDamage||0).toLocaleString()}</strong><p>${r.elapsed.toFixed(2)} 秒 · DPS ${(r.dps??(r.elapsed>0?r.totalDamage/r.elapsed:0)).toFixed(2)}${r.kind==='final-boss'?` · 红门漏怪 ${r.timePenalty||0} 次`:''}</p>${archived?`<p class="muted small">已记入本地战绩：最近 ${archived} 场，可在「战前准备」页查看并随存档导出。</p>`:''}<div class="native-result-dps"><h3>角色造成总伤害</h3><div class="native-result-unit-list">${units.map(u=>{const source=g.s.units.find(x=>x.uid===u.uid),name=source?data.profiles[source.chessId].name:u.id||'其他来源';return `<button data-act="result-unit" data-uid="${u.uid}" class="${selected?.uid===u.uid?'chosen':''}">${esc(name)}<b>${Math.round(u.damage).toLocaleString()}</b></button>`;}).join('')||'<p>本次没有造成伤害。</p>'}</div>${selected?reportCurve(selected.dpsSamples):''}</div>${bondLayerReport(finalBondLayerRows(g,r))}<div class="native-result-actions"><button data-act="export">导出本次记录</button><button class="native-primary" data-act="home">回到大厅</button></div>`);}
 function action(button,anchor=null){const a=button.dataset.act,g=state.game,uid=Number(button.dataset.uid);if(button.disabled)return;if(['home','new','begin','resume','sandbox','sandbox-exit'].includes(a))runtimeFault=null;if(['sandbox','home','sandbox-exit','new'].includes(a))rememberView('lobby');if(['begin','resume','import'].includes(a))rememberView('game');
  if(a==='result-unit'){state.resultUnitUid=uid;showResult();return;}
  if(a==='update-log'){showUpdateLog();return;}
