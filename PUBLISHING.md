@@ -24,3 +24,7 @@
 ## 历史记录
 
 2026-09-13 因手动 dispatch API 返回 500，曾采用 gh-pages 静态分支发布。该方式现已被自动工作流替代。artifacts/research/pages-publish-20260913 是旧独立工作副本，后续无需向它同步。
+
+## 联机发布（2026-10-02）
+
+当前工作流构建后执行 `multiplayer/scripts/build-pages.mjs`，上传 `.pages`（保留 `dist/` 与 `multiplayer/` 相对目录关系，并增加单机/联机入口）。联机服务器独立运行；Pages 仅部署静态文件。`happyboat.tech/ark/` 由博客根站点的 Pages 工作流组合发布。部署步骤、服务安装与版本指纹规则见 [multiplayer/README.md](multiplayer/README.md)。

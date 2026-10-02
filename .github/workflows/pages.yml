@@ -23,11 +23,13 @@ jobs:
           node-version: '24'
       - name: 构建客户端（按要求不运行测试）
         run: npm run build
+      - name: 组装单机与联机入口
+        run: node multiplayer/scripts/build-pages.mjs
       - name: 写入部署版本
         run: |
           node --input-type=module <<'NODE'
           import {writeFileSync} from 'node:fs';
-          writeFileSync('dist/deployment.json', JSON.stringify({
+          writeFileSync('.pages/deployment.json', JSON.stringify({
             sourceCommit: process.env.GITHUB_SHA,
             deployedAt: new Date().toISOString(),
             testsRun: false,
@@ -37,7 +39,7 @@ jobs:
       - name: 上传站点文件
         uses: actions/upload-pages-artifact@v5.0.0
         with:
-          path: dist
+          path: .pages
 
   deploy:
     needs: build

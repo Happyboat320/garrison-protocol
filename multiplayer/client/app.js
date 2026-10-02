@@ -11,6 +11,9 @@ import {Connection, endpoint} from './connection.js';
 import {MultiplayerSession} from './session.js';
 import {drawBoard, cellAt, viewSnapshot, assetUrl} from './board.js';
 
+// Pages 没有动态 /health：构建时写入与服务端相同的规则指纹。
+const publishedVersion = await fetch(new URL('../version.json',import.meta.url),{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('联机版本文件缺失');return r.json();});
+const defaultEndpoint = publishedVersion.websocketUrl ? new URL(publishedVersion.websocketUrl) : null;
 const root = document.getElementById('online-app');
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const state = {room:null, playerId:null, game:null, snapshots:{}, view:null, selected:null, item:null, cell:null,
@@ -98,11 +101,11 @@ function reconcile() {
 }
 function renderConnect() {
   root.innerHTML=`<section class="connect-panel"><p class="eyebrow">GARRISON PROTOCOL / ONLINE</p><h1>与队友一起守住阵地</h1><p>创建房间后分享房间号。每位指挥官独立布阵，共同联防与迎击最终领袖。</p>
-    <form id="connect-form"><label>IP / 主机名<input name="host" required value="${esc(location.hostname||'127.0.0.1')}" placeholder="192.168.1.10"></label>
-    <label>端口<input name="port" type="number" min="1" max="65535" required value="${esc(location.port||'8080')}"></label>
+    <form id="connect-form"><label>IP / 主机名<input name="host" required value="${esc(defaultEndpoint?.hostname||location.hostname||'127.0.0.1')}" placeholder="192.168.1.10"></label>
+    <label>端口<input name="port" type="number" min="1" max="65535" required value="${esc(defaultEndpoint?.port||(defaultEndpoint?.protocol==='wss:'?'443':location.port||(location.protocol==='https:'?'443':'8080')))}"></label>
     <label>昵称<input name="name" maxlength="24" required value="${esc(state.profile.name)}"></label>
     <label>房间号<input name="room" maxlength="6" placeholder="创建房间时留空"></label>
-    <label class="check"><input name="secure" type="checkbox" ${location.protocol==='https:'?'checked':''}>使用加密连接（WSS）</label>
+    <label class="check"><input name="secure" type="checkbox" ${(defaultEndpoint?.protocol==='wss:'||location.protocol==='https:')?'checked':''}>使用加密连接（WSS）</label>
     <div class="profile-edit">${avatar(state.profile)}<label>上传头像<input id="avatar-upload" type="file" accept="image/png,image/jpeg,image/webp"></label></div>
     <div class="actions"><button type="submit" name="intent" value="create" class="primary">创建房间</button><button type="submit" name="intent" value="join">进入房间</button></div></form>
     <p class="muted">局域网：先运行联机服务，再访问 http://服务端IP:端口/ 。</p><a href="../../dist/index.html">进入单机版 →</a></section>`;
@@ -291,8 +294,8 @@ root.addEventListener('submit',async event=>{
     if(location.protocol==='https:'&&!form.has('secure'))throw Error('HTTPS 网页请使用 WSS；局域网普通连接请打开服务端的 HTTP 页面');
     const address=new URL(url);address.protocol=form.has('secure')?'https:':'http:';address.pathname='/health';
     const health=await fetch(address,{signal:AbortSignal.timeout(8000)}).then(r=>r.json());
-    const localHealth=await fetch(new URL('../../health',import.meta.url),{signal:AbortSignal.timeout(8000)}).then(r=>r.json());
-    if(health.rulesHash!==localHealth.rulesHash)throw Error('两个服务端规则版本不同，请打开目标服务端提供的页面');
+    const localHealth=publishedVersion;
+    if(health.rulesHash!==localHealth.rulesHash)throw Error('网页与服务端规则版本不同，请刷新网页或等待发布同步');
     state.profile.name=String(form.get('name')).trim();localStorage.setItem('garrison-online-profile-v1',JSON.stringify(state.profile));
     connection.stop();
     await connection.connect(url,{rulesHash:health.rulesHash,create:event.submitter.value==='create',roomId:String(form.get('room')).trim().toUpperCase(),profile:state.profile,flags:loadArchive(localStorage).flags});

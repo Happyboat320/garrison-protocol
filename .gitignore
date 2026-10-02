@@ -10,3 +10,5 @@ artifacts/research/
 references/alliance-lower/page-*.json
 references/alliance-lower/prts-query-app.js
 scripts/*.tmp.*
+
+.pages/

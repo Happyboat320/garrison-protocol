@@ -100,3 +100,16 @@ npm run test:browser --prefix multiplayer
 - 本轮验证环境为 Node.js 20.19.2（执行这些测试通过）；正式使用仍建议遵循原工程要求，采用 Node.js 22+。
 
 当前交付是独立联机实现，不宣称原单机所有机制、未开放 Boss 或 Spine 视觉已通过完整原作对照。
+
+## 静态发布与公网服务（2026-10-02）
+
+- 静态站点用 `npm run build` 后执行 `npm run build:pages --prefix multiplayer`，输出 `.pages/`；包含独立单机/联机入口、`dist/`、联机客户端和版本清单，不包含服务端、测试或依赖。
+- 本仓库 Pages 工作流上传 `.pages/`。博客 `Happyboat320/Happyboat320.github.io` 的 Pages 工作流另检出本仓库指定提交，构建后复制到博客的 `dist/ark/`，使 `https://happyboat.tech/ark/` 与博客共存。更新游戏时也需要更新博客工作流的固定游戏提交并触发博客部署。
+- 默认联机地址：`23-238-114-57.sslip.io`，端口 `443`，勾选 WSS。该临时域名通过公共 DNS 解析到服务器；以后可使用自己的联机子域名，将其 A 记录指向 `23.238.114.57`，同时修改 Caddy 域名与构建变量 `MULTIPLAYER_PUBLIC_URL`。
+- 服务器：Node.js 24.21.0，生产目录 `/opt/garrison-protocol`，systemd 单元 `garrison-multiplayer`；仅监听 `127.0.0.1:8080`，Caddy 提供公网 HTTPS/WSS 和证书自动续期。服务安装示例见 `deploy/`。
+- 发布客户端与服务端必须使用同一次构建的 `dist/` 和同一提交的 `multiplayer/client`、`shared`；版本清单与服务端指纹不匹配会阻止进入房间。上游构建会刷新生成资料，不能混用未构建的仓库文件与构建后的 Pages。
+- 更新生产：先结束现有房间，再构建并复制 `dist/`、`multiplayer/` 到生产目录，安装生产依赖，执行 `systemctl restart garrison-multiplayer`。房间暂存在内存，重启会清空。
+
+本次拉取上游到 `694d6f2`：78 项战斗/位移/状态/技能相关测试全部通过；联机 22 项、四浏览器验收、纯静态 `/ark` 跨端口两人入房验收均通过。生产环境 Node.js 24 的 22 项联机测试也通过。此前原仓库全量测试的 29 项失败为拉取前记录，本次没有宣称全量测试全部通过；本次未修改原单机玩法源码。
+
+额外验证：`npm run test:pages --prefix multiplayer` 验证纯静态子路径部署与独立 WebSocket 服务（不依赖静态站点的动态 `/health`）。
