@@ -1237,3 +1237,5 @@ html.native-need-rotate .native-briefing.native-briefing-v2{overflow:hidden}
  .native-hand-scroll-controls button{display:grid;place-items:center;flex:0 0 28px;width:28px;height:38px;min-height:38px;margin:0;padding:0;border:1px solid #579f8c;background:#102b27;color:#a8f2db;font:700 18px/1 var(--mono,monospace);pointer-events:auto;box-shadow:0 2px 8px #0006}
  .native-hand-scroll-controls button:disabled{opacity:.35}
 }
+.native-unit-sp-meter{display:block;width:100%;height:6px;margin-top:4px;border:0;background:#13282a;accent-color:#79dcb7}
+.native-unit-sp-meter.is-active{accent-color:#f0d18a}
