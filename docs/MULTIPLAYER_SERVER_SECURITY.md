@@ -8,19 +8,9 @@ Caddy 自动申请并续期 TLS 证书，浏览器使用 HTTPS/WSS 加密传输�
 游戏静态站点在 `happyboat.tech/garrison-protocol/`，GitHub Pages 提供；它通过 WSS 连接此 VPS。
 sslip.io 不是流量代理，也不提供抗 DDoS。之后可换为自有子域名，但单纯换域名并不消除攻击风险。
 
-## 运行架构
+## 架构与部署入口
 
-```mermaid
-flowchart LR
-  P[GitHub Pages 静态网页] --> B[玩家浏览器：原生游戏逻辑与绘制]
-  B -->|WSS :443| C[VPS Caddy：TLS 与反向代理]
-  C -->|本机 HTTP/WebSocket| N[Node.js 24 + ws :8080]
-  N --> R[内存房间：同步 / 顺序选择 / 联防 / Boss 总血量]
-```
-
-浏览器执行单机原生战斗、商店和绘制，发送结果与视角快照；服务端校验身份、阶段与任务，统一跨玩家结算和消息转发。
-没有数据库、账号密码系统或文件上传服务。头像由浏览器压成小尺寸 PNG/JPEG/WebP，再以消息形式发送。表情为 BWIKI 分类图片，PNG 保存在仓库 `multiplayer/client/emotes/` 并随静态网页部署；网络只传固定表情 ID，拒绝任意图片 URL。
-房间、恢复点、视角快照都在进程内存中，重启会清空。公开的客户端可被修改，服务端没有重新演算每次伤害，因此不提供完整防作弊。
+运行架构和模块分层见 [联机 README](../multiplayer/README.md#运行架构)。从零安装、systemd、Caddy、限流配置与维护命令见 [服务端部署步骤](MULTIPLAYER_SERVER_DEPLOYMENT.md)。本文记录安全参数和防护边界。
 
 ## 构建与启动
 

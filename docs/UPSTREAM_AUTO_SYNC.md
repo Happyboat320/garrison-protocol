@@ -30,7 +30,7 @@ GitHub 定时任务可能延迟；公开仓库连续 60 天无活动可能被 Gi
 
 ## 联机服务器
 
-该流程自动更新 GitHub Pages 静态网站，不远程重启 VPS。生产联机服务器需在房间结束后更新到同一构建版本，见 [联机 README](../multiplayer/README.md) 的生产服务章节及 [发布说明](../PUBLISHING.md)。更新不会取消当前服务的 10 房上限；资源参数与安全边界见 [服务端说明](MULTIPLAYER_SERVER_SECURITY.md)。网站和服务器的规则指纹不一致时，联机入口会阻止连接；单机仍可使用新版本。避免自动重启清空正在游玩的内存房间。
+该流程自动更新 GitHub Pages 静态网站，不远程重启 VPS。生产联机服务器需在房间结束后更新到同一构建版本，见 [联机 README](../multiplayer/README.md) 的架构章节、[服务端部署](MULTIPLAYER_SERVER_DEPLOYMENT.md) 及 [发布说明](../PUBLISHING.md)。更新不会取消当前服务的 10 房上限；资源参数与安全边界见 [服务端说明](MULTIPLAYER_SERVER_SECURITY.md)。网站和服务器的规则指纹不一致时，联机入口会阻止连接；单机仍可使用新版本。避免自动重启清空正在游玩的内存房间。
 
 本地验证同步规则（创建临时 Git 仓库，不访问远程）：
 

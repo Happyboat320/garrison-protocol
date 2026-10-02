@@ -42,7 +42,7 @@ Pages 是静态文件托管，不运行 Node.js。联机服务在 VPS `/opt/garr
 生产更新应等待房间结束，使用相同源码与构建产物，提前生成适配模块，清理已删除的旧模块，再重启服务。
 房间在内存中，重启会清空；仅改 CSS 不改变规则指纹，仅改服务器资源限制也无需改客户端协议。
 
-构建/运行见 [联机 README](multiplayer/README.md)，启动参数、服务模板与安全边界见 [服务端说明](docs/MULTIPLAYER_SERVER_SECURITY.md)。
+架构与快速启动见 [联机 README](multiplayer/README.md)，完整安装和维护步骤见 [服务端部署](docs/MULTIPLAYER_SERVER_DEPLOYMENT.md)，启动参数与安全边界见 [服务端说明](docs/MULTIPLAYER_SERVER_SECURITY.md)。
 
 ## 排障与历史
 
