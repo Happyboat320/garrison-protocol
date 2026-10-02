@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import WebSocket from 'ws';
 import {createMultiplayerServer} from '../server/index.js';
-import {PROTOCOL_VERSION} from '../shared/rules.js';
+import {PROTOCOL_VERSION, EMOTES} from '../shared/rules.js';
 
 test('真实WebSocket房间、表情广播、重连及静态资源边界',async()=>{
   const app=await createMultiplayerServer({host:'127.0.0.1',port:0});
@@ -24,7 +24,7 @@ test('真实WebSocket房间、表情广播、重连及静态资源边界',async(
     }
     const a=await client({create:true}),welcome=await a.wait(m=>m.type==='welcome');
     const b=await client({roomId:welcome.roomId});await b.wait(m=>m.type==='welcome');
-    a.ws.send(JSON.stringify({type:'emote',emote:'🎉'}));assert.equal((await b.wait(m=>m.type==='emote')).emote,'🎉');
+    a.ws.send(JSON.stringify({type:'emote',emote:EMOTES[0]}));assert.equal((await b.wait(m=>m.type==='emote')).emote,EMOTES[0]);
     a.ws.close();await new Promise(resolve=>a.ws.once('close',resolve));
     const again=await client({roomId:welcome.roomId,resumeToken:welcome.resumeToken});
     assert.equal((await again.wait(m=>m.type==='welcome')).playerId,welcome.playerId);

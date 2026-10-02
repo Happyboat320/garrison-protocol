@@ -25,3 +25,12 @@ html.native-landscape-ui .native-board.online-split canvas{height:100%!important
 @keyframes online-emote-pop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
 
 #online-app #online-social:not(.floating) .social-drag-handle{display:none}
+
+/* 本地游戏表情：分类下拉 + 有限高度网格，避免素材数量撑满浮框。 */
+#online-app .emote-category-label{font-size:12px;margin:8px 0}
+#online-app #online-social .emotes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;max-height:190px;overflow-y:auto}
+#online-app #online-social .emotes button{padding:3px;min-width:0;aspect-ratio:1}
+#online-app .emotes button img{display:block;width:100%;height:100%;max-height:64px;object-fit:contain;pointer-events:none}
+#online-app .player-avatar-wrap .emote-bubble{left:24px;top:-30px;width:76px;height:76px;padding:3px;box-shadow:0 3px 10px #0006}
+#online-app .emote-bubble img{width:100%;height:100%;object-fit:contain}
+#online-app .player-avatar-wrap .emote-bubble:empty{display:none}

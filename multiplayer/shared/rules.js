@@ -4,8 +4,10 @@ import {bountyOption} from '../../dist/native-bounty.js';
 import {ENEMY_KILL_COINS} from '../../dist/native-wave-defaults.js';
 import {waveRng} from '../../dist/native-wave-random.js';
 
+import {EMOTE_IDS} from './emotes.js';
+export const EMOTES = EMOTE_IDS;
 export const PROTOCOL_VERSION = 1;
-export const EMOTES = Object.freeze(['👍', '🎉', '❤️', '😅', '😭', '😮', '🔥', '💪', '👀', '🙏', '🫡', '🐱']);
+export const PROFILE_AVATARS = Object.freeze(['👍', '🎉', '❤️', '😅', '😭', '😮', '🔥', '💪', '👀', '🙏', '🫡', '🐱']);
 export const BOSS_MULTIPLIERS = Object.freeze({2: 3, 3: 5, 4: 7});
 export const MAX_PLAYERS = 4;
 export const MAX_ROUND_LOSS = 10;

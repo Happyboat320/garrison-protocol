@@ -15,7 +15,7 @@ const staticServer=http.createServer(async(req,res)=>{
     if(!target.startsWith('/garrison-protocol/')||target.includes('..'))throw Error();
     const file=target.slice("/garrison-protocol/".length)||'index.html';
     const bytes=await readFile(new URL(`../../.pages/${file}`,import.meta.url));
-    res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.json')?'application/json':'text/html');res.end(bytes);
+    res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.json')?'application/json':file.endsWith('.png')?'image/png':'text/html');res.end(bytes);
   } catch {res.writeHead(404);res.end();}
 });
 await new Promise(resolve=>staticServer.listen(0,'127.0.0.1',resolve));
@@ -37,5 +37,8 @@ try {
   for(const page of pages){await page.locator('.online-briefing').waitFor();await page.locator('[data-action="briefing-ready"]').click();}
   for(const page of pages)await page.locator('.strategy-card:not([disabled])').first().click();
   for(const page of pages)await page.locator('#native-canvas').waitFor();
+  assert.equal(await pages[0].evaluate(()=>[...document.querySelectorAll('.emote-bubble')].every(el=>getComputedStyle(el).display==='none')),true);
+  await pages[0].getByRole('button',{name:'发送表情 欢呼！',exact:true}).click();
+  await pages[1].waitForFunction(()=>[...document.querySelectorAll('.emote-bubble img')].some(img=>img.alt==='欢呼！'&&img.complete&&img.naturalWidth>0));
   assert.deepEqual(errors,[]);console.log('Pages /garrison-protocol 子路径、跨服务连接、两人选策略验收通过');
 } finally {await browser.close();await realtime.close();await new Promise(resolve=>staticServer.close(resolve));}

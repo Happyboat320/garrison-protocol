@@ -32,14 +32,17 @@ try {
   for(const page of pages){await page.locator('.online-briefing').waitFor();await page.locator('[data-action="briefing-ready"]').click();}
   for(const page of pages) {await page.locator('.strategy-card:not([disabled])').first().click();}
   for(const page of pages)await page.locator('#native-canvas').waitFor();
-  await pages[0].locator('[data-action="emote"][data-emote="🎉"]').click();
-  await pages[1].waitForFunction(()=>document.querySelector('.emote-bubble')?.textContent==='🎉');
+  await pages[0].locator('#emote-category').selectOption({label:'默认'});
+  assert.equal(await pages[0].locator('[data-action="emote"]').count(),13);
+  await pages[0].locator('#emote-category').selectOption({label:'卫戍协议：盟约·下半'});
+  await pages[0].getByRole('button',{name:'发送表情 欢呼！',exact:true}).click();
+  await pages[1].waitForFunction(()=>[...document.querySelectorAll('.emote-bubble img')].some(el=>el.alt==='欢呼！'&&el.complete&&el.naturalWidth>0));
   // 表情从发送者头像旁出现，实际计时五秒；拖动浮框不影响棋盘或点击。
-  const bubble=pages[1].locator('.player-avatar-wrap .emote-bubble').filter({hasText:'🎉'});
+  const bubble=pages[1].locator('.player-avatar-wrap .emote-bubble:has(img[alt="欢呼！"])');
   assert.equal(await bubble.count(),1);
   await pages[1].waitForTimeout(4200);
   assert.equal(await bubble.count(),1);
-  await pages[1].waitForFunction(()=>![...document.querySelectorAll('.emote-bubble')].some(el=>el.textContent==='🎉'));
+  await pages[1].waitForFunction(()=>!document.querySelector('.emote-bubble img[alt="欢呼！"]'));
   const handle=await pages[0].locator('.social-drag-handle').boundingBox();
   const before=await pages[0].locator('#online-social').boundingBox();
   await pages[0].mouse.move(handle.x+15,handle.y+10);await pages[0].mouse.down();

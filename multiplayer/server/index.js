@@ -32,7 +32,7 @@ export async function createMultiplayerServer({host = '0.0.0.0', port = 8080, tl
       let target = decodeURIComponent(url.pathname);
       if (target === '/') { response.writeHead(302, {Location:'/multiplayer/index.html'}); return response.end(); }
       // 只允许分发联机页面、JS/CSS 与游戏静态资源，不把整个仓库当静态根公开。
-      const allowed = target === '/multiplayer/index.html' || target === '/multiplayer/client/native-play.generated.js' || /^\/multiplayer\/(client|shared|generated)\/[\w-]+\.(js|css)$/.test(target) ||
+      const allowed = target === '/multiplayer/index.html' || /^\/multiplayer\/client\/emotes\/emote-[a-f0-9]{12}\.png$/.test(target) || target === '/multiplayer/client/native-play.generated.js' || /^\/multiplayer\/(client|shared|generated)\/[\w-]+\.(js|css)$/.test(target) ||
         /^\/dist\/[\w-]+\.(js|css|html)$/.test(target) || /^\/dist\/assets\/[\w/.-]+$/.test(target);
       if (!allowed || target.includes('..')) { response.writeHead(404); return response.end('Not found'); }
       const file = await realpath(path.join(ROOT, target.slice(1)));

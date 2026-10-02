@@ -5,7 +5,8 @@ import {loadArchive} from '../../dist/native-archive.js';
 import {visibleBands} from '../../dist/native-sees.js';
 import {loadWaveTable} from '../../dist/native-wave-fill.js';
 import {loadBondBan, bondBanBriefingHtml, bannedOperatorsHtml} from '../../dist/native-bond-ban.js';
-import {EMOTES, MODES} from '../shared/rules.js';
+import {MODES} from '../shared/rules.js';
+import {EMOTE_CATALOG, EMOTE_BY_ID} from '../shared/emotes.js';
 import {Connection, endpoint} from './connection.js';
 import {MultiplayerSession} from './session.js';
 import {nativeUI} from './native-play.generated.js';
@@ -19,6 +20,16 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;',
 const state = {room:null, playerId:null, game:null, snapshots:{}, view:null, selected:null, item:null, cell:null,
   fault:null, supportTask:null, clockOffset:0, ack:null, pendingTransfers:[], emotes:{}, profile:readProfile()};
 let toastTimer;
+let emoteCategory=EMOTE_CATALOG.categories.find(c=>c.name==='卫戍协议：盟约·下半').id;
+function emoteImage(id, attrs='') {
+  const emote=EMOTE_BY_ID[id];if(!emote)return '';
+  const src=new URL(`./emotes/${emote.file}`,import.meta.url).href;
+  return `<img src="${esc(src)}" alt="${esc(emote.name)}" draggable="false" ${attrs}>`;
+}
+function emotePicker() {
+  const group=EMOTE_CATALOG.categories.find(c=>c.id===emoteCategory);
+  return `<label class="emote-category-label">表情分类<select id="emote-category">${EMOTE_CATALOG.categories.map(c=>`<option value="${c.id}" ${c.id===emoteCategory?'selected':''} ${!c.emotes.length?'disabled':''}>${esc(c.name)}${!c.emotes.length?'（暂无图片）':''}</option>`).join('')}</select></label><div class="emotes">${group.emotes.map(id=>button('emote',emoteImage(id,'loading="lazy"'),`data-emote="${id}" title="${esc(EMOTE_BY_ID[id].name)}" aria-label="发送表情 ${esc(EMOTE_BY_ID[id].name)}"`)).join('')}</div>`;
+}
 // 浮框位置只在本地保存；重绘/观战切换保持位置，不占游戏棋盘布局。
 let socialPosition;
 try { socialPosition=JSON.parse(localStorage.getItem('garrison-online-social-position')); } catch {}
@@ -131,7 +142,7 @@ function renderConnect() {
 }
 function playersHtml() {
   return state.room.players.map(p=>`<button class="player ${p.id===state.view?'viewed':''} ${p.eliminated?'eliminated':''}" data-action="view" data-id="${p.id}">
-    <span class="player-avatar-wrap">${avatar(p)}<span class="emote-bubble">${state.emotes[p.id]?.until>Date.now()?esc(state.emotes[p.id].emote):''}</span></span><span><b>${esc(p.name)}${p.id===state.playerId?' · 我':''}</b><small>${p.hp===null?'待选策略':`${p.hp}/${p.maxHp} 生命`} · ${p.eliminated?'已淘汰':p.connected?(p.ready?'已准备':'在线'):'重连中'}</small></span>
+    <span class="player-avatar-wrap">${avatar(p)}<span class="emote-bubble">${state.emotes[p.id]?.until>Date.now()?emoteImage(state.emotes[p.id].emote):''}</span></span><span><b>${esc(p.name)}${p.id===state.playerId?' · 我':''}</b><small>${p.hp===null?'待选策略':`${p.hp}/${p.maxHp} 生命`} · ${p.eliminated?'已淘汰':p.connected?(p.ready?'已准备':'在线'):'重连中'}</small></span>
     </button>`).join('');
 }
 function renderPlayers(){const el=document.getElementById('players');if(el&&state.room){const markup=playersHtml();if(el._markup!==markup){el.innerHTML=markup;el._markup=markup;}}}
@@ -142,7 +153,7 @@ function render() {
 
     ${state.fault?`<p class="error">${esc(state.fault)} ${button('reload','重新加载并恢复')}</p>`:''}
     <section id="phase-panel">${phaseHtml(room,p)}</section>
-    <aside id="online-social" class="${['prep','main','support','boss'].includes(room.phase)?'floating':''}" aria-label="队友视角与表情"><div class="social-drag-handle" title="拖动移动">⠿ 队友视角 / 表情</div><div id="players" class="players">${playersHtml()}</div><section class="social"><div class="emotes">${EMOTES.map(e=>button('emote',e,`data-emote="${e}" aria-label="发送表情 ${e}"`)).join('')}</div><p class="muted" id="phase-status"></p></section></aside>
+    <aside id="online-social" class="${['prep','main','support','boss'].includes(room.phase)?'floating':''}" aria-label="队友视角与表情"><div class="social-drag-handle" title="拖动移动">⠿ 队友视角 / 表情</div><div id="players" class="players">${playersHtml()}</div><section class="social"><div id="emote-picker">${emotePicker()}</div><p class="muted" id="phase-status"></p></section></aside>
     <details class="room-log"><summary>房间记录</summary>${room.log.map(row=>`<p>${esc(row.text)}</p>`).join('')}</details>`;
   positionSocial();
   syncNativeView();
@@ -276,6 +287,7 @@ root.addEventListener('click',async event=>{
  }catch(error){notify(error.message);}
 });
 root.addEventListener('change',async event=>{
+  if(event.target.id==='emote-category'){emoteCategory=event.target.value;document.getElementById('emote-picker').innerHTML=emotePicker();positionSocial();return;}
   if(event.target.id!=='avatar-upload')return;
   try {
     const file=event.target.files[0];if(!file)return;

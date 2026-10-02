@@ -1,5 +1,5 @@
 /** 消息入口校验：网络输入永远不能作为路径、HTML 或任意方法名直接执行。 */
-import {EMOTES, PROTOCOL_VERSION} from './rules.js';
+import {PROFILE_AVATARS, PROTOCOL_VERSION} from './rules.js';
 export const MAX_MESSAGE_BYTES = 2 * 1024 * 1024;
 export const RECONNECT_WINDOW_MS = 120_000;
 export const CHECKPOINT_VERSION = 1;
@@ -13,7 +13,7 @@ export function profileOf(raw = {}) {
   requireValue(name.length > 0, '请输入玩家昵称');
   // 上传头像在浏览器压成小尺寸 raster；拒绝 SVG 与任意远程地址，避免外部引用。
   const avatar = raw.avatar ?? '🫡';
-  requireValue(typeof avatar === 'string' && (EMOTES.includes(avatar) ||
+  requireValue(typeof avatar === 'string' && (PROFILE_AVATARS.includes(avatar) ||
     avatar.length <= 100_000 && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(avatar)), '头像格式不支持或体积过大');
   return {name, avatar};
 }
