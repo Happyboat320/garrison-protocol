@@ -60,7 +60,7 @@ npm start --prefix multiplayer -- --max-rooms 10 --max-connections 56
 ```
 
 当前生产最多 10 房、56 连接，HTTPS/WSS 经 Caddy 转发到本机 Node.js 服务。网页自动同步上游不等于 VPS 自动更新；规则版本不一致时拒绝联机。
-运行与复用边界见 [联机 README](multiplayer/README.md)，参数及防护见 [服务端安全说明](docs/MULTIPLAYER_SERVER_SECURITY.md)，定时同步见 [上游自动更新](docs/UPSTREAM_AUTO_SYNC.md)。
+从零安装 Node、构建、systemd 自动启动、Caddy HTTPS/WSS、限流设置、更新与排障见 [服务端详细部署](multiplayer/README.md#服务端部署ubuntu-2404-lts)。运行与复用边界见 [联机 README](multiplayer/README.md)，参数及防护见 [服务端安全说明](docs/MULTIPLAYER_SERVER_SECURITY.md)，定时同步见 [上游自动更新](docs/UPSTREAM_AUTO_SYNC.md)。
 博客不再发布本游戏，旧 `/ark/` 已删除；独立地址为 `/garrison-protocol/`。
 
 ## 源码入口
