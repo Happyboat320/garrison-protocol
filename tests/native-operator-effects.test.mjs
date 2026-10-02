@@ -7,7 +7,7 @@ import {operatorRegistry,skillConfig,statMods} from '../dist/native-operator-eff
 import {openBattle,deployNow,enemy,byId,steps,reps,blackboard} from './effects-harness.mjs';
 import {dealDamage,applyElementDamage,operatorSkillConfig,tickLogic} from '../dist/native-effects.js';
 import {moveActor} from '../dist/native-effects.js';
-import {applyStatus,tickStatuses} from '../dist/status.js';
+import {applyStatus,effectiveWeight,tickStatuses} from '../dist/status.js';
 
 test('every fixed operator has an adapter entry and every skill resolves a safe config',()=>{
  const registry=operatorRegistry(NATIVE_DATA);
@@ -33,6 +33,48 @@ test('individual skill adapters map namespaced values, status and battle resourc
  const u=byId(b,'char_102_texas'),e=enemy(b,{x:u.x,y:u.y,hp:100000,res:0}),funds=b.s.cost;
  u.sp=b.spCost(u);b.activate(u);
  assert.ok(e.hp<100000);assert.ok(e.statuses.some(s=>s.kind==='stun'));assert.ok(b.s.cost>funds);
+});
+
+test('安洁莉娜 S1 待机时攻击积攒技力，并自动开启后继续造成伤害',()=>{
+ const {b}=openBattle({chessId:'chess_char_5_20_a',skillIndex:0});deployNow(b);
+ const u=byId(b,'char_291_aglina'),spot=b.range(u,false)[0];
+ const e=enemy(b,{x:spot.x,y:spot.y,hp:1e6,def:0,res:0});
+ assert.ok(b.targets(u).some(t=>t.uid===e.uid),'S1 待机期间应能攻击并积攒攻击回复技力');
+ steps(b,1200);
+ assert.ok(u.skillCount>0,'S1 应在攻击积攒满技力后自动开启');
+ assert.ok(e.hp<1e6,'S1 循环中应持续造成伤害');
+ assert.ok(b.s.logicLog.some(row=>row.type==='damage'&&row.sourceUid===u.uid),'伤害账本应记录安洁莉娜的 S1 攻击');
+});
+
+test('安洁莉娜 S2 开启后能按高频攻击正常造成伤害',()=>{
+ const {b}=openBattle({chessId:'chess_char_5_20_a',skillIndex:1});deployNow(b);
+ const u=byId(b,'char_291_aglina'),spot=b.range(u,false)[0];
+ const e=enemy(b,{x:spot.x,y:spot.y,hp:1e6,def:0,res:0});
+ u.sp=b.spCost(u);u.lastSkill=-1e9;b.activate(u);
+ assert.ok(b.skillActive(u),'S2 应成功开启');
+ const hp=e.hp;steps(b,150);
+ assert.ok(e.hp<hp,'S2 期间应按技能攻击间隔造成伤害');
+ assert.ok(b.s.logicLog.some(row=>row.type==='damage'&&row.sourceUid===u.uid),'伤害账本应记录安洁莉娜的 S2 攻击');
+});
+
+test('安洁莉娜 S3 给予失重而非浮空，保留阻挡并持续造成攻击伤害',()=>{
+ const {b}=openBattle([{chessId:'chess_char_5_20_a',skillIndex:2},{chessId:'chess_char_1_01_a',skillIndex:1}]);deployNow(b);
+ const angelina=byId(b,'char_291_aglina'),blocker=byId(b,'char_498_inside');
+ const occupied=new Set(b.s.units.filter(u=>u.uid!==blocker.uid).map(u=>u.x+','+u.y));
+ const spot=b.range(angelina,true).find(g=>{const tile=b.map.grid[g.y]?.[g.x];return tile&&tile.heightType!=='HIGHLAND'&&tile.tileKey!=='tile_hole'&&!tile.obstacle&&tile.buildableType!=='NONE'&&!occupied.has(g.x+','+g.y);});
+ assert.ok(spot,'技能范围内要有可阻挡的地面格');
+ blocker.x=spot.x;blocker.y=spot.y;
+ const e=enemy(b,{x:spot.x,y:spot.y,hp:1e6,def:0,res:0,block:blocker.uid});
+ angelina.sp=b.spCost(angelina);b.activate(angelina);
+ assert.ok(e.statuses.some(s=>s.kind==='weightless'),'S3 敌人应获得失重');
+ assert.equal(effectiveWeight(e),0,'失重状态将有效重量设为 0');
+ assert.equal(e.statuses.some(s=>s.kind==='levitate'),false,'失重不能被实现成浮空');
+ assert.equal(e.block,blocker.uid,'失重不能解除已有阻挡');
+ assert.ok(b.targets(angelina).some(t=>t.uid===e.uid),'技能期间目标仍可被安洁莉娜索敌');
+ const hp=e.hp;steps(b,150);
+ assert.ok(e.hp<hp,'安洁莉娜 S3 期间仍应通过攻击造成伤害');
+ assert.equal(e.block,blocker.uid,'技能期间阻挡关系仍保留');
+ assert.ok(b.s.logicLog.some(row=>row.type==='damage'&&row.sourceUid===angelina.uid),'伤害账本应记录安洁莉娜的攻击');
 });
 
 test('probability talent multiplier changes the current hit without recursive extra damage',()=>{

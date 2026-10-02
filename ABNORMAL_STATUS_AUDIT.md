@@ -18,8 +18,8 @@
 | 5 | INVINCIBLE | 无敌 | 🟡 | 伤害/anchor 判定可用；未处理「元素值变为0」「不触发能力」，也没归入无法选择类 |
 | 6 | UNDEADABLE | 不死 | 🟡 | 有 `lives`/`reviveActor` 等复活链路，但没有不死标志的负血规则，也没有通用接线 |
 | 7 | HEAL_FREE | 禁疗 | 🟡 | 有 `healable`/`healingBlocked`，但不成体系：不能作为异常被施加/免疫，治疗选取检查不完整 |
-| 8 | UNBALANCE_IMMUNE | 失衡免疫 | ❌ | 位移链路（`moveActor`/`teleportActor`）既不查失衡免疫，也没有重量判定 |
-| 9 | INVISIBLE | 隐匿 | ✅ | `invisible` + `revealed`，索敌与反隐已接 |
+| 8 | UNBALANCE_IMMUNE | 失衡免疫 | ❌ | 没有可施加的 `UNBALANCE_IMMUNE` 状态；推／拉链路已通过 `effectiveWeight` 读取重量，失衡免疫与其它位移入口仍未统一 |
+| 9 | INVISIBLE | 隐匿 | ✅ | `invisible` + `revealed`，索敌与反隐已接；隐匿不影响阻挡资格，`blockingActors` 保留隐匿干员，因此隐匿干员可阻挡隐匿敌人 |
 | 10 | ~~占位~~ | × | — | 原作已弃用，忽略 |
 | 11 | DISARMED | 缴械 | 🟡 | `disarm` 只挡攻击；原文「持有无敌时此异常无效」未实现；干员侧无 `disarmImmune` 之类接线 |
 | 12 | SILENCED | 沉默 | ❌ | **缺口最明确**：`CONTROL.silence = []`（`status.js:2`），施加沉默不会禁止技能；`permissions().skill` 只被晕眩/冻结/沉睡/浮空/恐惧/战栗/麻痹影响 |
@@ -35,7 +35,7 @@
 | 22 | UNMOVABLE_PRIVATE | 自缚 | ❌ | 无常量，也与束缚不做区分 |
 | 23 | COLD | 寒冷 | ✅ | 攻速 -30、二次成冻结 |
 | 24 | SKILL_NOT_ACTIVATABLE | 静默 | ❌ | 无常量；与沉默同效但不被识别为沉默，本项目两者都没有 |
-| 25 | LEVITATE | 浮空 | 🟡 | 有 `levitate` + `levitateImmune`，也带不可阻挡/缴械；缺浮空 Buff 的重量 >3 时间减半、缚地对冲、视为飞行单位 |
+| 25 | LEVITATE | 浮空 | 🟡 | 有 `levitate` + `levitateImmune`，也带不可阻挡/缴械；`weightless` 是独立状态，不封锁行动或解除阻挡，只让 `effectiveWeight` 返回 0（安洁莉娜 S3）；缺浮空 Buff 的重量 >3 时间减半、缚地对冲、视为飞行单位 |
 | 26 | DURANCE | 禁锢 | ❌ | 无。保全派驻语义，本模式无内容引用，可低优先级 |
 | 27 | NOT_WITHDRAWABLE | 无法撤退 | ❌ | 无。整备期撤回是 UI 行为，没有战斗内「不可手动撤退」规则 |
 | 28 | OUT_OF_GROUND | 离地 | ❌ | 无。用于中断套索式弹道 |
