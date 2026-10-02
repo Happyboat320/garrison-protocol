@@ -56,8 +56,9 @@ export function spBarFill(u,skill,cost){
  if(!usesSp(skill))return null;
  const kind=skillKind(skill),cap=spCap(skill,cost);
  const currentAmmo=Math.max(0,Math.trunc(Number(u.ammo)||0));
- const maxAmmo=Math.max(currentAmmo,Math.trunc(Number(u.ammoMax)||0),currentAmmo>0?ammoCount(skill):0);
- const ammo=kind==='ammo'&&maxAmmo>0?{current:currentAmmo,max:maxAmmo}:null;
+ const ammoStarted=currentAmmo>0||Number(u.ammoMax)>0;
+ const maxAmmo=Math.max(currentAmmo,Math.trunc(Number(u.ammoMax)||0),kind==='ammo'?ammoCount(skill):0);
+ const ammo=kind==='ammo'&&maxAmmo>0?{current:ammoStarted?currentAmmo:maxAmmo,max:maxAmmo}:null;
  if(kind==='ammo'&&currentAmmo>0){
   return {kind:'ammo',on:true,cells:Math.max(1,maxAmmo||ammoCount(skill)),filled:currentAmmo,ratio:0,ready:false,ammo};
  }
