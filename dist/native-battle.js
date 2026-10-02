@@ -887,7 +887,7 @@ u.skillRangeHold=sk.rangeId||null;u.skillRangeHoldAt=this.s.time;const skillAir=
     if(!teleportActor(this,u,{...spot,source:u,mode:'raid-redeploy'}))continue;
     landed=true;break;
    }
-   if(landed){u.raidBuffUntil=this.s.time+bondValue(this.params('raidShip'),'no_attack_duration',10);u.raidIdleSince=this.s.time;u.lastAttack=this.s.time;dispatch(this,'deploy',{target:u,raid:true});this.emit('bond-raid',{uid:u.uid,x:u.x,y:u.y,targetUid:enemy.uid});}
+   if(landed){u.raidBuffUntil=this.s.time+bondValue(this.params('raidShip'),'no_attack_duration',10);u.raidIdleSince=this.s.time;u.lastAttack=this.s.time;this.event(u,'deploy');dispatch(this,'deploy',{target:u,raid:true});this.emit('bond-raid',{uid:u.uid,x:u.x,y:u.y,targetUid:enemy.uid});}
   }
   step(){
   if(this.s.finished)return;if(this.s.settle.fault)throw Error('战斗结算异常');if(!this.s.settle.queue.length){this.s.settle.byId={};this.s.settle.consumed=[];}const dt=1/FPS;this.s.frame++;this.s.time=this.s.frame/FPS;while(this.s.queue.length&&this.s.queue[0].at<=this.s.time)this.spawn(this.s.queue.shift());this.refreshEnemyCostEffects();this.tickCost(dt);
