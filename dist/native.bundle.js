@@ -10673,18 +10673,25 @@ function terrainActors(battle){return [...alliedActors(battle.s),...battle.s.ene
 // 站在上面的**我方与敌方**单位每秒受 70 真实伤害，攻击力 +20%、攻击速度 +20。
 // 窗口取原表 duration（300 秒＝PRTS 写的「5 分钟内」）从开战计时；本客户端单场战斗远短于它，
 // 所以等价于「站在上面就有」。
+// 伤害按 0.1 秒结算并累计不足一个周期的暴露时间，避免快速经过时只吃到一次整秒脉冲。
+const ORIGINIUM_DAMAGE_TICK=.1;
 function tickActiveOriginium(battle){
  const cfg=battle.map.environment?.originium;
  if(!cfg||battle.s.benchmark)return;
- const now=battle.s.time,room=!cfg.duration||now<cfg.duration;
+ const now=battle.s.time,room=!cfg.duration||now<cfg.duration,frame=battle.s.frame>0?now/battle.s.frame:0;
  for(const actor of terrainActors(battle)){
   const on=room&&standsOn(battle,actor,TERRAIN_TILES.originium);
-  actor.originium=on;
-  if(!on){actor.originiumNextAt=null;continue;}
-  actor.originiumNextAt??=now+1;
+  if(!on){const carry=Math.max(0,Number(actor.originiumDamageCarry)||0);actor.originium=false;actor.originiumNextAt=null;actor.originiumLastAt=null;actor.originiumDamageCarry=0;if(carry>0&&cfg.damage>0&&actor.hp>0)dealDamage(battle,{target:actor,amount:carry,type:'true',cause:'dot',environmental:true});continue;}
+  actor.originium=true;
+  const last=Number.isFinite(actor.originiumLastAt)?actor.originiumLastAt:now-frame;
+  actor.originiumDamageCarry=Math.max(0,Number(actor.originiumDamageCarry)||0)+Math.max(0,now-last)*Math.max(0,Number(cfg.damage)||0);
+  actor.originiumLastAt=now;
+  if(!Number.isFinite(actor.originiumNextAt)||actor.originiumNextAt>now+ORIGINIUM_DAMAGE_TICK+1e-9)actor.originiumNextAt=now+ORIGINIUM_DAMAGE_TICK;
   while(actor.hp>0&&now+1e-9>=actor.originiumNextAt){
-   actor.originiumNextAt+=1;
-   if(cfg.damage>0)dealDamage(battle,{target:actor,amount:cfg.damage,type:'true',cause:'dot',environmental:true});
+   actor.originiumNextAt+=ORIGINIUM_DAMAGE_TICK;
+   const amount=Math.min(actor.originiumDamageCarry,Math.max(0,Number(cfg.damage)||0)*ORIGINIUM_DAMAGE_TICK);
+   actor.originiumDamageCarry=Math.max(0,actor.originiumDamageCarry-amount);
+   if(amount>0)dealDamage(battle,{target:actor,amount,type:'true',cause:'dot',environmental:true});
   }
  }
 }
