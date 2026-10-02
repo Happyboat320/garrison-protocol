@@ -1728,5 +1728,5 @@ function tickSummons(battle,dt){
 export function newAttackId(battle){return battle.s.settle.nextAttackId++;}
 
 export function blockingActors(battle){
- return attackableAllies(battle.s).filter(u=>u.canBlock!==false&&(u.kind!=='summon'||u.canBlock));
+ return attackableAllies(battle.s,{includeInvisible:true}).filter(u=>u.canBlock!==false&&(u.kind!=='summon'||u.canBlock));
 }

@@ -1,5 +1,5 @@
 import {attribute,FPS} from './combat.js';
-import {enemyMovementSpeed,permissions} from './status.js';
+import {enemyMovementSpeed,effectiveWeight,permissions} from './status.js';
 import {skillKind} from './native-sp.js';
 
 // Tentative adapters — not original animation tables. Do not treat as restored data.
@@ -390,7 +390,7 @@ export function remainingDistance(e){
 export function specialPriority(a,b,priority){
  if(priority==='air')return Number(!!b.flying)-Number(!!a.flying);
  if(priority==='defense')return (a.def||0)-(b.def||0);
- if(priority==='weight')return (b.weight||0)-(a.weight||0);
+ if(priority==='weight')return effectiveWeight(b)-effectiveWeight(a);
  return 0;
 }
 export function compareOperatorTargets(a,b,uid,priority,position){
