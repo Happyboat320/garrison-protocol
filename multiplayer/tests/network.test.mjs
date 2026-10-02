@@ -10,7 +10,7 @@ test('真实WebSocket房间、表情广播、重连及静态资源边界',async(
   try {
     const base=`http://127.0.0.1:${app.port}`;
     assert.equal((await fetch(base+'/health').then(r=>r.json())).rulesHash,app.rulesHash);
-    const page=await fetch(base+'/');assert.match(await page.text(),/联合模拟/);
+    const page=await fetch(base+'/');assert.match(await page.text(),/联机作战/);
     assert.equal((await fetch(base+'/multiplayer/client/app.js')).status,200);
     assert.equal((await fetch(base+'/.git/config')).status,404);
     assert.equal((await fetch(base+'/multiplayer/server/rooms.js')).status,404);

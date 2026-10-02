@@ -1,3 +1,5 @@
 node_modules/
 artifacts/
 *.log
+client/native-play.generated.js
+generated/

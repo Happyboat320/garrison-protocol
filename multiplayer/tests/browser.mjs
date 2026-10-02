@@ -30,34 +30,36 @@ try {
   await pages[0].waitForFunction(()=>window.__garrisonOnline.state.room.players.length===4);
   await pages[0].locator('[data-action="start-room"]').click();
   for(const page of pages) {await page.locator('.strategy-card:not([disabled])').first().click();}
-  for(const page of pages)await page.locator('canvas').waitFor();
+  for(const page of pages)await page.locator('#native-canvas').waitFor();
   await pages[0].locator('[data-action="emote"][data-emote="🎉"]').click();
   await pages[1].waitForFunction(()=>document.querySelector('.emote-bubble')?.textContent==='🎉');
   // 买牌、选择落点和朝向均通过 UI，不直接改干员布阵。
-  await pages[0].locator('[data-action="buy"]').first().click();
+  await pages[0].locator('[data-act="buy"]').first().click();
+  await pages[0].locator('[data-act="buy"]').first().click();
   const uid=await pages[0].evaluate(()=>window.__garrisonOnline.state.game.s.units[0]?.uid);
   assert.ok(uid);
-  await pages[0].locator(`[data-action="unit"][data-uid="${uid}"]`).click();
   const cell=await pages[0].evaluate(uid=>{const g=window.__garrisonOnline.state.game;for(let y=0;y<g.map.rows;y++)for(let x=0;x<g.map.cols;x++)if(g.canDeploy(uid,x,y))return{x,y};},uid);
-  const canvas=pages[0].locator('canvas');
-  const box=await canvas.boundingBox();await canvas.click({position:{x:(cell.x+.5)*80*box.width/880,y:(34+(cell.y+.5)*80)*box.height/594}});
-  await pages[0].locator('[data-action="place"][data-dir="0"]').click();
+  const card=await pages[0].locator(`#native-hand [data-act="select"][data-uid="${uid}"]`).boundingBox();
+  const point=await pages[0].evaluate(cell=>window.__garrisonOnline.nativeUI.cellPoint(cell.x,cell.y),cell);
+  await pages[0].mouse.move(card.x+card.width/2,card.y+card.height/2);await pages[0].mouse.down();await pages[0].mouse.move(point.x,point.y,{steps:12});await pages[0].mouse.up();
+  await pages[0].locator('[data-act="aim"][data-dir="0"]').click();
+  await pages[0].locator('[data-act="place-confirm"]').click();
   await pages[0].waitForFunction(()=>window.__garrisonOnline.state.game.s.units[0].position!==null);
   const p0=await pages[0].evaluate(()=>window.__garrisonOnline.state.playerId);
   await pages[1].locator(`[data-action="view"][data-id="${p0}"]`).click();
-  await pages[1].waitForFunction(id=>window.__garrisonOnline.state.snapshots[id]?.units.length>0,p0);
-  await pages[1].locator('canvas').click({position:{x:60,y:60}});
+  await pages[1].waitForFunction(id=>window.__garrisonOnline.state.snapshots[id]?.record.native.s.units.length>0,p0);
+  await pages[1].locator('#native-canvas').click({position:{x:60,y:60}});
   assert.equal(await pages[1].evaluate(()=>window.__garrisonOnline.state.game.s.units.length),0);
   await pages[0].screenshot({path:new URL('../artifacts/preparation.png',import.meta.url).pathname,fullPage:true});
   // 准备状态可取消，在全员准备前仍未开战。
-  await pages[0].locator('[data-action="ready"]').click();
+  await pages[0].locator('[data-act="start"]').click();
   await pages[0].waitForFunction(()=>window.__garrisonOnline.state.room.players.find(p=>p.id===window.__garrisonOnline.state.playerId).ready);
-  await pages[0].locator('[data-action="ready"]').click();
+  await pages[0].locator('[data-act="start"]').click();
   await pages[0].waitForFunction(()=>!window.__garrisonOnline.state.room.players.find(p=>p.id===window.__garrisonOnline.state.playerId).ready);
   // 真实刷新重连恢复整备状态（不依赖仍在内存中的会话）。
-  await pages[0].reload();await pages[0].locator('canvas').waitFor();
+  await pages[0].reload();await pages[0].locator('#native-canvas').waitFor();
   assert.equal(await pages[0].evaluate(()=>window.__garrisonOnline.state.game.s.units[0].uid),uid);
-  for(const page of pages)await page.locator('[data-action="ready"]').click();
+  for(const page of pages){const id=await page.evaluate(()=>window.__garrisonOnline.state.playerId);await page.locator(`[data-action="view"][data-id="${id}"]`).click();await page.locator('[data-act="start"]').click();}
   for(const page of pages)await page.waitForFunction(()=>!!window.__garrisonOnline.state.game.battle);
   // 让玩家3/4成为完美作战者；玩家1/2实际跑完原波次，产生漏怪。
   for(let i=0;i<4;i++)await pages[i].evaluate(async perfect=>{
@@ -68,7 +70,8 @@ try {
     } else for(let n=0;n<15000&&!g.battle.s.finished;n++)g.tick();
   },i>=2);
   for(const page of pages)await page.waitForFunction(()=>window.__garrisonOnline.state.room.phase==='support');
-  assert.equal(await pages[0].locator('canvas').count(),2);
+  assert.equal(await pages[0].locator('#native-canvas,#online-second-canvas').count(),2);
+  const sizes=await pages[0].locator('#native-canvas,#online-second-canvas').evaluateAll(nodes=>nodes.map(n=>({width:n.getBoundingClientRect().width,height:n.getBoundingClientRect().height})));assert.ok(Math.abs(sizes[0].height-sizes[1].height)<2);assert.ok(Math.abs(sizes[0].width-sizes[1].width)<2);
   await pages[0].screenshot({path:new URL('../artifacts/support.png',import.meta.url).pathname,fullPage:true});
   let current=await pages[0].evaluate(()=>window.__garrisonOnline.state.room.task.playerId);
   const first=await Promise.all(pages.map(p=>p.evaluate(()=>window.__garrisonOnline.state.playerId)));
@@ -91,14 +94,14 @@ try {
   for(const page of pages)await page.locator('.decision-card').first().waitFor();
   assert.equal(await pages[0].locator('.decision-card').count(),6);
   for(const page of pages) {await page.locator('.decision-card:not([disabled])').first().click();}
-  for(const page of pages)await page.locator('canvas').waitFor();
+  for(const page of pages)await page.locator('#native-canvas').waitFor();
   assert.equal(new Set(Object.values(room.picked).map(o=>o.id)).size,4);
   // 共享Boss测试：各自独立地图，公共HP与实际伤害同步。
   room.round=roundPlan(data,room.config.modeId).at(-1).round;room.phase='prep';room.choice=null;room.picked={};
   for(const p of room.players)p.ready=false;
   for(const page of pages)await page.evaluate(round=>{const g=window.__garrisonOnline.state.game;g.s.round=round;g.s.phase='prep';g.s.prepApplied=false;g.s.rewardPending=null;g.s.units=[];g.s.summonCards=[];},room.round);
   app.rooms.broadcast(room);
-  for(const page of pages)await page.locator('[data-action="ready"]').click();
+  for(const page of pages){const id=await page.evaluate(()=>window.__garrisonOnline.state.playerId);await page.locator(`[data-action="view"][data-id="${id}"]`).click();await page.locator('[data-act="start"]').click();}
   for(const page of pages)await page.waitForFunction(()=>window.__garrisonOnline.state.game.battle?.s.finalBossId);
   const max=room.boss.maxHp;
   await pages[0].evaluate(()=>{const g=window.__garrisonOnline.state.game;const e=g.battle.s.enemies.find(e=>e.finalBoss);e.hp-=100;});

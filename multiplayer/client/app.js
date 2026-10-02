@@ -2,14 +2,14 @@
 import {NATIVE_DATA as data} from '../../dist/runtime-data.js';
 import {richText} from '../../dist/protocol.js';
 import {loadArchive} from '../../dist/native-archive.js';
-import {visibleBands, freeDeploy} from '../../dist/native-sees.js';
+import {visibleBands} from '../../dist/native-sees.js';
 import {loadWaveTable} from '../../dist/native-wave-fill.js';
 import {loadBondBan} from '../../dist/native-bond-ban.js';
-import {renderSkillDescription} from '../../dist/native-skill-text.js';
 import {EMOTES, MODES} from '../shared/rules.js';
 import {Connection, endpoint} from './connection.js';
 import {MultiplayerSession} from './session.js';
-import {drawBoard, cellAt, viewSnapshot, assetUrl} from './board.js';
+import {nativeUI} from './native-play.generated.js';
+import {presentationSnapshot, restorePresentation, assetUrl} from './presentation.js';
 
 // Pages 没有动态 /health：构建时写入与服务端相同的规则指纹。
 const publishedVersion = await fetch(new URL('../version.json',import.meta.url),{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('联机版本文件缺失');return r.json();});
@@ -19,9 +19,8 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;',
 const state = {room:null, playerId:null, game:null, snapshots:{}, view:null, selected:null, item:null, cell:null,
   fault:null, supportTask:null, clockOffset:0, ack:null, pendingTransfers:[], emotes:{}, profile:readProfile()};
 let toastTimer;
-function notify(text) { const el=document.getElementById('toast');el.textContent=text;el.classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('visible'),4500); }
+function notify(text) { const el=document.getElementById('online-toast');el.textContent=text;el.classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('visible'),4500); }
 function readProfile() { try {return JSON.parse(localStorage.getItem('garrison-online-profile-v1')) || {name:'指挥官',avatar:'🫡'};}catch{return {name:'指挥官',avatar:'🫡'};} }
-const deployCount = s => s.units.filter(u => u.position && !freeDeploy(data,u)).length;
 function me() { return state.room?.players.find(p=>p.id===state.playerId); }
 const connection = new Connection(receive, status => {document.getElementById('connection-status').textContent=status;});
 function avatar(profile) { return profile.avatar?.startsWith('data:image/') ? `<img class="avatar" src="${esc(profile.avatar)}" alt="玩家头像">` : `<span class="avatar">${esc(profile.avatar||'🫡')}</span>`; }
@@ -52,13 +51,13 @@ function receive(message) {
     } else if(message.type==='room') {
       if(state.room && message.room.id===state.room.id && message.room.revision<state.room.revision)return;
       state.room=message.room; reconcile(); render();
-    } else if(message.type==='snapshot') {state.snapshots[message.playerId]=message.snapshot;}
+    } else if(message.type==='snapshot') {state.snapshots[message.playerId]=message.snapshot;if(state.view===message.playerId||state.room?.phase==='support'&&state.room.task.playerId===message.playerId)syncNativeView();}
     else if(message.type==='boss') {if(state.room){state.room.boss=message.boss;state.game?.updateBoss(message.boss);}}
     else if(message.type==='emote') {state.emotes[message.playerId]={emote:message.emote,until:Date.now()+3500};renderPlayers();}
     else if(message.type==='result-ack') {state.ack=message.taskId;}
     else if(message.type==='transfer') {if(state.game)state.game.receiveFangTransfer(message.record);else state.pendingTransfers.push(message.record);}
     else if(message.type==='transfer-ack') {const record=state.game?.s.transferOutbox.find(r=>r.transferId===message.transferId);if(record)record.sent=true;}
-    else if(message.type==='left') {state.room=null;state.game=null;state.snapshots={};sessionStorage.removeItem('garrison-online-checkpoint-v1');render();}
+    else if(message.type==='left') {state.room=null;state.game=null;state.snapshots={};state.peerViews={};nativeUI.clear();sessionStorage.removeItem('garrison-online-checkpoint-v1');render();}
     else if(message.type==='error') {notify(message.message);}
   } catch(error) {state.fault=error.message;notify('联机状态处理失败：'+error.message);console.error(error);render();}
 }
@@ -66,6 +65,7 @@ function receive(message) {
 function reconcile() {
   const room=state.room,p=me();if(!room?.config||!p?.bandId)return;
   if(!state.game)state.game=new MultiplayerSession(data,room.config,p,peers());
+  state.game.commandAllowed=type=>canEdit()||type==='mineCommand'&&ownView()&&state.game.s.phase==='battle';
   const game=state.game;
   game.s.teamPeers=peers();
   game.attachTeamTransport({send:record=>{connection.send({type:'transfer',record});return false;}});
@@ -108,14 +108,14 @@ function renderConnect() {
     <label class="check"><input name="secure" type="checkbox" ${(defaultEndpoint?.protocol==='wss:'||location.protocol==='https:')?'checked':''}>使用加密连接（WSS）</label>
     <div class="profile-edit">${avatar(state.profile)}<label>上传头像<input id="avatar-upload" type="file" accept="image/png,image/jpeg,image/webp"></label></div>
     <div class="actions"><button type="submit" name="intent" value="create" class="primary">创建房间</button><button type="submit" name="intent" value="join">进入房间</button></div></form>
-    <p class="muted">局域网：先运行联机服务，再访问 http://服务端IP:端口/ 。</p><a href="../../dist/index.html">进入单机版 →</a></section>`;
+    <p class="muted">局域网：先运行联机服务，再访问 http://服务端IP:端口/ 。</p><a href="./index.html">进入单机版 →</a></section>`;
 }
 function playersHtml() {
   return state.room.players.map(p=>`<button class="player ${p.id===state.view?'viewed':''} ${p.eliminated?'eliminated':''}" data-action="view" data-id="${p.id}">
     ${avatar(p)}<span><b>${esc(p.name)}${p.id===state.playerId?' · 我':''}</b><small>${p.hp===null?'待选策略':`${p.hp}/${p.maxHp} 生命`} · ${p.eliminated?'已淘汰':p.connected?(p.ready?'已准备':'在线'):'重连中'}</small></span>
     <span class="emote-bubble">${state.emotes[p.id]?.until>Date.now()?esc(state.emotes[p.id].emote):''}</span></button>`).join('');
 }
-function renderPlayers(){const el=document.getElementById('players');if(el&&state.room)el.innerHTML=playersHtml();}
+function renderPlayers(){const el=document.getElementById('players');if(el&&state.room){const markup=playersHtml();if(el._markup!==markup){el.innerHTML=markup;el._markup=markup;}}}
 function render() {
   if(!state.room){renderConnect();return;}
   const room=state.room,p=me();
@@ -125,6 +125,7 @@ function render() {
     <section id="phase-panel">${phaseHtml(room,p)}</section>
     <section class="social"><div class="emotes">${EMOTES.map(e=>button('emote',e,`data-emote="${e}" aria-label="发送表情 ${e}"`)).join('')}</div><p class="muted" id="phase-status"></p></section>
     <details class="room-log"><summary>房间记录</summary>${room.log.map(row=>`<p>${esc(row.text)}</p>`).join('')}</details>`;
+  syncNativeView();
   draw();
 }
 // UI 按服务端阶段生成；淘汰者不显示可操作的准备界面，仍保留观战与表情。
@@ -148,134 +149,101 @@ function phaseHtml(room,p) {
       return `<button class="decision-card" data-action="choice" data-id="${offer.id}" ${!active||owner?'disabled':''}>${offer.enemyId?portrait(offer.enemyId):''}<b>${esc(offer.name)}</b><span>${esc(richText(desc||''))}</span><small>${owner?`${esc(room.players.find(p=>p.id===owner)?.name)}已选`:'可选择'}</small></button>`;
     }).join('')}</div>`;
   }
-  const support=room.phase==='support',isPrep=room.phase==='prep'&&!p.eliminated;
-  const heading=({prep:'战斗准备',main:'道中作战',support:'联防接力',boss:'共同迎击领袖',settlement:'本轮结算',finished:room.success?'挑战成功':'挑战结束'})[room.phase];
-  const boardViews=support&&room.supportPlayers.length===2?room.supportPlayers:[state.view||state.playerId];
-  let html=`<div class="battle-heading"><h2>第 ${room.round} 回合 · ${heading}</h2><span id="battle-hud"></span></div>`;
-  if(room.boss)html+=`<div class="boss-health"><label>共同 Boss 生命 <span id="boss-label"></span></label><progress id="boss-hp" max="${room.boss.maxHp}" value="${room.boss.hp}"></progress></div>`;
-  html+=`<div class="boards ${boardViews.length===2?'split':''}">${boardViews.map(id=>`<div class="board-panel"><canvas width="880" height="594" data-player="${id}" aria-label="${esc(room.players.find(p=>p.id===id)?.name)}的战场"></canvas><p class="board-note">${id===state.playerId?'你的阵地':`${esc(room.players.find(p=>p.id===id)?.name)} · 只读观战`}${support?` · ${id===room.task.playerId?'正在联防':'等待接力 / 战后状态'}`:''}</p></div>`).join('')}</div>`;
-  if(isPrep) {
-    html+=`<div class="prep-layout"><section class="panel"><div class="section-heading"><h3>调度中心</h3><span id="economy">${game.s.funds} 资金 · ${game.s.level} 阶</span></div><div class="shop">${game.s.offers.map((id,i)=>id?`<button class="card" data-action="buy" data-index="${i}" ${p.ready?'disabled':''}>${portrait(data.profiles[id]?.charId)}<b>${esc(data.profiles[id]?.name)}</b><small>${game.price(id)} ◆</small></button>`:'<div class="card empty">已购入</div>').join('')}</div><div class="shop items">${game.s.itemOffers.map((id,i)=>id?`<button class="card" data-action="buyItem" data-index="${i}" ${p.ready?'disabled':''}><b>${esc(itemName(id))}</b><small>${data.season.trapChessDataDict[id]?.purchasePrice} ◆</small></button>`:'<div class="card empty">已购入</div>').join('')}</div><div class="actions">${button('refresh',`刷新 · ${game.terms().refreshCost} ◆`,'',p.ready)}${button('upgrade',`升级 · ${game.terms().upgradeCost??'满阶'} ◆`,'',p.ready||game.terms().upgradeCost===null)}${button('lock',game.s.locked?'取消冻结':'冻结商店','',p.ready)}</div></section>
-    <section class="panel"><h3>整备区 · ${game.handLength()} / 10 · 部署 ${deployCount(game.s)} / ${game.s.capacity}</h3><div class="hand">${game.s.units.map(u=>`<button draggable="${!p.ready}" class="card ${state.selected===u.uid?'selected':''}" data-action="unit" data-uid="${u.uid}">${portrait(u.charId)}<b>${esc(data.profiles[u.chessId]?.name)}${data.profiles[u.chessId]?.isGolden?' ★':''}</b><small>${u.position?'已部署':'整备中'} · ${u.equipment.length}/2装备</small></button>`).join('')}${game.s.items.map(i=>`<button class="card ${state.item===i.uid?'selected':''}" data-action="item" data-uid="${i.uid}" draggable="${!p.ready}"><b>${esc(itemName(i.chessId))}</b><small>选择后点击干员装备</small></button>`).join('')}${(game.s.summonCards||[]).map(c=>`<button class="card ${state.selected===c.uid?'selected':''}" data-action="summon" data-uid="${c.uid}"><b>${esc(c.name)}</b><small>${c.position?'已放置':'待放置'}</small></button>`).join('')}</div><p class="muted">选择干员或召唤物，点击格位并确认朝向。装备可点选或拖到干员上。</p></section></div>
-    ${placementHtml(game,p)}${dossierHtml(game,p)}${rewardsHtml(game)}<div class="ready-bar">${button('ready',p.ready?'取消准备':'准备战斗','class="primary"',!!game.s.rewardPending||!!state.fault)}</div>`;
-  } else if(room.phase==='main'||support||room.phase==='boss') {
-    html+=`<div class="combat-controls">${game.battle?.s.units.map(u=>`<button data-action="activate" data-uid="${u.uid}" ${game.battle.s.finished?'disabled':''}>${esc(data.profiles[u.chessId]?.name)} <span data-sp="${u.uid}"></span></button>`).join('')}</div>`;
-  }
-  if(room.phase==='settlement')html+=`<section class="panel result"><p>本轮生命损失 ${room.losses?.[p.id]||0} · 悬赏奖金 ${room.rewards?.[p.id]||0}（下轮到账）</p>${p.eliminated?'<p>你已淘汰，可继续观看队友。</p>':button('next',p.next?'等待队友':'进入下一回合','class="primary"',p.next)}</section>`;
-  if(room.phase==='finished')html+=`<section class="panel result"><h3>${room.success?'共同击破最终领袖':'本局已结束'}</h3><p>剩余生命 ${p.hp}/${p.maxHp}</p>${game.s.runResult?`<p>你的总伤害 ${Math.round(game.s.runResult.totalDamage||0).toLocaleString()}</p>`:''}<div class="actions">${button('export','导出本次记录')}${button('leave','回到联机大厅','class="primary"')}</div></section>`;
-  if(room.phase==='finished'&&game.s.runResult?.units)html+=damageReportHtml(game.s.runResult);
-  html+=`<details class="bonds"><summary>当前视角的盟约与层数</summary><div id="bond-content"></div></details>`;
-  return html;
+  if(room.phase==='settlement')return `<section class="panel"><p>本轮生命损失 ${room.losses?.[p.id]||0} · 悬赏奖金 ${room.rewards?.[p.id]||0}（下轮到账）</p>${p.eliminated?'<p>你已淘汰，可继续观看队友。</p>':button('next',p.next?'等待队友':'进入下一回合','class="primary"',p.next)}</section>`;
+  if(room.phase==='finished')return `<section class="panel"><h3>${room.success?'共同击破最终领袖':'本局已结束'}</h3>${button('export','导出本次记录')}${button('leave','回到联机大厅','class="primary"')}</section>`;
+  return `<div class="online-round">第 ${room.round} 回合 · ${({prep:'战斗准备',main:'道中作战',support:'联防接力',boss:'共同迎击领袖'})[room.phase]||room.phase}${room.boss?` · Boss 剩余 <span id="boss-label">${Math.ceil(room.boss.hp)}</span>`:''}</div>`;
 }
-/** 原引擎保留的逐干员1秒采样：直接画战报曲线，不用表现事件反推伤害。 */
-function damageReportHtml(result) {
-  const rows=(result.units||[]).filter(u=>u.damage>0).sort((a,b)=>b.damage-a.damage);
-  return `<details class="panel damage-report" open><summary>逐干员伤害报告 · 1秒DPS采样</summary>${rows.map(u=>{
-    const samples=u.dpsSamples||[],max=Math.max(1,...samples);
-    const points=samples.map((value,i)=>`${10+i*580/Math.max(1,samples.length-1)},${100-value/max*85}`).join(' ');
-    return `<div class="damage-row"><b>${esc(data.profiles[state.game.s.units.find(v=>v.uid===u.uid)?.chessId]?.name||u.id)}</b><span>${Math.round(u.damage).toLocaleString()} 伤害</span><svg viewBox="0 0 600 110" role="img" aria-label="${esc(u.id)}的每秒DPS曲线"><path d="M10 100H590" stroke="#4a6470"/><polyline fill="none" stroke="#83e4d5" stroke-width="2" points="${points}"/></svg></div>`;
-  }).join('')||'<p>本场没有记录到干员伤害。</p>'}</details>`;
+function ownView(){return !state.view||state.view===state.playerId;}
+function observedGame(id=state.view){
+ if(!id||id===state.playerId)return state.game;
+ const snapshot=state.snapshots[id];if(!snapshot)return null;
+ state.peerViews??={};const cached=state.peerViews[id];
+ if(cached?.snapshot===snapshot)return cached.game;
+ const game=restorePresentation(data,snapshot);state.peerViews[id]={snapshot,game};return game;
 }
-function itemName(id){return data.season.effectInfoDataDict[data.season.trapChessDataDict[id]?.effectId]?.effectName||id;}
-function placementHtml(game,p) {
-  if(!state.cell)return '';
-  return `<section class="placement"><b>格位 ${state.cell.x+1}, ${state.cell.y+1} · 选择朝向</b><div class="actions">${['右 →','下 ↓','左 ←','上 ↑'].map((label,i)=>button('place',label,`data-dir="${i}"`,p.ready)).join('')}${button('cancel-place','取消')}</div></section>`;
+function syncNativeView(){
+  const visible=state.game&&state.room&&!['waiting','strategy','decision'].includes(state.room.phase);
+  const app=document.getElementById('app');app.hidden=!visible;
+  if(!visible){nativeUI.clear();return;}
+  const ids=state.room.phase==='support'&&state.room.supportPlayers.length===2?[state.room.task.playerId,...state.room.supportPlayers.filter(id=>id!==state.room.task.playerId)]:null;
+  const primary=ids?ids[0]:state.view||state.playerId;
+  nativeUI.mount(observedGame(primary)||state.game);
+  if(ids){
+    const board=document.querySelector('.native-board');
+    board?.classList.add('online-split');
+    if(!board?.querySelector('#online-second-canvas'))board?.insertAdjacentHTML('beforeend',`<canvas id="online-second-canvas" aria-label="第二名联防队友的战场"></canvas>`);
+    app.dataset.secondPlayer=ids[1];
+  }else delete app.dataset.secondPlayer;
 }
-function dossierHtml(game,p) {
-  const u=game.s.units.find(u=>u.uid===state.selected),summon=game.s.summonCards.find(u=>u.uid===state.selected);
-  if(summon)return `<section class="panel">${esc(summon.name)} ${button('withdrawSummon','收回召唤物',`data-uid="${summon.uid}"`,p.ready)}</section>`;
-  if(!u){const item=game.s.items.find(i=>i.uid===state.item);return item?`<section class="panel"><h3>${esc(itemName(item.chessId))}</h3><p>${esc(richText(data.season.effectInfoDataDict[data.season.trapChessDataDict[item.chessId]?.effectId]?.effectDesc||''))}</p>${button('destroy','销毁装备',`data-uid="${item.uid}"`,p.ready)}</section>`:'';}
-  const profile=data.profiles[u.chessId],skill=profile.skillChoices[u.skillIndex??profile.skillIndex]||profile;
-  return `<section class="panel dossier"><h3>${esc(profile.name)} · ${profile.rank}阶${profile.isGolden?'精锐':''}</h3><p>${(profile.bonds||[]).map(id=>esc(data.season.bondInfoDict[id]?.name||id)).join(' / ')}</p><div class="actions">${profile.skillChoices.map((_,i)=>button('skill',`S${i+1}${i===(u.skillIndex??profile.skillIndex)?' ✓':''}`,`data-uid="${u.uid}" data-index="${i}"`,p.ready)).join('')}${button('withdraw','撤回整备区',`data-uid="${u.uid}"`,p.ready||!u.position)}${button('sell','出售',`data-uid="${u.uid}"`,p.ready)}</div><p>${renderSkillDescription(skill.skill)}</p><p>${profile.garrisons.map(g=>esc(richText(g.garrisonDesc))).join('<br>')}</p><div class="actions">${u.equipment.map((item,index)=>`<span>${esc(itemName(item.chessId))}${button('destroyEquip','销毁',`data-uid="${u.uid}" data-index="${index}"`,p.ready)}${state.item?button('replace','替换此槽',`data-uid="${u.uid}" data-index="${index}"`,p.ready):''}</span>`).join('')}</div></section>`;
+function draw(){
+  const second=document.getElementById('online-second-canvas');
+  if(second)nativeUI.drawOn(second,observedGame(document.getElementById('app').dataset.secondPlayer));
+  const label=document.getElementById('boss-label');if(label&&state.room?.boss)label.textContent=Math.ceil(state.room.boss.hp).toLocaleString();
 }
-function rewardsHtml(game) {
-  const r=game.s.rewardPending;if(!r)return '';
-  return `<section class="panel rewards"><h3>领取奖励后才能准备</h3><div class="actions">${(r.offers||[]).map(id=>button('takePromotion',esc(data.profiles[id]?.name||itemName(id)),`data-id="${esc(id)}"`)).join('')}</div></section>`;
-}
-function snapshotFor(id) {return id===state.playerId&&state.game?viewSnapshot(state.game):state.snapshots[id];}
-function draw() {
-  const game=state.game,room=state.room;if(!game||!room)return;
-  for(const canvas of root.querySelectorAll('canvas')) {
-    const id=canvas.dataset.player,snapshot=snapshotFor(id);
-    let range=[];
-    const unit=game.s.units.find(u=>u.uid===state.selected);
-    if(id===state.playerId&&unit&&state.cell) {
-      const profile=data.profiles[unit.chessId],skill=profile.skillChoices[unit.skillIndex??profile.skillIndex]?.skill||profile.skill;
-      range=(data.ranges[skill?.rangeId||profile.rangeId]?.grids||profile.range.grids).map(row=>{
-        let x=row.col,y=-row.row;for(let i=0;i<unit.dir;i++)[x,y]=[-y,x];return {x:x+state.cell.x,y:y+state.cell.y};
-      });
-    }
-    drawBoard(canvas,data,snapshot,{selected:id===state.playerId?state.selected:null,selectedCell:id===state.playerId?state.cell:null,range,label:room.players.find(p=>p.id===id)?.name||''});
-  }
-  const hud=document.getElementById('battle-hud');if(hud)hud.textContent=game.battle?`${Math.max(0,Math.ceil(game.battle.s.limit-game.battle.s.time))}秒 · 漏失${game.battle.s.leaks} · ${Math.floor(game.battle.s.cost)}部署费用`:'';
-  if(room.boss){const hp=document.getElementById('boss-hp'),label=document.getElementById('boss-label');if(hp)hp.value=room.boss.hp;if(label)label.textContent=`${Math.ceil(room.boss.hp).toLocaleString()} / ${room.boss.maxHp.toLocaleString()}`;}
-  for(const span of root.querySelectorAll('[data-sp]')){const u=game.battle?.s.units.find(u=>u.uid===+span.dataset.sp);if(u)span.textContent=`SP ${Math.floor(u.sp)} / ${game.battle.spCost(u)}`;}
-  const content=document.getElementById('bond-content');
-  if(content&&content.closest('details').open) {
-    const snapshot=snapshotFor(state.view||state.playerId);
-    content.innerHTML=Object.entries(snapshot?.bonds||{}).filter(([,b])=>b.count||b.active).map(([id,b])=>`<p><b>${esc(data.season.bondInfoDict[id]?.name||id)}</b> ${b.count}人 · ${snapshot.layers[id]||0}层${b.active?' · 已激活':''}</p>`).join('');
-  }
-}
-// 原会话负责具体操作是否合法；这里另加房间阶段/就绪门禁，禁止旁观视角发出部署命令。
-function perform(action,...args) {
-  if(!state.game||state.room.phase!=='prep'||me().ready||me().eliminated||state.fault)return false;
-  const ok=state.game.perform(action,...args);if(!ok)notify(state.game.lastError||'当前条件不能执行：请检查资金、格位、整备区或奖励');
-  else {checkpoint();publishSnapshot();}render();return ok;
-}
-function equip(uid,slot=null){if(perform('equip',state.item,uid,slot)){state.item=null;render();}}
-root.addEventListener('click', async event => {
-  const target=event.target.closest('[data-action]');if(!target)return;
-  const {action,id,uid,index,dir}=target.dataset;
-  try {
-    if(action==='copy'){if(navigator.clipboard)await navigator.clipboard.writeText(state.room.id);else{const input=document.createElement('textarea');input.value=state.room.id;document.body.append(input);input.select();document.execCommand('copy');input.remove();}notify('房间号已复制');}
-    else if(action==='leave'){connection.send({type:'leave'});}
-    else if(action==='reload'){location.reload();}
-    else if(action==='view'){state.view=id;render();}
-    else if(action==='emote'){connection.send({type:'emote',emote:target.dataset.emote});}
-    else if(action==='start-room')connection.send({type:'start',config:{modeId:document.getElementById('mode').value,mapId:document.getElementById('map').value,waveTable:loadWaveTable(),bondBan:loadBondBan(data)}});
-    else if(action==='strategy')connection.send({type:'strategy',bandId:id});
-    else if(action==='choice')connection.send({type:'choice',id});
-    else if(action==='ready'){if(!me().ready&&!state.game.prepareOnlineReady()){notify('请先领取开战前产生的奖励');render();return;}checkpoint();publishSnapshot();connection.send({type:'ready',ready:!me().ready});}
-    else if(action==='next'){checkpoint();connection.send({type:'next'});}
-    else if(action==='unit') {if(state.item)equip(+uid);else{state.selected=+uid;state.cell=null;render();}}
-    else if(action==='summon'){state.selected=+uid;state.cell=null;render();}
-    else if(action==='item'){state.item=state.item===+uid?null:+uid;state.selected=null;render();}
-    else if(action==='replace')equip(+uid,+index);
-    else if(action==='cancel-place'){state.cell=null;render();}
-    else if(action==='place') {
-      if(!state.cell)return;const kind=state.game.s.summonCards.some(c=>c.uid===state.selected)?'deploySummon':'deploy';
-      if(perform(kind,state.selected,state.cell.x,state.cell.y,+dir)){state.cell=null;render();}
-    } else if(action==='activate') {
-      const b=state.game?.battle,u=b?.s.units.find(u=>u.uid===+uid);
-      if(b&&!b.s.finished&&u?.deployed&&u.sp>=b.spCost(u)&&!b.skillActive(u))b.activate(u);else notify('技力不足或技能正在持续');
-    } else if(action==='export') {
-      const record={format:'garrison-protocol-multiplayer-result',room:state.room,local:state.game.checkpoint()};
-      const url=URL.createObjectURL(new Blob([JSON.stringify(record,null,2)],{type:'application/json'}));
-      const link=document.createElement('a');link.href=url;link.download=`联机战报-${state.room.id}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
-    } else if(['buy','buyItem'].includes(action))perform(action,+index);
-    else if(action==='skill')perform(action,+uid,+index);
-    else if(action==='destroyEquip')perform(action,+uid,+index);
-    else if(action==='takePromotion')perform(action,id);
-    else if(['sell','withdraw','withdrawSummon','destroy'].includes(action))perform(action,+uid);
-    else if(['refresh','upgrade','lock'].includes(action))perform(action);
-  } catch(error){notify(error.message);}
+// 游戏主体只由 nativeUI 的原 UI 处理；此模块只处理网络按钮和房间状态。
+nativeUI.configure({
+ save(){checkpoint();publishSnapshot();},
+ paintExtra:draw,
+ action(button){
+  const action=button.dataset.act;
+  if(action==='home'){connection.send({type:'leave'});return true;}
+  if(action==='start'){ready();return true;}
+  if(action==='next'){connection.send({type:'next'});return true;}
+  if(action==='export'){exportOnline();return true;}
+  if(['pause','speed','new','begin','resume','import','sandbox'].includes(action))return true;
+  return false;
+ },
+ afterRender(){
+  const app=document.getElementById('app');
+  if(state.room?.phase==='support'&&state.room.supportPlayers.length===2&&!app.querySelector('#online-second-canvas')){const board=app.querySelector('.native-board');board?.classList.add('online-split');board?.insertAdjacentHTML('beforeend','<canvas id="online-second-canvas" aria-label="第二名联防队友的战场"></canvas>');app.dataset.secondPlayer=state.room.supportPlayers.find(id=>id!==state.room.task.playerId);}
+  const board=app.querySelector('.native-board');
+  const split=state.room?.phase==='support'&&state.room.supportPlayers.length===2;
+  if(split&&board){
+    if(!board.querySelector('.online-split-label'))board.insertAdjacentHTML('beforeend','<span class="online-split-label"></span><span class="online-split-label right"></span>');
+    const current=state.room.task.playerId,other=state.room.supportPlayers.find(id=>id!==current);
+    board.querySelector('.online-split-label').textContent=(state.room.players.find(p=>p.id===current)?.name||'队友')+' · 正在联防';
+    board.querySelector('.online-split-label.right').textContent=(state.room.players.find(p=>p.id===other)?.name||'队友')+' · 等待 / 战后状态';
+  }else if(board){board.classList.remove('online-split');board.querySelector('#online-second-canvas')?.remove();for(const el of board.querySelectorAll('.online-split-label'))el.remove();}
+  app.classList.toggle('online-readonly',!canEdit());
+  for(const button of app.querySelectorAll('[data-act="pause"],[data-act="speed"]'))button.hidden=true;
+  const start=app.querySelector('[data-act="start"]');if(start){start.textContent=me()?.ready?'取消准备':'准备完毕 →';start.disabled=!!state.fault||!!state.game?.s.rewardPending||!ownView()||!!me()?.eliminated;}
+  const next=app.querySelector('[data-act="next"]');if(next)next.disabled=state.room?.phase!=='settlement'||me()?.next||me()?.eliminated;
+ },
 });
-root.addEventListener('click',event=>{
-  const canvas=event.target.closest('canvas');if(!canvas||canvas.dataset.player!==state.playerId||!state.game)return;
-  if(state.room.phase!=='prep'||me().ready)return;
-  const cell=cellAt(canvas,event,data,state.game.s.mapId);if(!cell)return;
-  if(state.selected){state.cell=cell;render();}
-  else {const unit=state.game.s.units.find(u=>u.position?.x===cell.x&&u.position?.y===cell.y);if(unit){state.selected=unit.uid;render();}}
-});
-let drag=null;
-root.addEventListener('dragstart',event=>{const el=event.target.closest('[data-uid]');if(!el)return;drag={uid:+el.dataset.uid,kind:el.dataset.action};event.dataTransfer.setData('text/plain',String(drag.uid));});
-root.addEventListener('dragover',event=>{if(event.target.closest('canvas,[data-action="unit"]'))event.preventDefault();});
-root.addEventListener('drop',event=>{
-  event.preventDefault();if(!drag||!state.game)return;
-  const unit=event.target.closest('[data-action="unit"]'),canvas=event.target.closest('canvas');
-  if(drag.kind==='item'&&unit){state.item=drag.uid;equip(+unit.dataset.uid);}
-  else if(drag.kind==='unit'&&canvas?.dataset.player===state.playerId){state.selected=drag.uid;state.cell=cellAt(canvas,event,data,state.game.s.mapId);render();}
-  drag=null;
+function canEdit(){return ownView()&&state.room?.phase==='prep'&&!me()?.ready&&!me()?.eliminated&&!state.fault;}
+function ready(){
+ if(!ownView()||!state.game||state.room?.phase!=='prep'||me()?.eliminated)return;
+ try{if(!me().ready&&!state.game.prepareOnlineReady()){notify('请先领取开战前产生的奖励');syncNativeView();return;}checkpoint();publishSnapshot();connection.send({type:'ready',ready:!me().ready});}catch(error){notify(error.message);}
+}
+function exportOnline(){
+ const url=URL.createObjectURL(new Blob([JSON.stringify({format:'garrison-protocol-multiplayer-result',room:state.room,local:state.game?.checkpoint()},null,2)],{type:'application/json'}));
+ const link=document.createElement('a');link.href=url;link.download=`联机战报-${state.room.id}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+// 捕获层阻止只读视角/就绪后的拖放、键盘部署和手动技能。网络 ready/next/home 仍可用。
+const nativeRoot=document.getElementById('app');
+for(const name of ['pointerdown','pointerup','click','keydown'])nativeRoot.addEventListener(name,event=>{
+ const locked=!ownView()||me()?.eliminated||me()?.ready&&state.room?.phase==='prep'||state.room?.phase==='support'&&state.room.task?.playerId!==state.playerId;
+ if(!locked)return;
+ const act=event.target.closest('[data-act]')?.dataset.act;
+ if(['home','start','next','export','result','result-unit','close','mute','reduce-fx','fullscreen','limits','branches','ban-list','bond-info','field-info','supply-toggle','hand-scroll'].includes(act))return;
+ event.preventDefault();event.stopImmediatePropagation();
+},true);
+root.addEventListener('click',async event=>{
+ const target=event.target.closest('[data-action]');if(!target)return;
+ const {action,id}=target.dataset;
+ try{
+  if(action==='copy'){await navigator.clipboard?.writeText(state.room.id);notify('房间号已复制');}
+  else if(action==='leave')connection.send({type:'leave'});
+  else if(action==='reload')location.reload();
+  else if(action==='view'){state.view=id;render();}
+  else if(action==='emote')connection.send({type:'emote',emote:target.dataset.emote});
+  else if(action==='start-room')connection.send({type:'start',config:{modeId:document.getElementById('mode').value,mapId:document.getElementById('map').value,waveTable:loadWaveTable(),bondBan:loadBondBan(data)}});
+  else if(action==='strategy')connection.send({type:'strategy',bandId:id});
+  else if(action==='choice')connection.send({type:'choice',id});
+  else if(action==='ready')ready();
+  else if(action==='next')connection.send({type:'next'});
+  else if(action==='export')exportOnline();
+ }catch(error){notify(error.message);}
 });
 root.addEventListener('change',async event=>{
   if(event.target.id!=='avatar-upload')return;
@@ -301,7 +269,7 @@ root.addEventListener('submit',async event=>{
     await connection.connect(url,{rulesHash:health.rulesHash,create:event.submitter.value==='create',roomId:String(form.get('room')).trim().toUpperCase(),profile:state.profile,flags:loadArchive(localStorage).flags});
   }catch(error){notify('连接失败：'+error.message);}
 });
-function publishSnapshot(){if(state.game)connection.send({type:'snapshot',snapshot:viewSnapshot(state.game)});}
+function publishSnapshot(){if(state.game)connection.send({type:'snapshot',snapshot:presentationSnapshot(state.game)});}
 let last=performance.now(),accumulator=0,lastPublish=0,lastCheckpoint=0,lastReport=0,lastBoss=0,lastPaint=0,lastTransfer=0;
 // 仅推进房间分配给自己的任务。taskId 防止同一轮广播反复重建战斗。
 function advance() {
@@ -330,7 +298,7 @@ function advance() {
       if(game.online.report&&state.ack!==game.online.report.taskId&&now-lastReport>=600&&ownBattle) {
         connection.send({type:'result',...game.online.report});lastReport=now;checkpoint();
       }
-      if(now-lastPublish>=160){publishSnapshot();lastPublish=now;}
+      if(now-lastPublish>=400){publishSnapshot();lastPublish=now;}
       if(now-lastCheckpoint>=2500){checkpoint();lastCheckpoint=now;}
       if(now-lastTransfer>=1000){for(const record of game.s.transferOutbox||[])if(!record.sent)connection.send({type:'transfer',record});lastTransfer=now;}
     }
@@ -349,4 +317,4 @@ try {
   if(saved){connection.credentials=saved.credentials;connection.connect(saved.url,saved.hello);}
 }catch{}
 // 浏览器验收仅暴露读状态接口，不为生产用户添加越权房间控制命令。
-window.__garrisonOnline={get state(){return state;},connection};
+window.__garrisonOnline={nativeUI,get state(){return state;},connection};

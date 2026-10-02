@@ -3,48 +3,11 @@
  * 不修改原模块、不写全局 prototype 补丁；只有联机会话使用以下两个子类。
  * 商店/技能/伤害/地形仍由上游模块处理，这里只接管跨玩家结算与可恢复账本。
  */
-import {NativeSession} from '../../dist/native-session.js';
-import {NativeBattle} from '../../dist/native-battle.js';
-import {runStrategyEvent} from '../../dist/strategy.js';
-import {bondEffectBlackboard, bondValue, buildPhasePlan} from '../../dist/protocol.js';
-import {finalBossPlacementContains} from '../../dist/native-final-boss.js';
-import {buildWavePlan, buildFinalBossAddQueue} from '../../dist/native-wave-random.js';
-import {scheduleWaveQueue} from '../../dist/native-wave-random.js';
+import {NativeSession} from '../generated/native-session.js';
+import {NativeBattle} from '../generated/native-battle.js';
+
 
 export class MultiplayerBattle extends NativeBattle {
-  prepareWaves(turn) {
-    // 这是上游 prepareWaves 的小型适配：额外传入房主冻结的波次配置。
-    // 保留鸭爵策略及装备追加悬赏，避免只有普通波次一致、策略生成敌人却丢失。
-    const plan = buildWavePlan(this.data, turn, this.economy.s.waveRoster, this.economy.online.config.waveTable);
-    this.level = plan.level;
-    this.combatScale = plan.scale;
-    this.s.queue = plan.queue;
-    if (this.economy.s.bandId === 'band_ducklord' && turn.round >= 5) {
-      const targets = ['enemy_2002_bearmi_2', 'enemy_2034_sythef_2', 'enemy_2085_skzjxd_2', 'enemy_2001_duckmi_2'];
-      const ground = this.s.queue.filter(q => this.level.routes[q.route]?.motionMode !== 'FLY');
-      const count = Math.min(2, Math.floor(this.economy.random() * 3));
-      for (let i = 0; i < count && ground.length; i++) {
-        if (this.economy.random() < .6) continue;
-        const q = ground.splice(Math.floor(this.economy.random() * ground.length), 1)[0];
-        q.id = targets[Math.floor(this.economy.random() * targets.length)]; q.ducklord = true;
-      }
-    }
-    const bounties = [...(this.economy.s.pendingBounties || []), this.economy.s.pendingBounty].filter(Boolean);
-    for (const bounty of bounties) {
-      const motion = this.enemyRaw(bounty.enemyId)?.motion === 'FLY' ? 'FLY' : 'WALK';
-      const route = this.level.routes.findIndex(row => row.motionMode === motion);
-      for (let i = 0; i < bounty.count; i++) this.s.queue.push({id: bounty.enemyId, route: Math.max(0, route), cost: 0, bountyReward: bounty.coin});
-    }
-    this.economy.s.pendingBounties = []; this.economy.s.pendingBounty = null;
-    this.s.queue = scheduleWaveQueue(this.s.queue, this.level, turn.round);
-    this.s.total = this.s.queue.filter(q => !this.enemyRaw(q.id)?.enemyBehavior?.notCountInTotal).length;
-  }
-  prepareFinalBoss(turn) {
-    super.prepareFinalBoss(turn);
-    this.s.queue = buildFinalBossAddQueue(this.data, this.economy.s.waveRoster,
-      this.economy.s.finalBossAddSeed, this.map.bossDoorRoutes, this.economy.online.config.waveTable);
-    this.s.total = this.s.queue.length + 1;
-  }
   finish(reason = 'manual') {
     // 单机“累计漏失 >= 当前生命”会结束本道中。联机必须等队友救援，
     // 因此只允许清场或超时结束，不能让临时的漏怪提前淘汰玩家。
@@ -134,12 +97,17 @@ export class MultiplayerSession extends NativeSession {
     // 上游构造函数会生成商店并触发策略：先提供完整策略与独立商店种子。
     super(data, {modeId: config.modeId, bandId: player.bandId, mapId: config.mapId,
       seed: (config.seed ^ player.seat * 0x45d9f3b) >>> 0, waveRoster: config.waveRoster,
-      bondBan: config.bondBan, finalBossId: config.bossId, finalBossHpMultiplier: .75,
+      bondBan: config.bondBan, finalBossId: config.bossId, finalBossHpMultiplier: .75 * config.bossMultiplier,
       playerId: player.id, teamPeers: peers});
     this.online = {config, taskId: null, kind: null, enemySeq: 0, remaining: {}, killedBounties: {},
       report: null, damage: 0, healing: 0, acknowledgedDamage: 0, acknowledgedHealing: 0,
       bossHp: 0, choices: {}, settlementRound: 0};
   }
+  perform(type,...args){
+    if(this.commandAllowed&&!this.commandAllowed(type))return false;
+    return super.perform(type,...args);
+  }
+  get waveTable() { return this.online?.config.waveTable; }
   addLayers(...args) {
     if (this.online?.kind === 'support') return 0;
     return super.addLayers(...args);
@@ -157,39 +125,24 @@ export class MultiplayerSession extends NativeSession {
   prepareOnlineReady() {
     if (this.s.rewardPending || this.s.phase !== 'prep') return false;
     if (this.s.prepApplied) return true;
-    // 原 beginBattle 把准备期效果与清空资金放在同一个方法中。
-    // 独立执行前半段，允许先领取新奖励，再进入全员就绪；通常资金/溢出卡等到同步开战才处理。
-    // S.E.E.S. 的资金转换必须在 prepEnd 之前，与原 startBattle 顺序一致；取消准备不会回滚一次性效果。
-    this.applyTouchReplacement(); this.settleTartarusRound();
-    this.deferBondLayerFunds = true;
-    try {
-      for (const u of this.s.units.slice()) this.triggerGarrisons('SERVER_PREP_FIN', u);
-      const rows = this.bonds();
-      if (rows.deputShip.active) {
-        const bb = bondEffectBlackboard(this.data, 'deputShip', 'bond_activated_add_layer');
-        const variants = new Set(this.s.units.filter(u => u.position && this.ownBonds(u).includes('deputShip'))
-          .map(u => u.charId + ':' + this.data.season.charChessDataDict[u.chessId].isGolden));
-        const amount = variants.size >= bondValue(bb, 'count', 3) ? bondValue(bb, 'more_layer', 4) : bondValue(bb, 'layer', 2);
-        for (const [id, b] of Object.entries(rows)) if (b.active) this.addLayers(id, amount);
-      }
-      runStrategyEvent(this, 'prepEnd'); this.s.prepApplied = true;
-      this.ensureRewards(); return !this.s.rewardPending;
-    } finally { this.deferBondLayerFunds = false; }
+    // 原 startBattle 处理布局检查、S.E.E.S.、卫戍、盟约与策略奖励。
+    // 联机只停在 prep；共享任务下发后再由同一 startBattle 转换阶段。
+    const ok=super.startBattle({prepareOnly:true});
+    this.ensureRewards();return !!ok&&!this.s.rewardPending;
+  }
+  createBattle(turn) {
+    // 原 startBattle 负责布局、资金、开战事件；这里只选择联机战斗子类。
+    if (turn.finalBossId) turn.finalBoss = {...turn.finalBoss, hp:this.online.config.bossMaxHp};
+    return new MultiplayerBattle(this.data,this,this.map,turn);
   }
   startOnlineBattle(task) {
     if (this.online.taskId === task.id) return true;
     if (this.s.phase !== 'prep' || this.s.rewardPending) return false;
-    this.online.taskId = task.id; this.online.kind = task.kind; this.online.supportStartTime = 0;
-    this.online.remaining = {}; this.online.killedBounties = {}; this.online.report = null;
-    this.syncSummonCards(); this.syncHandSlots();
-    const area = this.finalBossPrepArea();
-    if (area && [...this.s.units, ...this.s.summonCards].some(u => u.position && finalBossPlacementContains(area, u.position.x, u.position.y))) return false;
-    if (!this.s.prepApplied && !this.prepareOnlineReady()) { this.online.taskId = null; return false; }
-    if (!this.beginBattle() || this.s.phase !== 'battle') { this.online.taskId = null; return false; }
-    const turn = this.resolveTurn(buildPhasePlan(this.data, this.s.modeId).find(t => t.round === this.s.round));
-    if (turn.finalBossId) turn.finalBoss = {...turn.finalBoss, hp: task.bossMaxHp};
-    this.battle = new MultiplayerBattle(this.data, this, this.map, turn);
-    if (turn.finalBossId) this.attachBossLedger(task.bossMaxHp);
+    if (!this.s.prepApplied && !this.prepareOnlineReady()) return false;
+    this.online.taskId=task.id;this.online.kind=task.kind;this.online.supportStartTime=0;
+    this.online.remaining={};this.online.killedBounties={};this.online.report=null;
+    if (!super.startBattle() || this.s.phase !== 'battle') {this.online.taskId=null;return false;}
+    if (this.battle.s.finalBossId) this.attachBossLedger(task.bossMaxHp);
     return true;
   }
   startSupport(task) {

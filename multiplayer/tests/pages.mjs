@@ -1,4 +1,4 @@
-/** 在 /ark 子路径从纯静态站点进入，连接另一端口的真实 WebSocket 服务。
+/** 在 /garrison-protocol 子路径从纯静态站点进入，连接另一端口的真实 WebSocket 服务。
  * 静态服务器完全没有 /health，确保 Pages 不会依赖 Node 才能加载。
  */
 import {chromium} from 'playwright';
@@ -12,8 +12,8 @@ await import('../scripts/build-pages.mjs');
 const staticServer=http.createServer(async(req,res)=>{
   try {
     const target=decodeURIComponent(new URL(req.url,'http://local').pathname);
-    if(!target.startsWith('/ark/')||target.includes('..'))throw Error();
-    const file=target.slice(5)||'index.html';
+    if(!target.startsWith('/garrison-protocol/')||target.includes('..'))throw Error();
+    const file=target.slice("/garrison-protocol/".length)||'index.html';
     const bytes=await readFile(new URL(`../../.pages/${file}`,import.meta.url));
     res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.json')?'application/json':'text/html');res.end(bytes);
   } catch {res.writeHead(404);res.end();}
@@ -25,7 +25,7 @@ try {
   for(let seat=0;seat<2;seat++) {
     const context=await browser.newContext();const page=await context.newPage();pages.push(page);
     page.on('pageerror',error=>errors.push(error.message));
-    await page.goto(`http://127.0.0.1:${staticServer.address().port}/ark/`);
+    await page.goto(`http://127.0.0.1:${staticServer.address().port}/garrison-protocol/`);
     await page.getByRole('link',{name:/联机作战/}).click();
     await page.locator('#connect-form').waitFor();
     assert.equal(await page.locator('input[name="port"]').inputValue(),String(realtime.port));
@@ -35,6 +35,6 @@ try {
   }
   await pages[0].locator('[data-action="start-room"]').click();
   for(const page of pages)await page.locator('.strategy-card:not([disabled])').first().click();
-  for(const page of pages)await page.locator('canvas').waitFor();
-  assert.deepEqual(errors,[]);console.log('Pages /ark 子路径、跨服务连接、两人选策略验收通过');
+  for(const page of pages)await page.locator('#native-canvas').waitFor();
+  assert.deepEqual(errors,[]);console.log('Pages /garrison-protocol 子路径、跨服务连接、两人选策略验收通过');
 } finally {await browser.close();await realtime.close();await new Promise(resolve=>staticServer.close(resolve));}

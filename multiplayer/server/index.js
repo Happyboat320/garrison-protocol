@@ -1,4 +1,5 @@
 /** 独立启动：不接入单机 Pages 构建，也不改变 npm run dev。 */
+import {buildNativeUI} from '../scripts/build-native-ui.mjs';
 import http from 'node:http';
 import https from 'node:https';
 import {readFile, stat, realpath, readdir} from 'node:fs/promises';
@@ -16,6 +17,7 @@ const MIME = {'.html':'text/html; charset=utf-8', '.js':'text/javascript; charse
   '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.webp':'image/webp', '.svg':'image/svg+xml', '.woff2':'font/woff2', '.json':'application/json'};
 
 export async function createMultiplayerServer({host = '0.0.0.0', port = 8080, tls = null} = {}) {
+  await buildNativeUI();
   const rulesHash = await rulesFingerprint(), rooms = new RoomManager(NATIVE_DATA, rulesHash);
   const handler = async (request, response) => {
     try {
@@ -28,7 +30,7 @@ export async function createMultiplayerServer({host = '0.0.0.0', port = 8080, tl
       let target = decodeURIComponent(url.pathname);
       if (target === '/') { response.writeHead(302, {Location:'/multiplayer/index.html'}); return response.end(); }
       // 只允许分发联机页面、JS/CSS 与游戏静态资源，不把整个仓库当静态根公开。
-      const allowed = target === '/multiplayer/index.html' || /^\/multiplayer\/(client|shared)\/[\w-]+\.(js|css)$/.test(target) ||
+      const allowed = target === '/multiplayer/index.html' || target === '/multiplayer/client/native-play.generated.js' || /^\/multiplayer\/(client|shared|generated)\/[\w-]+\.(js|css)$/.test(target) ||
         /^\/dist\/[\w-]+\.(js|css|html)$/.test(target) || /^\/dist\/assets\/[\w/.-]+$/.test(target);
       if (!allowed || target.includes('..')) { response.writeHead(404); return response.end('Not found'); }
       const file = await realpath(path.join(ROOT, target.slice(1)));

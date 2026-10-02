@@ -7,7 +7,11 @@
     "test": "node --test tests/*.test.mjs",
     "test:browser": "node tests/browser.mjs",
     "build:pages": "node scripts/build-pages.mjs",
-    "test:pages": "node tests/pages.mjs"
+    "test:pages": "node tests/pages.mjs",
+    "build:native": "node scripts/build-native-ui.mjs",
+    "pretest": "npm run build:native",
+    "pretest:browser": "npm run build:native",
+    "prestart": "npm run build:native"
   },
   "engines": {
     "node": ">=22"
