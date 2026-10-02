@@ -13764,7 +13764,8 @@ u.skillRangeHold=sk.rangeId||null;u.skillRangeHoldAt=this.s.time;const skillAir=
    // 开了技能反而不能打空的（银灰「雪境生存法则」）同样按覆盖后的值判断。非对空技能两张表完全一致。
    const decisionAntiAir=this.upcomingAntiAir(u,p),decisionTargets=decisionAntiAir===behavior.antiAir?targets:this.targets(u,{antiAir:decisionAntiAir});
    const readyByTargets=healer?heals.length>0:(decisionTargets.length>0||canHitAfterSkill);
-   const skillReady=skill?.skillType==='AUTO'?u.sp>=cost&&(readyByTargets||attackTriggeredInstantAuto(skill)):shouldAutoSkill({policy,ready:u.sp>=cost,deployed:u.deployed,now:this.s.time,lastOperation:u.lastSkill,initialDeployment:u.deployAt,hasTarget:readyByTargets,hasAnyTarget:this.s.enemies.length>0,hasEnemyInInitialRange:decisionTargets.length>0,hasEnemyInSkillRange:canHitAfterSkill,wasDamaged:this.s.time-(u.lastDamagedAt??-999)<.1});
+   const friendlyAuto=p.charId==='char_1039_thorn2'&&(p.skillIndex??u.source?.skillIndex)===0;
+   const skillReady=skill?.skillType==='AUTO'?u.sp>=cost&&(readyByTargets||attackTriggeredInstantAuto(skill)||friendlyAuto):shouldAutoSkill({policy,ready:u.sp>=cost,deployed:u.deployed,now:this.s.time,lastOperation:u.lastSkill,initialDeployment:u.deployAt,hasTarget:readyByTargets,hasAnyTarget:this.s.enemies.length>0,hasEnemyInInitialRange:decisionTargets.length>0,hasEnemyInSkillRange:canHitAfterSkill,wasDamaged:this.s.time-(u.lastDamagedAt??-999)<.1});
    if(skill?.skillType==='PASSIVE'&&u.coinSkillEnabled&&(skill.skillIndex??u.source?.skillIndex)===1&&u.coins>0&&targets.length)this.activate(u);
    if(skill&&skill.skillType!=='PASSIVE'&&!u.enhanced&&!this.skillActive(u)&&skillReady)this.activate(u);
    stats=this.stats(u);behavior=this.behavior(u);healer=behavior.kind==='heal'||u.focusHeal;u.branchSkillActive=this.skillActive(u);
