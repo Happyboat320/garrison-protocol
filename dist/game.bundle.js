@@ -15037,6 +15037,15 @@ const CONCEAL_STYLE={
  blockLight:'rgba(154,162,172,0.22)',  // 浅色块（原 0.4）
  band:0.10,                            // 流光带峰值透明度（原 0.16）
 };
+let concealRasterCanvas=null,concealRasterContext=null;
+function concealRaster(size){
+ if(typeof document==='undefined')return null;
+ if(!concealRasterCanvas){concealRasterCanvas=document.createElement('canvas');concealRasterContext=concealRasterCanvas.getContext('2d');}
+ if(!concealRasterContext)return null;
+ if(concealRasterCanvas.width!==size||concealRasterCanvas.height!==size){concealRasterCanvas.width=size;concealRasterCanvas.height=size;}
+ concealRasterContext.clearRect(0,0,size,size);
+ return concealRasterCanvas;
+}
 // 隐匿表现口径与索敌口径一致：形态/状态给出 invisible，但**被阻挡时视为脱离隐匿**
 // （native-battle 的 targets() 就是「e.block!=null 即对所有人可选」），所以马赛克也要同步消失。
 function concealActive(actor){return !!actor&&!actor.hidden&&actor.invisible===true&&actor.block==null;}
@@ -15045,19 +15054,22 @@ function drawConcealOverlay(c,actor,box,opts={}){
  const reduce=!!opts.reduceFx,time=Number(opts.time)||0,im=opts.image,st=CONCEAL_STYLE;
  c.save();
  c.fillStyle=st.wash;c.fillRect(box.x,box.y,box.w,box.h);      // 灰色滤镜
- // 有头像时做真正的马赛克：先把头像缩到 detail×detail，再关掉插值放大回来（同一张画布自读，不会污染）。
+ // 有头像时做真正的马赛克：先缩到独立小画布再放大，避免在战场画布上自读导致偶发黑屏；成像保持半透明。
  let mosaicked=false;
- if(im&&im.complete&&im.naturalWidth&&c.canvas&&!reduce){
+ if(im&&im.complete&&im.naturalWidth&&!reduce){
   try{
-   const n=st.detail,smooth=c.imageSmoothingEnabled;
-   c.imageSmoothingEnabled=false;
-   c.drawImage(im,box.x,box.y,n,n);
-   c.drawImage(c.canvas,box.x,box.y,n,n,box.x,box.y,box.w,box.h);
-   c.imageSmoothingEnabled=smooth;mosaicked=true;
+   const n=st.detail,raster=concealRaster(n);
+   if(raster){
+    concealRasterContext.drawImage(im,0,0,n,n);
+    c.save();
+    try{c.globalCompositeOperation='source-over';c.globalAlpha=.5;c.imageSmoothingEnabled=false;c.drawImage(raster,box.x,box.y,box.w,box.h);}
+    finally{c.restore();}
+    mosaicked=true;
+   }
   }catch{mosaicked=false;}
  }
  if(!mosaicked){
-  // 没有头像（召唤物、装置）或拿不到画布时退化成暗灰马赛克块，按时间错开相位形成流动感。
+  // 没有头像、拿不到离屏画布或绘制失败时，退化成半透明马赛克块，按时间错开相位形成流动感。
   const tile=reduce?st.block*1.5:st.block,cols=Math.ceil(box.w/tile),rows=Math.ceil(box.h/tile),phase=reduce?0:Math.floor(time*6)%4;
   for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
    const k=(row*2+col*3+phase)%4;
