@@ -55,13 +55,16 @@ export function tickTimeSp(u,skill,dt,rate,opts={}){
 export function spBarFill(u,skill,cost){
  if(!usesSp(skill))return null;
  const kind=skillKind(skill),cap=spCap(skill,cost);
- if(kind==='ammo'&&u.ammo>0){
-  return {kind:'ammo',on:true,cells:Math.max(1,u.ammoMax||ammoCount(skill)),filled:u.ammo,ratio:0,ready:false};
+ const currentAmmo=Math.max(0,Math.trunc(Number(u.ammo)||0));
+ const maxAmmo=Math.max(currentAmmo,Math.trunc(Number(u.ammoMax)||0),currentAmmo>0?ammoCount(skill):0);
+ const ammo=kind==='ammo'&&maxAmmo>0?{current:currentAmmo,max:maxAmmo}:null;
+ if(kind==='ammo'&&currentAmmo>0){
+  return {kind:'ammo',on:true,cells:Math.max(1,maxAmmo||ammoCount(skill)),filled:currentAmmo,ratio:0,ready:false,ammo};
  }
  if(kind==='duration'&&u.skillLeft>0){
   const dur=skill.duration<0?1e9:skill.duration;
   return {kind:'duration',on:true,ratio:dur?Math.min(1,u.skillLeft/dur):0,ready:false};
  }
  const sp=Math.floor(u.sp??(skill.spData.initSp||0));
- return {kind:'idle',on:false,ratio:cap?Math.min(1,sp/cap):0,ready:sp>=(cost??(skill.spData.spCost||0))};
+ return {kind:'idle',on:false,ratio:cap?Math.min(1,sp/cap):0,ready:sp>=(cost??(skill.spData.spCost||0)),ammo};
 }
