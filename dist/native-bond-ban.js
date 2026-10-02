@@ -222,7 +222,7 @@ export function bondBanBriefingHtml(data,ban,ui={}){
  const rowOf=id=>summary.bonds.find(b=>b.id===id);
  const bannedExtra=extra.filter(id=>banned.has(id));
  
- return `<h2>盟约缺席情况</h2><h3 class="native-ban-heading">核心盟约 <small>${core.filter(id=>banned.has(id)).length} / ${core.length} 缺席</small></h3><div class="native-ban-bonds">${core.map(id=>bondCellHtml(data,id,banned.has(id),rowOf(id),esc)).join('')}</div><h3 class="native-ban-heading">被禁用的附加盟约 <small>${bannedExtra.length} 个</small></h3><div class="native-ban-bonds">${bannedExtra.map(id=>bondCellHtml(data,id,true,rowOf(id),esc)).join('')||'<p class="native-ban-none">本局没有被禁用的附加盟约。</p>'}</div><button class="native-ban-open" data-act="ban-list">查看本局被禁用的 ${summary.operators.length} 名干员 →</button>`;
+ return `<h2>盟约缺席情况</h2><button class="native-ban-open" data-act="ban-list">查看本局被禁用的 ${summary.operators.length} 名干员 →</button><h3 class="native-ban-heading">核心盟约 <small>${core.filter(id=>banned.has(id)).length} / ${core.length} 缺席</small></h3><div class="native-ban-bonds">${core.map(id=>bondCellHtml(data,id,banned.has(id),rowOf(id),esc)).join('')}</div><h3 class="native-ban-heading">被禁用的附加盟约 <small>${bannedExtra.length} 个</small></h3><div class="native-ban-bonds">${bannedExtra.map(id=>bondCellHtml(data,id,true,rowOf(id),esc)).join('')||'<p class="native-ban-none">本局没有被禁用的附加盟约。</p>'}</div>`;
 }
 
 // 简报（按钮上的「N 名」）与弹窗必须用**同一份**禁用记录，否则会出现「按钮写 50 名、弹窗 0 名」。

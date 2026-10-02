@@ -985,7 +985,7 @@ html.native-landscape-ui #native-modal .native-ban-entry{display:block;width:100
 .native-briefing-v2 .briefing-topmark b{color:#c9e6db;font-size:9px;font-weight:500}
 .native-briefing-v2 .briefing-mode{justify-self:end;display:flex;align-items:center;gap:8px;color:#a8c9bf;font-size:10px;white-space:nowrap}
 .native-briefing-v2 .briefing-mode i{width:4px;height:4px;border-radius:50%;background:var(--color-terminal-accent)}
-.native-briefing-v2 .briefing-content{display:flex;flex:1 1 auto;flex-direction:column;gap:12px;min-height:0;overflow-x:hidden;overflow-y:auto;padding:0 2px 10px;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#39756a transparent}
+.native-briefing-v2 .briefing-content{display:flex;flex:1 1 0;flex-direction:column;gap:12px;min-height:0;overflow-x:hidden;overflow-y:auto;padding:0 2px 10px;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#39756a transparent}
 .native-briefing-v2 .briefing-title{display:grid;grid-template-columns:minmax(0,1fr) minmax(250px,320px);align-items:center;gap:24px;flex:0 0 auto;padding:12px 0 2px}
 .native-briefing-v2 .briefing-title>.native-eyebrow,.native-briefing-v2 .briefing-title .native-eyebrow{color:var(--color-terminal-accent);font-size:9px;letter-spacing:.2em}
 .native-briefing-v2 .briefing-title h1{margin:5px 0 4px;color:#f1fff8;font-size:clamp(34px,4vw,54px);line-height:1.05;letter-spacing:.08em}
@@ -1040,6 +1040,7 @@ html.native-landscape-ui #native-modal .native-ban-entry{display:block;width:100
 .native-briefing-v2 .briefing-bond-section .native-ban-bond b{font-size:11px}
 .native-briefing-v2 .briefing-bond-section .native-ban-bond small,.native-briefing-v2 .briefing-bond-section .native-ban-bond span{font-size:8px}
 .native-briefing-v2 .briefing-bond-section .native-ban-open{padding:8px 11px;color:#cfe8df;background:#10272a;border:1px solid #315e5a;font-size:10px}
+.native-briefing-v2 .briefing-bond-section .native-ban-open{display:block;width:100%;min-height:40px;margin:0 0 8px;text-align:left}
 .native-briefing-v2 .briefing-actions{flex:0 0 auto;padding-top:9px;border-top:1px solid #2b5754}
 .native-briefing-v2 .briefing-actions .native-begin{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:44px;margin:0;padding:10px 16px;border:0;background:linear-gradient(90deg,#54cbaa,#71dfbc)!important;color:#09261e!important;font-size:14px;letter-spacing:.06em}
 .native-briefing-v2 .briefing-actions .native-begin span{font:700 16px var(--mono,'Arial Narrow',sans-serif)}
