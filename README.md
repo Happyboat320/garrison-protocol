@@ -2,9 +2,9 @@
 
 非官方同人项目。主入口已连接历史下半期数据、运营控制器与 native 战斗循环。
 
-源码仓库：[Yilegendoflink/garrison-protocol](https://github.com/Yilegendoflink/garrison-protocol)
+本仓库：[Happyboat320/garrison-protocol](https://github.com/Happyboat320/garrison-protocol) · 单机上游：[Yilegendoflink/garrison-protocol](https://github.com/Yilegendoflink/garrison-protocol)
 
-在线试玩：[GitHub Pages](https://yilegendoflink.github.io/garrison-protocol/)
+在线试玩：[单机 / 联机入口](https://happyboat.tech/garrison-protocol/) · [上游单机](https://yilegendoflink.github.io/garrison-protocol/)
 
 给后续开发者的当前事实见 [AGENTS.md](AGENTS.md)。
 
@@ -39,13 +39,29 @@ S.E.E.S. 联动四人（虎狼丸／埃癸斯／岳羽由加莉／结城理）�
 - 112 名均有适配层入口，不等于技能／天赋／模组已逐项对照。能力状态表里 `verified` 只覆盖抽样场景。
 - 特殊召唤站位选择、精确动作释放帧、部分敌人特殊能力、地图环境／装置动态破坏仍有缺口。
 - 战斗盟约、复杂策略、特殊刷新／冻结、道具和机变仍在补；不要把侧栏盟约计数当成效果已全部执行。
-- 同盟联机和完整甄选／助战档案尚未接入。
+- 本仓库已有独立 2–4 人联机扩展；完整甄选／助战档案仍未接入。联机沿用单机已实现范围，不代表全部原作机制完成。
 
 页面「已知差异」也会提示这些范围。手动反馈时请导出存档并附复现步骤。
 
 ## 本地运行与构建
 
-直接打开根目录 `index.html`，或运行 `npm run dev` 后访问 http://127.0.0.1:5502 。开发需要 Node.js 22+（Pages 使用 24）。`npm run build` 只编译；推送 `main` 会自动部署 Pages，工作流不运行测试。
+直接打开根目录 `index.html`，或运行 `npm run dev` 后访问 http://127.0.0.1:5502 。开发需要 Node.js 22+（Pages 使用 24）。`npm run build` 只编译；推送 `main` 会自动构建独立 Pages，普通发布工作流不运行测试。上游自动同步流程会先运行构建和联机检查，详见 [发布说明](PUBLISHING.md)。
+
+## 本仓库联机扩展
+
+联机直接复用当前单机的游玩代码和显示，通过 `multiplayer/` 中的生成器追加网络接口，原 `dist/` 源码保持独立。
+房主开始后先展示本局盟约禁用，全员确认再轮流选择不重复的策略；公共决策六选、独立生命、串行联防与共享 Boss 血量由房间协调。
+队友视角与表情放在可拖动悬浮框内。BWIKI 图片表情按分类选择，发送后在头像旁显示 5 秒。
+
+```bash
+npm ci --prefix multiplayer
+npm run build
+npm start --prefix multiplayer -- --max-rooms 10 --max-connections 56
+```
+
+当前生产最多 10 房、56 连接，HTTPS/WSS 经 Caddy 转发到本机 Node.js 服务。网页自动同步上游不等于 VPS 自动更新；规则版本不一致时拒绝联机。
+运行与复用边界见 [联机 README](multiplayer/README.md)，参数及防护见 [服务端安全说明](docs/MULTIPLAYER_SERVER_SECURITY.md)，定时同步见 [上游自动更新](docs/UPSTREAM_AUTO_SYNC.md)。
+博客不再发布本游戏，旧 `/ark/` 已删除；独立地址为 `/garrison-protocol/`。
 
 ## 源码入口
 
@@ -66,10 +82,10 @@ S.E.E.S. 联动四人（虎狼丸／埃癸斯／岳羽由加莉／结城理）�
 - 补全最终BOSS战
 - 实装小人动画和更精致的特效
 - 支持自定义追加原创干员、盟约、敌人、BOSS
-- 支持联机（有可能吗？）
+- 完善独立联机扩展与上游接口适配，按公开规模补充认证和网络防护
 
 ## 来源
 
-规则来源：[PRTS 下半期页面](https://prts.wiki/w/卫戍协议：盟约_下半)。基础数据使用固定提交的公开游戏数据镜像，每份表及关卡记录来源。头像清单见 `dist/assets/prts/manifest.json`，旧素材清单见 `dist/assets/asset-manifest.json`。
+规则来源：[PRTS 下半期页面](https://prts.wiki/w/卫戍协议：盟约_下半)。基础数据使用固定提交的公开游戏数据镜像，每份表及关卡记录来源。头像清单见 `dist/assets/prts/manifest.json`，旧素材清单见 `dist/assets/asset-manifest.json`。联机表情来自 [BWIKI 游戏表情一览](https://wiki.biligame.com/arknights/游戏表情一览)，来源记录见 `multiplayer/shared/emotes.js`。
 
 角色、美术与原始游戏内容的权利属于鹰角网络及相关权利人，本项目非官方产品。公开下载地址不代表原始素材采用开放许可。
