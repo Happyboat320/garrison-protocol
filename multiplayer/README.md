@@ -113,3 +113,5 @@ npm run test:browser --prefix multiplayer
 本次拉取上游到 `694d6f2`：78 项战斗/位移/状态/技能相关测试全部通过；联机 22 项、四浏览器验收、纯静态 `/ark` 跨端口两人入房验收均通过。生产环境 Node.js 24 的 22 项联机测试也通过。此前原仓库全量测试的 29 项失败为拉取前记录，本次没有宣称全量测试全部通过；本次未修改原单机玩法源码。
 
 额外验证：`npm run test:pages --prefix multiplayer` 验证纯静态子路径部署与独立 WebSocket 服务（不依赖静态站点的动态 `/health`）。
+
+公网检查也已通过：两个独立 Chromium 上下文通过有效证书的 HTTPS 网页及 WSS 入房、互斥选策略并进入准备界面。健康检查地址为 `https://23-238-114-57.sslip.io/health`。systemd 与 Caddy 均已启用开机启动。
