@@ -5,6 +5,8 @@
 > `drawStatuses` 的隐匿图标都已完成，逐条见文末「落地结果」。
 > 仍未做：迷彩的完整细则（§七），它不影响本批已经落地的选择判定。
 
+> **2026-10-02 回归补记**：隐匿不影响阻挡资格；`blockingActors()` 将隐匿干员交给 `resolveBlocks()`，隐匿干员可以正常阻挡隐匿敌人，敌人被挡后按阻挡目标规则可被攻击。忍冬 S3 击倒敌人后获得迷彩，迷彩期间仍可阻挡隐匿敌人。安洁莉娜 S1 待机攻击来积攒攻击回复技力；S2/S3 未开启时不攻击；三个技能开启期间均有伤害回归。S3 施加独立的 `weightless` 状态，重量按 0 参与重量判定，但不会浮空、打断攻击或解除阻挡。回归分别位于 `tests/native-invisibility.test.mjs` 与 `tests/native-operator-effects.test.mjs`。
+
 目标：把隐匿做成**一套统一的可选性规则**，让敌人的隐匿、我方干员／召唤物获得的隐匿都真正生效；反隐（隐匿免疫）按原表逐个接入；隐匿单位在场上带**暗灰色流动马赛克**特效。
 
 范围包含波次编辑器的 `INVISIBLE` 词条，以及原表里带 `InvisibleCombat` / `InvisibleShield` 预制体、天赋黑名单写着「隐匿」或「被阻挡前无法被攻击」的敌人。
@@ -105,6 +107,7 @@
 25. 清明：只给周围其他敌人、不含自身、时长 5 秒、冷却 15 秒、到期恢复。
 26. 山海众：攻击后显形，6 秒不攻击后重新隐匿。
 27. 马赛克：隐匿单位绘制调用返回 true 且取自暗灰色板；被反隐后不再绘制；`reduceFx` 下不流动。
+28. 隐匿干员参与正常阻挡：隐匿干员能够阻挡隐匿敌人，被阻挡的敌人对阻挡者可选并会受到其攻击。
 
 ## 五、验收口径
 
@@ -139,10 +142,10 @@
 | 伊内丝【影哨】 | `periodicMods` + `placeInesSentry` | 攻击范围内隐匿失效且移速 -30%；撤退后在原地留 1 个影哨继续生效（半径取她撤退时攻击范围的最大切比雪夫跨度） |
 | 马赛克 | `drawConcealOverlay`（native-fx） | 我方／召唤物／敌人三处；灰滤镜 + 马赛克（有头像时缩到 10×10 再关插值放大），被反隐时不画，`reduceFx` 下不流动。**强度只在 `CONCEAL_STYLE` 里调**（wash 0.22 / detail 10 / block 5 / 块 α 0.28·0.22 / band 0.10）：早先的 6×6 + 0.45 灰滤镜糊到认不出人，用户要求调低，现在只做提示不做遮挡；改完要 `node scripts/build-browser.mjs` 重编 bundle |
 | 被阻挡即脱隐匿（表现） | `concealActive` + `drawStatuses` | 与索敌同口径：`actor.block!=null` 时 `concealActive` 返回 false，马赛克与头顶隐匿图标一起消失，解除阻挡后恢复（用户 2026-09-19 追加） |
+| 隐匿不影响阻挡 | `native-effects.blockingActors` → `native-combat.resolveBlocks` | 阻挡候选包含隐匿干员；隐匿干员可阻挡隐匿敌人，敌人被阻挡后按现有规则可被阻挡者索敌 |
+| 安洁莉娜 S3 失重 | `native-operator-effects.operatorSkillStart` + `status.effectiveWeight` | 敌人获得 `weightless`，有效重量为 0；该状态不等同于 `levitate`，不封锁行动、不取消阻挡，干员可继续攻击 |
 | 清明 `InvisibleShield` | `tickEnemyInvisibleShield`（native-battle）+ `supportedSkillPrefabs` | 独立计时：`initCooldown` 5 秒首放、之后每 `cooldown` 15 秒一次，给半径 2 格（敌人自身 `rangeRadius`，原表无独立半径字段）内的**其他**敌人 5 秒隐匿（技能黑板 `duration`；天赋黑板的 `InvisibleShield.duration=3` 不是这个技能的时长），自身不获得。已解除 `complexity` 并在 `enemy-behavior-overrides.json` 显式 `randomPoolEligible:true`；原表 `enemyInfoDict` 里它不属于任何词条（只出现在固定关卡 `h07_03`），所以默认随机池没收它，编制台手工加池与固定波次可用 |
 | 迷彩的发放时机 | `native-operator-effects.js`（`operatorSkillStart` / `enemy-death` / `skill-end`） | 通用分支只处理「技能开始即获得」，且跳过带「技能结束时」的文本；忍冬 S3【隐狐之艺】改成条件式：技能期间击倒过敌人才在技能结束拿到迷彩，下一次开技时由 `removeStatus` 摘掉（原实现是开技即给 10 秒，时序与条件都不对）。寒芒克洛丝的迷彩在本期卡池里取不到（她的运行时档案只有 S2【封喉】），因此没有额外分支 |
 | 头顶状态图标 | `drawStatuses` / `mark`（native-fx） | `invisible`／`camouflage` 进白名单，画虚线方框（迷彩多一道对角），没有状态就不画 |
 
-测试：`tests/native-invisibility.test.mjs`（10 例，含山海众显形周期、敌方远程不选隐匿干员、银灰/伊内丝反隐与哨位、
-清明 InvisibleShield 的半径/时长/冷却/不含自身、忍冬条件式迷彩、隐匿图标、清明的随机池归属）
-与 `tests/native-bonds.test.mjs` 的叙拉古用例（盟约隐匿真的挡住敌人）。
+测试：`tests/native-invisibility.test.mjs`（12 例，含山海众显形周期、敌方远程不选隐匿干员、隐匿干员阻挡隐匿敌人、银灰/伊内丝反隐与哨位、清明 InvisibleShield 的半径/时长/冷却/不含自身、忍冬 S3 迷彩状态下阻挡隐匿敌人、隐匿图标、清明的随机池归属）；`tests/native-operator-effects.test.mjs` 覆盖安洁莉娜 S1 自然循环与 S2/S3 技能伤害；`tests/native-bonds.test.mjs` 另覆盖叙拉古盟约隐匿对敌人索敌的影响。

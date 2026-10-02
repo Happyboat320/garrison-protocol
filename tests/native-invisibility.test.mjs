@@ -55,6 +55,21 @@ test('隐匿敌人未被阻挡时别人选不中，被别人阻挡后视为脱�
  assert.equal(b.targets(other).some(x=>x.uid===e.uid),true,'本来就不隐匿的单位不受影响');
 });
 
+test('隐匿干员可以照常阻挡隐匿敌人，被阻挡后可攻击该敌人',()=>{
+ const b=liveBattle(['char_498_inside']),blocker=b.s.units[0];
+ blocker.x=4;blocker.y=0;
+ blocker.statuses.push({kind:'invisible',remaining:30,source:'regression',value:1});blocker.invisible=true;
+ const foe=probe(b,blocker.x,blocker.y,{hp:100000,invisible:true});
+ foe.statuses.push({kind:'invisible',remaining:30,source:'regression',value:1});
+ assert.equal(b.targets(blocker).some(x=>x.uid===foe.uid),false,'未阻挡的隐匿敌人仍不可主动索敌');
+ b.step();
+ assert.equal(foe.block,blocker.uid,'隐匿干员仍参与正常阻挡');
+ assert.equal(b.targets(blocker).some(x=>x.uid===foe.uid),true,'敌人被阻挡后对阻挡者可选');
+ const hp=foe.hp;
+ for(let i=0;i<60;i++)b.step();
+ assert.ok(foe.hp<hp,'阻挡者应能正常攻击已阻挡的隐匿敌人');
+});
+
 test('隐匿马赛克：我方与敌方都画灰色滤镜 + 马赛克块，reduceFx 下不流动',()=>{
  const box={x:10,y:10,w:40,h:40},ally={invisible:true,statuses:[]},foe={invisible:true,statuses:[],flying:false};
  for(const actor of [ally,foe]){
@@ -201,6 +216,12 @@ test('忍冬 S3 的迷彩只在技能期间击倒过敌人时、于技能结束�
  assert.equal(b.skillActive(u),false,'技能要正常结束');
  assert.ok(u.statuses.some(s=>s.kind==='camouflage'),'技能结束时获得迷彩');
  assert.equal(u.invisible,true,'迷彩按隐匿口径生效');
+ const concealedFoe=enemy(b,{x:u.x,y:u.y,hp:100000,invisible:true});
+ concealedFoe.statuses.push({kind:'invisible',remaining:30,source:'regression',value:1});
+ assert.equal(b.targets(u).some(x=>x.uid===concealedFoe.uid),false,'隐匿敌人未被阻挡前不可主动索敌');
+ b.step();
+ assert.equal(concealedFoe.block,u.uid,'忍冬处于 S3 迷彩时仍能阻挡隐匿敌人');
+ assert.equal(b.targets(u).some(x=>x.uid===concealedFoe.uid),true,'被忍冬阻挡后敌人可被她索敌');
  u.sp=b.spCost(u);u.lastSkill=-999;b.activate(u);
  assert.equal(u.statuses.some(s=>s.kind==='camouflage'),false,'下一次开技时迷彩结束');
  assert.equal(u.invisible,false,'迷彩结束后恢复可见');
@@ -226,4 +247,3 @@ test('清明已解除 complex 限制（可进手工池与固定波次），但�
  const dict=NATIVE_DATA.season.enemyInfoDict||{};
  assert.equal(Object.values(dict).some(list=>(list||[]).includes('enemy_1209_sfden')),false,'原表 enemyInfoDict 里清明不属于任何词条，不能为了进池去改采集数据');
 });
-
