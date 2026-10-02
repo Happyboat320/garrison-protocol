@@ -16555,6 +16555,7 @@ const {EGG_BASE_MODE,EGG_MODE_ID,apply325Display,egg325Active,format325,rewrite3
 // S.E.E.S. 策略（用户 2026-09-27 口径）：解锁标记决定策略列表里能不能看到它，本局选了它才会带进卡池。
 const {visibleBands,isSeesBand,bondPanelCount,SEES_BOND_ID,TARTARUS_BOND_ID,freeDeploy} = load("native-sees.js");
 const CAT_MODE_ID='mode_cat_all',CAT_BASE_MODE='mode_single_normal';
+let upgradeConfirm=false;
 const data=NATIVE_DATA,root=document.getElementById('app'),strategyCoverageById=Object.fromEntries(strategyCoverage(data).map(x=>[x.id,x])),SAVE='garrison-native-manual-v1',CHECKPOINT_SAVE='garrison-native-safe-v1',VIEW_SAVE='garrison-native-view-v1';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const plain=s=>richText(s);
@@ -16901,7 +16902,9 @@ function reportCurve(samples){const values=(samples||[]).map(v=>Math.max(0,Numbe
 function finalBondLayerRows(g,r){const sees=isSeesBand(g.s.bandId),visible=id=>sees||id!==SEES_BOND_ID&&id!==TARTARUS_BOND_ID,ids=[...new Set([...Object.keys(data.season.bondInfoDict||{}),SEES_BOND_ID,TARTARUS_BOND_ID,...Object.keys(g.s.bondLayers||{})])].filter(visible),rows=Array.isArray(r.finalBondLayers)?r.finalBondLayers.filter(row=>visible(row.id)):ids.map(id=>({id,name:data.season.bondInfoDict[id]?.name||id,layers:g.s.bondLayers?.[id]||0}));return rows.map(row=>{const value=Number(row.layers);return {id:row.id,name:row.name||data.season.bondInfoDict[row.id]?.name||row.id,layers:Number.isFinite(value)?Math.max(0,Math.floor(value)):0};});}
 function bondLayerReport(rows){return '<section class="native-result-bond-layers"><h3>盟约最终层数</h3><div role="list">'+rows.map(row=>'<span role="listitem" class="'+(row.layers?'has-layers':'')+'"><b>'+esc(row.name)+'</b><i>'+row.layers+' 层</i></span>').join('')+'</div></section>';}
 function showResult(){const g=state.game,r=g.s.runResult||g.s.history.at(-1);if(!r)return;const archived=state.archive?.runs?.length||archiveNow().runs.length,units=(r.units||[]).slice().sort((a,b)=>b.damage-a.damage),selected=units.find(u=>u.uid===state.resultUnitUid)||units[0],bossName=r.bossName||'最终 Boss';modal(`<h2>${r.kind==='final-boss'?(r.reason==='boss-killed'?'Boss 击破 · 挑战成功':'Boss 未能击破 · 挑战结束'):'作战报告'}</h2>${r.kind==='final-boss'?`<p class="native-boss-result-heading">${esc(bossName)} · ${r.elapsed.toFixed(1)} 秒</p>`:''}<p>总伤害</p><strong class="native-total">${Math.round(r.totalDamage||0).toLocaleString()}</strong><p>${r.elapsed.toFixed(2)} 秒 · DPS ${(r.dps??(r.elapsed>0?r.totalDamage/r.elapsed:0)).toFixed(2)}${r.kind==='final-boss'?` · 红门漏怪 ${r.timePenalty||0} 次`:''}</p>${archived?`<p class="muted small">已记入本地战绩：最近 ${archived} 场，可在「战前准备」页查看并随存档导出。</p>`:''}<div class="native-result-dps"><h3>角色造成总伤害</h3><div class="native-result-unit-list">${units.map(u=>{const source=g.s.units.find(x=>x.uid===u.uid),name=source?data.profiles[source.chessId].name:u.id||'其他来源';return `<button data-act="result-unit" data-uid="${u.uid}" class="${selected?.uid===u.uid?'chosen':''}">${esc(name)}<b>${Math.round(u.damage).toLocaleString()}</b></button>`;}).join('')||'<p>本次没有造成伤害。</p>'}</div>${selected?reportCurve(selected.dpsSamples):''}</div>${bondLayerReport(finalBondLayerRows(g,r))}<div class="native-result-actions"><button data-act="export">导出本次记录</button><button class="native-primary" data-act="home">回到大厅</button></div>`);}
-function action(button,anchor=null){const a=button.dataset.act,g=state.game,uid=Number(button.dataset.uid);if(button.disabled)return;if(['home','new','begin','resume','sandbox','sandbox-exit'].includes(a))runtimeFault=null;if(['sandbox','home','sandbox-exit','new'].includes(a))rememberView('lobby');if(['begin','resume','import'].includes(a))rememberView('game');
+function resetUpgradeConfirm(){if(!upgradeConfirm)return;upgradeConfirm=false;const button=root.querySelector('[data-act="upgrade"]');if(button){button.textContent=`升级 ${catOn()?'ALL':(state.game?.terms?.().upgradeCost??'MAX')} ◆`;button.classList.remove('is-confirming');button.setAttribute('aria-pressed','false');}}
+function action(button,anchor=null){const a=button.dataset.act,g=state.game,uid=Number(button.dataset.uid);if(button.disabled)return;if(a!=='upgrade')resetUpgradeConfirm();if(['home','new','begin','resume','sandbox','sandbox-exit'].includes(a))runtimeFault=null;if(['sandbox','home','sandbox-exit','new'].includes(a))rememberView('lobby');if(['begin','resume','import'].includes(a))rememberView('game');
+ if(a==='upgrade'){if(!g||g.s.phase!=='prep')return;if(!upgradeConfirm){upgradeConfirm=true;button.textContent='确定升级';button.classList.add('is-confirming');button.setAttribute('aria-pressed','true');return;}resetUpgradeConfirm();const ok=g.perform('upgrade');if(!ok)notice(g.lastError||'当前资金不足或商店已达最高等级，无法升级。');save();render();return;}
  if(a==='result-unit'){state.resultUnitUid=uid;showResult();return;}
  if(a==='update-log'){showUpdateLog();return;}
  if(a==='hand-scroll'){scrollHandByHalfSlot(button.dataset.direction);return;}
@@ -17380,6 +17383,7 @@ function draw(){
  }
 }
 root.addEventListener('change',e=>{
+ if(upgradeConfirm)resetUpgradeConfirm();
  if(e.target.id==='native-mode')state.mode=e.target.value;if(e.target.id==='native-map')state.map=e.target.value;if(e.target.id==='native-skill'){state.game.perform('skill',Number(e.target.dataset.uid),Number(e.target.value));save();render();}
  // 战前准备页：盟约下拉重筛列表；技能选择通过卡片按钮即时保存。
  if(state.view==='prepare'){
@@ -17390,6 +17394,7 @@ root.addEventListener('change',e=>{
  if(state.view==='editor'&&e.target.dataset.act){const catalog=document.getElementById('ed-catalog');state.editor.scroll=catalog?.scrollTop||0;if(applyEditorField(e.target.dataset.act,e.target.dataset.id,e.target.value,state.waveTable,state.editor)){if(['ed-budget','ed-cost','ed-default','ed-temp-name'].includes(e.target.dataset.act)){const ui=state.editor,slot=state.waveTable.types[ui.type][ui.tier].templates[ui.template],name=slot.name||`模板 ${ui.template+1}`;root.querySelector('.wave-ed-current h2').textContent=name;root.querySelector('.wave-ed-temps .chosen b').textContent=name;root.querySelector('.wave-ed-temps .chosen small').textContent=`${slot.pool.length} 种敌人 · 预算 ${slot.budget}`;}else{const act=e.target.dataset.act;queueMicrotask(()=>{render();root.querySelector(`[data-act="${act}"]`)?.focus();});}}}
 });
 root.addEventListener('input',e=>{
+ if(upgradeConfirm)resetUpgradeConfirm();
  if(e.target.id==='native-volume'||e.target.hasAttribute('data-native-volume')){state.volume=Number(e.target.value);savePreference('garrison-volume',String(state.volume));return;}
  if(e.target.id==='sandbox-op-search'){const term=e.target.value.trim().toLowerCase();if(state.sandbox)state.sandbox.opQuery=e.target.value;for(const button of root.querySelectorAll('[data-sandbox-op]'))button.hidden=!button.dataset.sandboxOp.includes(term);return;}if(e.target.id==='sandbox-enemy-search'){const term=e.target.value.trim().toLowerCase();if(state.sandbox)state.sandbox.enemyQuery=e.target.value;for(const button of root.querySelectorAll('[data-sandbox-enemy]'))button.hidden=!button.dataset.sandboxEnemy.includes(term);return;}
   if(e.target.id!=='ed-search')return;state.editor.query=e.target.value;state.editor.caret=e.target.selectionStart||e.target.value.length;state.editor.keepSearch=true;const catalog=document.getElementById('ed-catalog');state.editor.scroll=catalog?.scrollTop||0;render();
@@ -17497,6 +17502,7 @@ root.addEventListener('click',e=>{
 });
 root.addEventListener('pointerdown',e=>{
   if(e.isPrimary===false||e.button!==0)return;ignoredClickPointer=null;ignoredClickUntil=0;
+  if(upgradeConfirm&&!e.target.closest?.('[data-act="upgrade"]'))resetUpgradeConfirm();
   if(dismissInspectOnOutsidePress(e))return;
  const paneHit=hitInScroller(scrollerAtPoint(e.clientX,e.clientY),e.clientX,e.clientY);
  const button=paneHit||e.target.closest('button[data-act], [role="button"][data-act]');
